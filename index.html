@@ -3,21 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <title>Association – Accueil</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-image: url(index.png); /* ← mets ton image ici */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .menu-box {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 30px 40px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 28px;
+            color: #333;
+        }
+
+        .btn {
+            display: block;
+            margin: 12px 0;
+            padding: 12px 20px;
+            background: #8b0000;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #b30000;
+        }
+    </style>
 </head>
+
 <body>
 
-<h1>Bienvenue à l’Association</h1>
+<div class="menu-box">
+    <h1>Bienvenue à l’Association</h1>
 
-<nav>
-    <ul>
-        <li><a href="manifestations.html">Manifestations</a></li>
-        <li><a href="calendrier.html">Calendrier des manifestations</a></li>
-        <li><a href="chalet.html">Occupation du chalet</a></li>
-        <li><a href="compagnons.html">Liste des compagnons</a></li>
-        <li><a href="login.html">Connexion</a></li>
-    </ul>
-</nav>
+    <a class="btn" href="manifestations.html">Manifestations</a>
+    <a class="btn" href="calendrier.html">Calendrier</a>
+    <a class="btn" href="chalet.html">Occupation du chalet</a>
+    <a class="btn" href="compagnons.html">Liste des compagnons</a>
+    <a class="btn" href="login.html">Connexion</a>
+</div>
 
 </body>
 </html>
