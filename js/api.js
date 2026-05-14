@@ -1,11 +1,11 @@
 // =====================================
 //  CONFIGURATION POCKETBASE
 // =====================================
-const pb = new PocketBase("http://127.0.0.1:8090");
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
 
 // =====================================
-//  MANIFESTATIONS
+//  MANIFESTATIONS – ADMIN
 // =====================================
 
 // Charger les manifestations pour la page admin
@@ -27,12 +27,17 @@ async function loadAdminManifestations() {
 
         records.forEach(m => {
             const div = document.createElement("div");
+            div.className = "manifest-card";
+
             div.innerHTML = `
-                <strong>${m.title}</strong> – ${m.date}<br>
+                <strong>${m.title}</strong><br>
+                Date : ${m.date}<br>
                 Places max : ${m.places_max || "—"}<br>
+                Date limite : ${m.date_limite || "—"}<br><br>
+
                 <button onclick="deleteManifestation('${m.id}')">Supprimer</button>
-                <hr>
             `;
+
             container.appendChild(div);
         });
 
@@ -50,6 +55,7 @@ async function createManifestation() {
         description: document.getElementById("description").value,
         date: document.getElementById("date").value,
         places_max: document.getElementById("places_max").value || null,
+        date_limite: document.getElementById("date_limite").value || null,
         created_by: pb.authStore.model?.id || null
     };
 
@@ -80,85 +86,9 @@ async function deleteManifestation(id) {
 
 
 // =====================================
-//  CHALET – RÉSERVATIONS
+//  MANIFESTATIONS – PUBLIC / COMPAGNON
 // =====================================
 
-// Charger les réservations
-async function loadChaletReservations() {
-    const container = document.getElementById("reservations");
-    container.innerHTML = "<p>Chargement...</p>";
-
-    try {
-        const records = await pb.collection("chalet_reservations").getFullList({
-            sort: "start_date"
-        });
-
-        if (records.length === 0) {
-            container.innerHTML = "<p>Aucune réservation.</p>";
-            return;
-        }
-
-        container.innerHTML = "";
-
-        records.forEach(r => {
-            const div = document.createElement("div");
-            div.innerHTML = `
-                <strong>${r.title}</strong><br>
-                Du ${r.start_date} au ${r.end_date}<br>
-                <button onclick="deleteChaletReservation('${r.id}')">Supprimer</button>
-                <hr>
-            `;
-            container.appendChild(div);
-        });
-
-    } catch (err) {
-        container.innerHTML = "<p>Erreur lors du chargement.</p>";
-        console.error(err);
-    }
-}
-
-
-// Créer une réservation
-async function createChaletReservation() {
-    const data = {
-        title: document.getElementById("title").value,
-        description: document.getElementById("description").value,
-        start_date: document.getElementById("start_date").value,
-        end_date: document.getElementById("end_date").value,
-        reserved_by: pb.authStore.model?.id || null
-    };
-
-    try {
-        await pb.collection("chalet_reservations").create(data);
-        alert("Réservation créée !");
-        loadChaletReservations();
-    } catch (err) {
-        alert("Erreur lors de la création.");
-        console.error(err);
-    }
-}
-
-
-// Supprimer une réservation
-async function deleteChaletReservation(id) {
-    if (!confirm("Supprimer cette réservation ?")) return;
-
-    try {
-        await pb.collection("chalet_reservations").delete(id);
-        loadChaletReservations();
-    } catch (err) {
-        alert("Erreur lors de la suppression.");
-        console.error(err);
-    }
-}
-
-
-
-// =====================================
-//  INSCRIPTIONS (pour les pages publiques)
-// =====================================
-
-// Charger les manifestations publiques
 async function loadManifestations() {
     const container = document.getElementById("manifestations");
     container.innerHTML = "<p>Chargement...</p>";
@@ -170,15 +100,32 @@ async function loadManifestations() {
 
         container.innerHTML = "";
 
+        const now = new Date();
+
         records.forEach(m => {
+            const limite = m.date_limite ? new Date(m.date_limite) : null;
+            const inscriptionsCloses = limite && now > limite;
+
             const div = document.createElement("div");
+            div.className = "manifest-card";
+
             div.innerHTML = `
                 <h3>${m.title}</h3>
                 <p>${m.description || ""}</p>
                 <p>Date : ${m.date}</p>
-                <a href="inscription.html?id=${m.id}">S'inscrire</a>
-                <hr>
+                <p>Date limite d'inscription : ${m.date_limite || "—"}</p>
             `;
+
+            if (inscriptionsCloses) {
+                div.innerHTML += `
+                    <p style="color:red;"><strong>Inscriptions closes</strong></p>
+                `;
+            } else {
+                div.innerHTML += `
+                    <a class="btn" href="inscription.html?id=${m.id}">S'inscrire</a>
+                `;
+            }
+
             container.appendChild(div);
         });
 
@@ -189,7 +136,11 @@ async function loadManifestations() {
 }
 
 
-// Initialiser le formulaire d'inscription
+
+// =====================================
+//  INSCRIPTION – COMPAGNON
+// =====================================
+
 function initInscription() {
     const url = new URL(window.location.href);
     const manifestationId = url.searchParams.get("id");
@@ -225,7 +176,7 @@ function initInscription() {
 
 
 // =====================================
-//  INSCRITS (pour le comité)
+//  INSCRITS – COMITÉ
 // =====================================
 
 async function loadInscrits() {
@@ -242,14 +193,16 @@ async function loadInscrits() {
 
         records.forEach(i => {
             const div = document.createElement("div");
+            div.className = "manifest-card";
+
             div.innerHTML = `
                 <strong>${i.nom} ${i.prenom}</strong><br>
                 Manifestation : ${i.expand.manifestation?.title}<br>
                 Email : ${i.email || "—"}<br>
                 Téléphone : ${i.telephone || "—"}<br>
                 Commentaire : ${i.commentaire || "—"}<br>
-                <hr>
             `;
+
             container.appendChild(div);
         });
 
