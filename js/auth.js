@@ -12,18 +12,20 @@ async function login(email, password) {
 
         console.log("Connecté :", authData);
 
-        // Redirection selon le rôle
         const role = authData.record.role;
 
+        // Retourne true pour que login.html sache que c'est OK
         if (role === "comite") {
             window.location.href = "admin/admin-manifestations.html";
         } else {
             window.location.href = "index.html";
         }
 
+        return true;
+
     } catch (error) {
         console.error("Erreur de connexion :", error);
-        document.getElementById("message").innerText = "Email ou mot de passe incorrect.";
+        return false; // Permet à login.html d'afficher un message
     }
 }
 
