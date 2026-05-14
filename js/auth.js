@@ -8,7 +8,7 @@ const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 // ===============================
 async function login(email, password) {
     try {
-        const authData = await pb.collection("compagnons").authWithPassword(email, password);
+        const authData = await pb.collection("users").authWithPassword(email, password);
 
         console.log("Connecté :", authData);
 
