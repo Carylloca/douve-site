@@ -1,0 +1,149 @@
+/* ============================================
+   STYLE GLOBAL — Thème Vin Neuchâtelois
+   ============================================ */
+
+body {
+    font-family: "DM Sans", sans-serif;
+    background: #faf6f2; /* beige cave */
+    color: #2e2b29; /* brun foncé */
+    margin: 0;
+    padding: 0;
+}
+
+/* ============================================
+   HEADER / TITRES
+   ============================================ */
+
+h1, h2, h3 {
+    color: #7b0f23; /* rouge pinot noir */
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+/* ============================================
+   CONTENEURS
+   ============================================ */
+
+.container, form, .block {
+    background: #ffffff;
+    border: 1px solid #e4d7c7; /* ton bois clair */
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 900px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* ============================================
+   BOUTONS
+   ============================================ */
+
+button, .btn {
+    background: #7b0f23; /* rouge pinot noir */
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    text-decoration: none;
+    display: inline-block;
+    transition: 0.2s;
+}
+
+button:hover, .btn:hover {
+    background: #a01332; /* rouge plus clair */
+}
+
+/* Bouton danger */
+.btn-danger {
+    background: #b30000;
+}
+.btn-danger:hover {
+    background: #d40000;
+}
+
+/* ============================================
+   INPUTS & SELECTS
+   ============================================ */
+
+input, textarea, select {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0 20px;
+    border-radius: 6px;
+    border: 1px solid #c8b8a6;
+    font-size: 16px;
+    background: #fffdf8;
+}
+
+/* ============================================
+   TABLES
+   ============================================ */
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.table th {
+    background: #7b0f23; /* rouge pinot noir */
+    color: white;
+    padding: 10px;
+    border-bottom: 3px solid #d4b48a; /* or doux */
+}
+
+.table td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+/* ============================================
+   BLOCS / LISTES
+   ============================================ */
+
+.item, .manifestation-item, .reservation-item {
+    background: #f7f1eb; /* beige cave très clair */
+    border-left: 5px solid #7b0f23; /* bande rouge vin */
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+/* ============================================
+   LIENS
+   ============================================ */
+
+a {
+    color: #7b0f23;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover {
+    color: #a01332;
+}
+
+/* ============================================
+   NAVIGATION SIMPLE
+   ============================================ */
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px;
+    display: flex;
+    gap: 20px;
+}
+
+nav ul li a {
+    padding: 8px 14px;
+    border-radius: 6px;
+    background: #7b0f23;
+    color: white;
+}
+
+nav ul li a:hover {
+    background: #a01332;
+}

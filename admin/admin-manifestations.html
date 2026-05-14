@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin – Manifestations</title>
+
+    <!-- PocketBase -->
+    <script src="../js/pocketbase.min.js"></script>
+
+    <!-- Auth + API -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+</head>
+
+<body>
+
+<h1>Gestion des manifestations</h1>
+
+<button onclick="logout()">Déconnexion</button>
+
+<h2>Créer une nouvelle manifestation</h2>
+
+<form id="createForm">
+    <label>Titre :</label>
+    <input type="text" id="title" required>
+
+    <label>Description :</label>
+    <textarea id="description"></textarea>
+
+    <label>Date :</label>
+    <input type="date" id="date" required>
+
+    <label>Places max :</label>
+    <input type="number" id="places_max">
+
+    <button type="submit">Créer</button>
+</form>
+
+<hr>
+
+<h2>Liste des manifestations</h2>
+<div id="manifestations"></div>
+
+<script>
+// Empêche l’accès si l’utilisateur n’est pas comité
+requireComite();
+
+// Charge la liste des manifestations
+loadAdminManifestations();
+
+// Création d’une nouvelle manifestation
+document.getElementById("createForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    await createManifestation();
+});
+</script>
+
+</body>
+</html>

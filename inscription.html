@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Inscription</title>
+    <script src="js/pocketbase.min.js"></script>
+    <script src="js/api.js"></script>
+</head>
+<body>
+
+<h1>Inscription à la manifestation</h1>
+
+<form id="inscriptionForm">
+    <label>Nom :</label>
+    <input type="text" id="nom" required>
+
+    <label>Prénom :</label>
+    <input type="text" id="prenom" required>
+
+    <label>Email :</label>
+    <input type="email" id="email">
+
+    <label>Téléphone :</label>
+    <input type="text" id="telephone">
+
+    <label>Commentaire :</label>
+    <textarea id="commentaire"></textarea>
+
+    <button type="submit">Envoyer</button>
+</form>
+
+<script>
+initInscription();
+</script>
+
+</body>
+</html>

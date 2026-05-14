@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin – Chalet</title>
+
+    <!-- PocketBase -->
+    <script src="../js/pocketbase.min.js"></script>
+
+    <!-- Auth + API -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+</head>
+
+<body>
+
+<h1>Gestion des réservations du chalet</h1>
+
+<button onclick="logout()">Déconnexion</button>
+
+<h2>Nouvelle réservation</h2>
+
+<form id="createReservationForm">
+    <label>Titre :</label>
+    <input type="text" id="title" required>
+
+    <label>Description :</label>
+    <textarea id="description"></textarea>
+
+    <label>Date début :</label>
+    <input type="date" id="start_date" required>
+
+    <label>Date fin :</label>
+    <input type="date" id="end_date" required>
+
+    <button type="submit">Créer</button>
+</form>
+
+<hr>
+
+<h2>Réservations existantes</h2>
+<div id="reservations"></div>
+
+<script>
+// Empêche l’accès si l’utilisateur n’est pas comité
+requireComite();
+
+// Charge les réservations existantes
+loadChaletReservations();
+
+// Création d’une nouvelle réservation
+document.getElementById("createReservationForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    await createChaletReservation();
+});
+</script>
+
+</body>
+</html>
