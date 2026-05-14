@@ -3,12 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <title>Inscription</title>
+
+    <!-- PocketBase -->
     <script src="js/pocketbase.min.js"></script>
+
+    <!-- Auth + API -->
+    <script src="js/auth.js"></script>
     <script src="js/api.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        form label { display: block; margin-top: 10px; }
+        form input, form textarea { width: 300px; padding: 6px; }
+        button { margin-top: 10px; padding: 8px 12px; }
+        #info { margin-bottom: 20px; padding: 10px; background: #f5f5f5; border-radius: 6px; }
+        #closed { color: red; font-weight: bold; }
+    </style>
 </head>
+
 <body>
 
 <h1>Inscription à la manifestation</h1>
+
+<div id="info">Chargement des informations…</div>
 
 <form id="inscriptionForm">
     <label>Nom :</label>
@@ -26,10 +44,66 @@
     <label>Commentaire :</label>
     <textarea id="commentaire"></textarea>
 
-    <button type="submit">Envoyer</button>
+    <button type="submit" id="btnSubmit">Envoyer</button>
 </form>
 
 <script>
+// 🔒 Empêche l’accès si non connecté
+requireLogin();
+
+// 🔄 Récupère l'utilisateur connecté
+const user = getUser();
+
+// Pré-remplit le formulaire avec les infos du compagnon
+document.getElementById("nom").value = user.nom || "";
+document.getElementById("prenom").value = user.prenom || "";
+document.getElementById("email").value = user.email || "";
+document.getElementById("telephone").value = user.telephone || "";
+
+// =====================================
+//  CHARGEMENT DES INFOS DE LA MANIFESTATION
+// =====================================
+(async function loadManifestationInfo() {
+    const url = new URL(window.location.href);
+    const id = url.searchParams.get("id");
+
+    if (!id) {
+        document.getElementById("info").innerHTML = "<p>Manifestation inconnue.</p>";
+        document.getElementById("inscriptionForm").style.display = "none";
+        return;
+    }
+
+    try {
+        const m = await pb.collection("manifestations").getOne(id);
+
+        const now = new Date();
+        const limite = m.date_limite ? new Date(m.date_limite) : null;
+        const inscriptionsCloses = limite && now > limite;
+
+        let html = `
+            <strong>${m.title}</strong><br>
+            Date : ${m.date}<br>
+            Description : ${m.description || "—"}<br>
+            Date limite d'inscription : ${m.date_limite || "—"}<br>
+        `;
+
+        if (inscriptionsCloses) {
+            html += `<p id="closed">Les inscriptions sont closes.</p>`;
+            document.getElementById("btnSubmit").disabled = true;
+        }
+
+        document.getElementById("info").innerHTML = html;
+
+    } catch (err) {
+        document.getElementById("info").innerHTML = "<p>Erreur lors du chargement.</p>";
+        document.getElementById("inscriptionForm").style.display = "none";
+        console.error(err);
+    }
+})();
+
+// =====================================
+//  ENVOI DU FORMULAIRE
+// =====================================
 initInscription();
 </script>
 
