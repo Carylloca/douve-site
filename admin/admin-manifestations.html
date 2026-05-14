@@ -10,6 +10,20 @@
     <!-- Auth + API -->
     <script src="../js/auth.js"></script>
     <script src="../js/api.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        form label { display: block; margin-top: 10px; }
+        form input, form textarea { width: 300px; padding: 6px; }
+        button { margin-top: 10px; padding: 8px 12px; }
+        .manifest-card {
+            border: 1px solid #ccc;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+        }
+    </style>
 </head>
 
 <body>
@@ -33,6 +47,9 @@
     <label>Places max :</label>
     <input type="number" id="places_max">
 
+    <label>Date limite d'inscription :</label>
+    <input type="date" id="date_limite">
+
     <button type="submit">Créer</button>
 </form>
 
@@ -42,13 +59,13 @@
 <div id="manifestations"></div>
 
 <script>
-// Empêche l’accès si l’utilisateur n’est pas comité
+// 🔒 Empêche l’accès si l’utilisateur n’est pas comité
 requireComite();
 
-// Charge la liste des manifestations
+// 🔄 Charge la liste des manifestations
 loadAdminManifestations();
 
-// Création d’une nouvelle manifestation
+// ➕ Création d’une nouvelle manifestation
 document.getElementById("createForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     await createManifestation();
