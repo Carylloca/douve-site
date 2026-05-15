@@ -7,6 +7,12 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="../favicon.png">
 
+    <!-- jsPDF (PDF export) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- SheetJS (Excel export) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
         body {
             margin: 0;
@@ -40,32 +46,15 @@
             text-decoration: none;
             font-weight: bold;
             transition: 0.2s;
+            margin: 5px;
         }
 
         .btn:hover {
             background: #5A000C;
         }
 
-        .btn-back {
-            display: block;
-            width: fit-content;
-            margin: 0 auto 30px auto;
-        }
-
-        .btn-create {
-            display: block;
-            width: fit-content;
-            margin: 0 auto 30px auto;
-        }
-
         .btn-delete {
             background: #d50000;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            color: white;
-            font-weight: bold;
         }
 
         .btn-delete:hover {
@@ -74,18 +63,13 @@
 
         .btn-modifier {
             background: #7A0010;
-            padding: 8px 12px;
-            border-radius: 6px;
-            color: white;
-            text-decoration: none;
-            margin-right: 10px;
-            font-weight: bold;
         }
 
         .btn-modifier:hover {
             background: #5A000C;
         }
 
+        /* --- Cartes --- */
         .manifest-card {
             background: rgba(255, 255, 255, 0.92);
             border-radius: 10px;
@@ -95,8 +79,39 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        .manifest-card strong {
-            font-size: 18px;
+        /* --- Tableau --- */
+        #tableView {
+            display: none;
+        }
+
+        table {
+            width: 100%;
+            max-width: 900px;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: rgba(255,255,255,0.95);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #7A0010;
+            color: white;
+            cursor: pointer;
+        }
+
+        tr:hover {
+            background: #f2f2f2;
+        }
+
+        .actions {
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -105,37 +120,72 @@
     <div class="overlay">
         <h1>Gestion des manifestations</h1>
 
-        <a href="admin-menu.html" class="btn btn-back">← Retour au menu</a>
+        <div style="text-align:center;">
+            <a href="admin-menu.html" class="btn">← Retour au menu</a>
+            <a href="admin-manifestation-nouveau.html" class="btn">+ Nouvelle manifestation</a>
 
-        <a href="admin-manifestation-nouveau.html" class="btn btn-create">+ Nouvelle manifestation</a>
+            <button class="btn" onclick="showCards()">Vue cartes</button>
+            <button class="btn" onclick="showTable()">Vue tableau</button>
 
-        <div id="manifestations">
-            <p style="color:white;">Chargement...</p>
+            <button class="btn" onclick="exportPDF()">Export PDF</button>
+            <button class="btn" onclick="exportExcel()">Export Excel</button>
+        </div>
+
+        <!-- Vue Cartes -->
+        <div id="cardsView"></div>
+
+        <!-- Vue Tableau -->
+        <div id="tableView">
+            <table id="manifestTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)">Titre</th>
+                        <th onclick="sortTable(1)">Date</th>
+                        <th onclick="sortTable(2)">Places max</th>
+                        <th onclick="sortTable(3)">Date limite</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
         </div>
     </div>
 
     <!-- PocketBase -->
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
-
-    <!-- Auth -->
     <script src="../js/auth.js"></script>
 
     <script>
+        let manifestations = [];
+
+        function showCards() {
+            document.getElementById("cardsView").style.display = "block";
+            document.getElementById("tableView").style.display = "none";
+        }
+
+        function showTable() {
+            document.getElementById("cardsView").style.display = "none";
+            document.getElementById("tableView").style.display = "block";
+        }
+
         async function loadAdminManifestations() {
-            const container = document.getElementById("manifestations");
-            container.innerHTML = "<p style='color:white;'>Chargement...</p>";
+            const cards = document.getElementById("cardsView");
+            const tableBody = document.getElementById("tableBody");
+
+            cards.innerHTML = "<p style='color:white;text-align:center;'>Chargement...</p>";
 
             try {
-                const records = await pb.collection("manifestations").getFullList({
+                manifestations = await pb.collection("manifestations").getFullList({
                     sort: "-date"
                 });
 
-                container.innerHTML = "";
+                cards.innerHTML = "";
+                tableBody.innerHTML = "";
 
-                records.forEach(m => {
+                manifestations.forEach(m => {
+                    /* --- Vue cartes --- */
                     const div = document.createElement("div");
                     div.className = "manifest-card";
-
                     div.innerHTML = `
                         <strong>${m.title}</strong><br>
                         Date : ${m.date}<br>
@@ -145,12 +195,25 @@
                         <a href="admin-manifestation-modifier.html?id=${m.id}" class="btn-modifier">Modifier</a>
                         <button onclick="deleteManifestation('${m.id}')" class="btn-delete">Supprimer</button>
                     `;
+                    cards.appendChild(div);
 
-                    container.appendChild(div);
+                    /* --- Vue tableau --- */
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${m.title}</td>
+                        <td>${m.date}</td>
+                        <td>${m.places_max || "—"}</td>
+                        <td>${m.date_limite || "—"}</td>
+                        <td class="actions">
+                            <a href="admin-manifestation-modifier.html?id=${m.id}" class="btn-modifier">Modifier</a>
+                            <button onclick="deleteManifestation('${m.id}')" class="btn-delete">Supprimer</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
                 });
 
             } catch (err) {
-                container.innerHTML = "<p style='color:white;'>Erreur lors du chargement.</p>";
+                cards.innerHTML = "<p style='color:white;'>Erreur lors du chargement.</p>";
                 console.error(err);
             }
         }
@@ -165,6 +228,89 @@
                 alert("Erreur lors de la suppression.");
                 console.error(err);
             }
+        }
+
+        /* --- Tri du tableau --- */
+        function sortTable(col) {
+            const table = document.getElementById("manifestTable");
+            let switching = true;
+            let dir = "asc";
+
+            while (switching) {
+                switching = false;
+                const rows = table.rows;
+
+                for (let i = 1; i < rows.length - 1; i++) {
+                    let shouldSwitch = false;
+                    let x = rows[i].getElementsByTagName("td")[col];
+                    let y = rows[i + 1].getElementsByTagName("td")[col];
+
+                    if (dir === "asc" && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                        shouldSwitch = true;
+                    }
+                    if (dir === "desc" && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                        shouldSwitch = true;
+                    }
+
+                    if (shouldSwitch) {
+                        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                        switching = true;
+                        break;
+                    }
+                }
+
+                if (!switching && dir === "asc") {
+                    dir = "desc";
+                    switching = true;
+                }
+            }
+        }
+
+        /* --- Format nom fichier --- */
+        function formatFileName(title, date) {
+            const cleanTitle = title.normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-zA-Z0-9]/g, "_");
+
+            return `${cleanTitle}_${date}`;
+        }
+
+        /* --- Export PDF --- */
+        function exportPDF() {
+            if (manifestations.length === 0) return;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let y = 10;
+
+            manifestations.forEach(m => {
+                doc.text(`Titre : ${m.title}`, 10, y); y += 8;
+                doc.text(`Date : ${m.date}`, 10, y); y += 8;
+                doc.text(`Places max : ${m.places_max || "-"}`, 10, y); y += 8;
+                doc.text(`Date limite : ${m.date_limite || "-"}`, 10, y); y += 12;
+            });
+
+            const fileName = formatFileName(manifestations[0].title, manifestations[0].date) + ".pdf";
+            doc.save(fileName);
+        }
+
+        /* --- Export Excel --- */
+        function exportExcel() {
+            if (manifestations.length === 0) return;
+
+            const data = manifestations.map(m => ({
+                Titre: m.title,
+                Date: m.date,
+                Places_max: m.places_max || "-",
+                Date_limite: m.date_limite || "-"
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Manifestations");
+
+            const fileName = formatFileName(manifestations[0].title, manifestations[0].date) + ".xlsx";
+            XLSX.writeFile(wb, fileName);
         }
 
         loadAdminManifestations();
