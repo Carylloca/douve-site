@@ -8,13 +8,14 @@ const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 // ===============================
 async function login(email, password) {
     try {
-        const authData = await pb.collection("users").authWithPassword(email, password);
+        // 👉 Connexion sur la bonne collection : companions
+        const authData = await pb.collection("companions").authWithPassword(email, password);
 
         console.log("Connecté :", authData);
 
         const role = authData.record.role;
 
-        // Retourne true pour que login.html sache que c'est OK
+        // Redirection selon le rôle
         if (role === "comite") {
             window.location.href = "admin/admin-manifestations.html";
         } else {
@@ -25,7 +26,7 @@ async function login(email, password) {
 
     } catch (error) {
         console.error("Erreur de connexion :", error);
-        return false; // Permet à login.html d'afficher un message
+        return false;
     }
 }
 
@@ -34,7 +35,7 @@ async function login(email, password) {
 // ===============================
 function logout() {
     pb.authStore.clear();
-    window.location.href = "../login.html";
+    window.location.href = "login.html";
 }
 
 // ===============================
@@ -47,9 +48,13 @@ function getUser() {
 // ===============================
 //  VÉRIFIER SI CONNECTÉ
 // ===============================
+function isLoggedIn() {
+    return pb.authStore.isValid;
+}
+
 function requireLogin() {
     if (!pb.authStore.isValid) {
-        window.location.href = "../login.html";
+        window.location.href = "login.html";
     }
 }
 
@@ -58,7 +63,7 @@ function requireLogin() {
 // ===============================
 function requireComite() {
     if (!pb.authStore.isValid) {
-        window.location.href = "../login.html";
+        window.location.href = "login.html";
         return;
     }
 
@@ -66,7 +71,7 @@ function requireComite() {
 
     if (!user || user.role !== "comite") {
         alert("Accès réservé au comité.");
-        window.location.href = "../index.html";
+        window.location.href = "index.html";
     }
 }
 
