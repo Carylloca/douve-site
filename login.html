@@ -16,7 +16,6 @@
             padding: 0;
             font-family: Arial, sans-serif;
 
-            /* Image de fond */
             background-image: url('index.png');
             background-size: cover;
             background-position: center;
@@ -126,9 +125,12 @@
 // 🔒 Si l’utilisateur est déjà connecté → redirection automatique
 if (isLoggedIn()) {
     const user = getUser();
-    if (user.role === "comite") {
+
+    if (user.collectionName === "users") {
+        // Comité authentifié via USERS
         window.location.href = "admin/admin-manifestations.html";
     } else {
+        // Compagnon
         window.location.href = "index.html";
     }
 }
