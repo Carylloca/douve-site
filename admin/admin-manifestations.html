@@ -4,73 +4,100 @@
     <meta charset="UTF-8">
     <title>Admin – Manifestations</title>
 
-    <!-- PocketBase -->
-    <script src="../js/pocketbase.min.js"></script>
-
-    <!-- Auth + API -->
-    <script src="../js/auth.js"></script>
-    <script src="../js/api.js"></script>
-
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { color: #333; }
-        form label { display: block; margin-top: 10px; }
-        form input, form textarea { width: 300px; padding: 6px; }
-        button { margin-top: 10px; padding: 8px 12px; }
-        .manifest-card {
-            border: 1px solid #ccc;
-            padding: 12px;
-            margin-bottom: 10px;
+        /* ======== IMAGE DE FOND PERSONNALISABLE ======== */
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("../img/fond-admin.jpg"); /* ← CHANGE ICI */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+        }
+
+        /* ======== OVERLAY ======== */
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        /* ======== TITRE ======== */
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px black;
+        }
+
+        /* ======== BOUTON CRÉER ======== */
+        .btn-create {
+            display: block;
+            width: fit-content;
+            margin: 0 auto 30px auto;
+            padding: 12px 20px;
+            background: #00c853;
+            color: white;
             border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .btn-create:hover {
+            background: #009624;
+        }
+
+        /* ======== CARTE MANIFESTATION ======== */
+        .manifest-card {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px auto;
+            max-width: 600px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .manifest-card strong {
+            font-size: 18px;
+        }
+
+        .btn-delete {
+            background: #d50000;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-delete:hover {
+            background: #9b0000;
         }
     </style>
 </head>
 
 <body>
+    <div class="overlay">
+        <h1>Gestion des manifestations</h1>
 
-<h1>Gestion des manifestations</h1>
+        <a href="admin-manifestation-nouveau.html" class="btn-create">+ Nouvelle manifestation</a>
 
-<button onclick="logout()">Déconnexion</button>
+        <div id="manifestations">
+            <p style="color:white;">Chargement...</p>
+        </div>
+    </div>
 
-<h2>Créer une nouvelle manifestation</h2>
+    <!-- PocketBase -->
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
-<form id="createForm">
-    <label>Titre :</label>
-    <input type="text" id="title" required>
+    <!-- Auth + API -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
 
-    <label>Description :</label>
-    <textarea id="description"></textarea>
-
-    <label>Date :</label>
-    <input type="date" id="date" required>
-
-    <label>Places max :</label>
-    <input type="number" id="places_max">
-
-    <label>Date limite d'inscription :</label>
-    <input type="date" id="date_limite">
-
-    <button type="submit">Créer</button>
-</form>
-
-<hr>
-
-<h2>Liste des manifestations</h2>
-<div id="manifestations"></div>
-
-<script>
-// 🔒 Empêche l’accès si l’utilisateur n’est pas comité
-requireComite();
-
-// 🔄 Charge la liste des manifestations
-loadAdminManifestations();
-
-// ➕ Création d’une nouvelle manifestation
-document.getElementById("createForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    await createManifestation();
-});
-</script>
-
+    <!-- Lancement -->
+    <script>
+        loadAdminManifestations();
+    </script>
 </body>
 </html>
