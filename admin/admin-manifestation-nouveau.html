@@ -4,26 +4,26 @@
     <meta charset="UTF-8">
     <title>Admin – Nouvelle manifestation</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../favicon.png">
+
     <style>
-        /* ======== IMAGE DE FOND PERSONNALISABLE ======== */
         body {
             margin: 0;
             padding: 0;
-            background-image: url("../img/page-admin-manifestation-nouveau.jpg"); /* ← CHANGE ICI */
+            background-image: url("../img/page-admin-manifestation-nouveau.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             font-family: Arial, sans-serif;
         }
 
-        /* ======== OVERLAY ======== */
         .overlay {
             background: rgba(0, 0, 0, 0.55);
             min-height: 100vh;
             padding: 40px 20px;
         }
 
-        /* ======== TITRE ======== */
         h1 {
             text-align: center;
             color: white;
@@ -31,13 +31,12 @@
             text-shadow: 0 0 10px black;
         }
 
-        /* ======== BOUTONS ======== */
         .btn {
             display: block;
             width: fit-content;
             margin: 0 auto 30px auto;
             padding: 12px 20px;
-            background: #7A0010; /* couleur bordeaux */
+            background: #7A0010;
             color: white;
             border-radius: 6px;
             text-decoration: none;
@@ -49,7 +48,6 @@
             background: #5A000C;
         }
 
-        /* ======== FORMULAIRE ======== */
         form {
             background: rgba(255, 255, 255, 0.92);
             padding: 25px;
@@ -65,7 +63,7 @@
             margin-top: 15px;
         }
 
-        input, textarea {
+        input, textarea, select {
             width: 100%;
             padding: 10px;
             margin-top: 5px;
@@ -75,6 +73,10 @@
         }
 
         textarea {
+            height: 120px;
+        }
+
+        select[multiple] {
             height: 120px;
         }
 
@@ -90,7 +92,6 @@
     <div class="overlay">
         <h1>Créer une nouvelle manifestation</h1>
 
-        <!-- Bouton retour au menu -->
         <a href="admin-menu.html" class="btn">← Retour au menu</a>
 
         <form id="manifestForm">
@@ -109,6 +110,9 @@
             <label>Places maximum</label>
             <input type="number" id="places_max" min="1">
 
+            <label>Responsables (1 ou 2 compagnons)</label>
+            <select id="responsables" multiple></select>
+
             <button type="submit" class="btn btn-submit">Créer la manifestation</button>
         </form>
     </div>
@@ -118,7 +122,6 @@
 
     <!-- Auth + API -->
     <script src="../js/auth.js"></script>
-    <script src="../js/api.js"></script>
 
     <script>
         // Vérifier que l'utilisateur est connecté
@@ -126,10 +129,60 @@
             window.location.href = "../login.html";
         }
 
-        // Soumission du formulaire
+        // Charger la liste des compagnons pour le champ "responsables"
+        async function loadResponsables() {
+            const select = document.getElementById("responsables");
+            select.innerHTML = "<option>Chargement...</option>";
+
+            try {
+                const companions = await pb.collection("companions").getFullList({
+                    sort: "name"
+                });
+
+                select.innerHTML = "";
+
+                companions.forEach(c => {
+                    const opt = document.createElement("option");
+                    opt.value = c.id;
+                    opt.textContent = c.name + " (" + c.initiales + ")";
+                    select.appendChild(opt);
+                });
+
+            } catch (err) {
+                console.error(err);
+                select.innerHTML = "<option>Erreur de chargement</option>";
+            }
+        }
+
+        loadResponsables();
+
+        // Création de la manifestation
         document.getElementById("manifestForm").addEventListener("submit", async (e) => {
             e.preventDefault();
-            await createManifestation();
+
+            const user = pb.authStore.model;
+
+            const responsablesSelect = document.getElementById("responsables");
+            const responsables = Array.from(responsablesSelect.selectedOptions).map(o => o.value);
+
+            const data = {
+                title: document.getElementById("title").value.trim(),
+                description: document.getElementById("description").value.trim(),
+                date: document.getElementById("date").value,
+                date_limite: document.getElementById("date_limite").value || null,
+                places_max: document.getElementById("places_max").value || null,
+                created_by: user.id,
+                responsables: responsables
+            };
+
+            try {
+                await pb.collection("manifestations").create(data);
+                alert("Manifestation créée !");
+                window.location.href = "admin-manifestations.html";
+            } catch (err) {
+                console.error(err);
+                alert("Erreur lors de la création : " + (err?.message || "Vérifiez les champs obligatoires."));
+            }
         });
     </script>
 </body>
