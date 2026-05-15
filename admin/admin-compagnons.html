@@ -4,26 +4,32 @@
     <meta charset="UTF-8">
     <title>Admin – Compagnons</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../favicon.png">
+
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- SheetJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
-        /* ======== IMAGE DE FOND PERSONNALISABLE ======== */
         body {
             margin: 0;
             padding: 0;
-            background-image: url("../img/page-admin-compagnons.jpg"); /* ← CHANGE ICI */
+            background-image: url("../img/page-admin-compagnons.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             font-family: Arial, sans-serif;
         }
 
-        /* ======== OVERLAY ======== */
         .overlay {
             background: rgba(0, 0, 0, 0.55);
             min-height: 100vh;
             padding: 40px 20px;
         }
 
-        /* ======== TITRE ======== */
         h1 {
             text-align: center;
             color: white;
@@ -31,25 +37,22 @@
             text-shadow: 0 0 10px black;
         }
 
-        /* ======== BOUTONS ======== */
         .btn {
-            display: block;
-            width: fit-content;
-            margin: 0 auto 30px auto;
+            display: inline-block;
             padding: 12px 20px;
-            background: #7A0010; /* couleur bordeaux */
+            background: #7A0010;
             color: white;
             border-radius: 6px;
             text-decoration: none;
             font-weight: bold;
             transition: 0.2s;
+            margin: 5px;
         }
 
         .btn:hover {
             background: #5A000C;
         }
 
-        /* ======== CARTE COMPAGNON ======== */
         .comp-card {
             background: rgba(255, 255, 255, 0.92);
             border-radius: 10px;
@@ -82,8 +85,11 @@
     <div class="overlay">
         <h1>Gestion des compagnons</h1>
 
-        <!-- Bouton retour au menu -->
-        <a href="admin-menu.html" class="btn">← Retour au menu</a>
+        <div style="text-align:center;">
+            <a href="admin-menu.html" class="btn">← Retour au menu</a>
+            <button class="btn" onclick="exportPDF()">Export PDF</button>
+            <button class="btn" onclick="exportExcel()">Export Excel</button>
+        </div>
 
         <div id="companions">
             <p style="color:white;">Chargement...</p>
@@ -93,14 +99,14 @@
     <!-- PocketBase -->
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
-    <!-- Auth + API -->
+    <!-- Auth -->
     <script src="../js/auth.js"></script>
 
     <script>
-        // Vérifier que l'utilisateur est connecté
-        if (!pb.authStore.isValid) {
-            window.location.href = "../login.html";
-        }
+        // 🔒 Sécurisation admin
+        requireComite();
+
+        let companionsList = [];
 
         async function loadCompanions() {
             const container = document.getElementById("companions");
@@ -108,9 +114,10 @@
 
             try {
                 const records = await pb.collection("companions").getFullList({
-                    sort: "name"
+                    sort: "nom"
                 });
 
+                companionsList = records;
                 container.innerHTML = "";
 
                 records.forEach(c => {
@@ -118,7 +125,7 @@
                     div.className = "comp-card";
 
                     div.innerHTML = `
-                        <strong>${c.name}</strong><br>
+                        <strong>${c.nom} ${c.prenom}</strong><br>
                         Email : ${c.email}<br>
                         Rôle : ${c.role}<br>
                         Groupe : ${c.group || "—"}<br><br>
@@ -145,6 +152,49 @@
                 alert("Erreur lors de la suppression.");
                 console.error(err);
             }
+        }
+
+        /* --- Format nom fichier --- */
+        function formatFileName() {
+            return "Compagnons_" + new Date().toISOString().split("T")[0];
+        }
+
+        /* --- Export PDF --- */
+        function exportPDF() {
+            if (companionsList.length === 0) return;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let y = 10;
+
+            doc.text("Liste des compagnons", 10, y); 
+            y += 12;
+
+            companionsList.forEach(c => {
+                doc.text(`${c.nom} ${c.prenom} – ${c.email} – ${c.role}`, 10, y);
+                y += 8;
+            });
+
+            doc.save(formatFileName() + ".pdf");
+        }
+
+        /* --- Export Excel --- */
+        function exportExcel() {
+            if (companionsList.length === 0) return;
+
+            const data = companionsList.map(c => ({
+                Nom: c.nom,
+                Prénom: c.prenom,
+                Email: c.email,
+                Rôle: c.role,
+                Groupe: c.group || "-"
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Compagnons");
+
+            XLSX.writeFile(wb, formatFileName() + ".xlsx");
         }
 
         loadCompanions();
