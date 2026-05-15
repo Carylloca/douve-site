@@ -4,26 +4,26 @@
     <meta charset="UTF-8">
     <title>Admin – Manifestations</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../favicon.png">
+
     <style>
-        /* ======== IMAGE DE FOND PERSONNALISABLE ======== */
         body {
             margin: 0;
             padding: 0;
-            background-image: url("img/page-admin-manifestations.jpg");
+            background-image: url("../img/page-admin-manifestations.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             font-family: Arial, sans-serif;
         }
 
-        /* ======== OVERLAY ======== */
         .overlay {
             background: rgba(0, 0, 0, 0.55);
             min-height: 100vh;
             padding: 40px 20px;
         }
 
-        /* ======== TITRE ======== */
         h1 {
             text-align: center;
             color: white;
@@ -31,11 +31,10 @@
             text-shadow: 0 0 10px black;
         }
 
-        /* ======== BOUTONS ======== */
         .btn {
             display: inline-block;
             padding: 10px 16px;
-            background: #7A0010; /* Bordeaux */
+            background: #7A0010;
             color: white;
             border-radius: 6px;
             text-decoration: none;
@@ -87,7 +86,6 @@
             background: #5A000C;
         }
 
-        /* ======== CARTE MANIFESTATION ======== */
         .manifest-card {
             background: rgba(255, 255, 255, 0.92);
             border-radius: 10px;
@@ -107,10 +105,8 @@
     <div class="overlay">
         <h1>Gestion des manifestations</h1>
 
-        <!-- Bouton retour au menu -->
         <a href="admin-menu.html" class="btn btn-back">← Retour au menu</a>
 
-        <!-- Bouton nouvelle manifestation -->
         <a href="admin-manifestation-nouveau.html" class="btn btn-create">+ Nouvelle manifestation</a>
 
         <div id="manifestations">
@@ -121,11 +117,9 @@
     <!-- PocketBase -->
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
-    <!-- Auth + API -->
+    <!-- Auth -->
     <script src="../js/auth.js"></script>
-    <script src="../js/api.js"></script>
 
-    <!-- Lancement -->
     <script>
         async function loadAdminManifestations() {
             const container = document.getElementById("manifestations");
@@ -157,6 +151,18 @@
 
             } catch (err) {
                 container.innerHTML = "<p style='color:white;'>Erreur lors du chargement.</p>";
+                console.error(err);
+            }
+        }
+
+        async function deleteManifestation(id) {
+            if (!confirm("Supprimer cette manifestation ?")) return;
+
+            try {
+                await pb.collection("manifestations").delete(id);
+                loadAdminManifestations();
+            } catch (err) {
+                alert("Erreur lors de la suppression.");
                 console.error(err);
             }
         }
