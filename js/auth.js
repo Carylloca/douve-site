@@ -4,21 +4,37 @@
 const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
 // ===============================
-//  LOGIN
+//  LOGIN UNIFIÉ (users → companions)
 // ===============================
 async function login(email, password) {
+
+    // 1) ESSAYER DE CONNECTER COMME USER (COMITÉ)
     try {
-        // 👉 Connexion sur la bonne collection : companions
-        const authData = await pb.collection("companions").authWithPassword(email, password);
+        const authUser = await pb.collection("users").authWithPassword(email, password);
 
-        console.log("Connecté :", authData);
+        console.log("Connecté comme USER :", authUser);
 
-        const role = authData.record.role;
+        // Redirection admin
+        window.location.href = "admin/admin-manifestations.html";
+        return true;
 
-        // Redirection selon le rôle
+    } catch (e) {
+        console.log("Pas un user, on tente companion…");
+    }
+
+    // 2) ESSAYER DE CONNECTER COMME COMPANION
+    try {
+        const authComp = await pb.collection("companions").authWithPassword(email, password);
+
+        console.log("Connecté comme COMPANION :", authComp);
+
+        const role = authComp.record.role;
+
         if (role === "comite") {
+            // Un compagnon avec rôle comité → accès admin
             window.location.href = "admin/admin-manifestations.html";
         } else {
+            // Compagnon normal
             window.location.href = "index.html";
         }
 
@@ -31,10 +47,11 @@ async function login(email, password) {
 }
 
 // ===============================
-//  LOGOUT
+//  LOGOUT (DÉCONNEXION RÉELLE)
 // ===============================
 function logout() {
-    pb.authStore.clear();
+    pb.authStore.clear();      // Efface la session PocketBase
+    document.cookie = "";      // Efface le cookie de session
     window.location.href = "login.html";
 }
 
@@ -59,7 +76,7 @@ function requireLogin() {
 }
 
 // ===============================
-//  VÉRIFIER SI COMITÉ
+//  VÉRIFIER SI COMITÉ (users OU companions)
 // ===============================
 function requireComite() {
     if (!pb.authStore.isValid) {
@@ -69,14 +86,23 @@ function requireComite() {
 
     const user = pb.authStore.model;
 
-    if (!user || user.role !== "comite") {
-        alert("Accès réservé au comité.");
-        window.location.href = "index.html";
+    // Cas 1 : user (collection users)
+    if (pb.authStore.model?.collectionName === "users") {
+        return; // OK → accès admin
     }
+
+    // Cas 2 : companion avec rôle comité
+    if (user.role === "comite") {
+        return; // OK → accès admin
+    }
+
+    // Sinon → accès refusé
+    alert("Accès réservé au comité.");
+    window.location.href = "index.html";
 }
 
 // ===============================
-//  AUTO-CONNEXION SI TOKEN VALIDE
+//  AUTO-CONNEXION VIA COOKIE
 // ===============================
 pb.authStore.loadFromCookie(document.cookie);
 
