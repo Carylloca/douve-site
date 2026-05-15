@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin – Liste des inscrits</title>
+
+    <style>
+        /* ======== IMAGE DE FOND PERSONNALISABLE ======== */
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("../img/page-admin-inscrits.jpg"); /* ← CHANGE ICI */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+        }
+
+        /* ======== OVERLAY ======== */
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        /* ======== TITRE ======== */
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px black;
+        }
+
+        /* ======== BOUTONS ======== */
+        .btn {
+            display: block;
+            width: fit-content;
+            margin: 0 auto 30px auto;
+            padding: 12px 20px;
+            background: #7A0010; /* couleur bordeaux */
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #5A000C;
+        }
+
+        /* ======== CARTE INSCRIT ======== */
+        .inscrit-card {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px auto;
+            max-width: 600px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .inscrit-card strong {
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="overlay">
+        <h1>Liste des inscrits</h1>
+
+        <!-- Bouton retour au menu -->
+        <a href="admin-menu.html" class="btn">← Retour au menu</a>
+
+        <div id="inscrits">
+            <p style="color:white;">Chargement...</p>
+        </div>
+    </div>
+
+    <!-- PocketBase -->
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <!-- Auth + API -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+
+    <!-- Lancement -->
+    <script>
+        // Vérifier que l'utilisateur est connecté
+        if (!pb.authStore.isValid) {
+            window.location.href = "../login.html";
+        }
+
+        loadInscrits();
+    </script>
+</body>
+</html>
