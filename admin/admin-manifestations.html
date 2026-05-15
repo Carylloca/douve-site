@@ -9,7 +9,7 @@
         body {
             margin: 0;
             padding: 0;
-            background-image: url("img/page-admin-manifestations.jpg"); /* ← CHANGE ICI */
+            background-image: url("img/page-admin-manifestations.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -31,21 +31,46 @@
             text-shadow: 0 0 10px black;
         }
 
-        /* ======== BOUTON CRÉER ======== */
-        .btn-create {
-            display: block;
-            width: fit-content;
-            margin: 0 auto 30px auto;
-            padding: 12px 20px;
-            background: #00c853;
+        /* ======== BOUTONS ======== */
+        .btn {
+            display: inline-block;
+            padding: 10px 16px;
+            background: #7A0010; /* Bordeaux */
             color: white;
             border-radius: 6px;
             text-decoration: none;
             font-weight: bold;
+            transition: 0.2s;
         }
 
-        .btn-create:hover {
-            background: #009624;
+        .btn:hover {
+            background: #5A000C;
+        }
+
+        .btn-back {
+            display: block;
+            width: fit-content;
+            margin: 0 auto 30px auto;
+        }
+
+        .btn-create {
+            display: block;
+            width: fit-content;
+            margin: 0 auto 30px auto;
+        }
+
+        .btn-delete {
+            background: #d50000;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+        }
+
+        .btn-delete:hover {
+            background: #9b0000;
         }
 
         /* ======== CARTE MANIFESTATION ======== */
@@ -62,17 +87,18 @@
             font-size: 18px;
         }
 
-        .btn-delete {
-            background: #d50000;
-            color: white;
+        .btn-modifier {
+            background: #7A0010;
             padding: 8px 12px;
             border-radius: 6px;
-            border: none;
-            cursor: pointer;
+            color: white;
+            text-decoration: none;
+            margin-right: 10px;
+            font-weight: bold;
         }
 
-        .btn-delete:hover {
-            background: #9b0000;
+        .btn-modifier:hover {
+            background: #5A000C;
         }
     </style>
 </head>
@@ -81,7 +107,11 @@
     <div class="overlay">
         <h1>Gestion des manifestations</h1>
 
-        <a href="admin-manifestation-nouveau.html" class="btn-create">+ Nouvelle manifestation</a>
+        <!-- Bouton retour au menu -->
+        <a href="admin-menu.html" class="btn btn-back">← Retour au menu</a>
+
+        <!-- Bouton nouvelle manifestation -->
+        <a href="admin-manifestation-nouveau.html" class="btn btn-create">+ Nouvelle manifestation</a>
 
         <div id="manifestations">
             <p style="color:white;">Chargement...</p>
@@ -97,6 +127,40 @@
 
     <!-- Lancement -->
     <script>
+        loadAdminManifestations = async function () {
+            const container = document.getElementById("manifestations");
+            container.innerHTML = "<p style='color:white;'>Chargement...</p>";
+
+            try {
+                const records = await pb.collection("manifestations").getFullList({
+                    sort: "-date"
+                });
+
+                container.innerHTML = "";
+
+                records.forEach(m => {
+                    const div = document.createElement("div");
+                    div.className = "manifest-card";
+
+                    div.innerHTML = `
+                        <strong>${m.title}</strong><br>
+                        Date : ${m.date}<br>
+                        Places max : ${m.places_max || "—"}<br>
+                        Date limite : ${m.date_limite || "—"}<br><br>
+
+                        <a href="admin-manifestation-modifier.html?id=${m.id}" class="btn-modifier">Modifier</a>
+                        <button onclick="deleteManifestation('${m.id}')" class="btn-delete">Supprimer</button>
+                    `;
+
+                    container.appendChild(div);
+                });
+
+            } catch (err) {
+                container.innerHTML = "<p style='color:white;'>Erreur lors du chargement.</p>";
+                console.error(err);
+            }
+        };
+
         loadAdminManifestations();
     </script>
 </body>
