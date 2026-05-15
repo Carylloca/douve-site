@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin – Nouvelle manifestation</title>
+
+    <style>
+        /* ======== IMAGE DE FOND PERSONNALISABLE ======== */
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("../img/page-admin-manifestation-nouveau.jpg"); /* ← CHANGE ICI */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+        }
+
+        /* ======== OVERLAY ======== */
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        /* ======== TITRE ======== */
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px black;
+        }
+
+        /* ======== BOUTONS ======== */
+        .btn {
+            display: block;
+            width: fit-content;
+            margin: 0 auto 30px auto;
+            padding: 12px 20px;
+            background: #7A0010; /* couleur bordeaux */
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #5A000C;
+        }
+
+        /* ======== FORMULAIRE ======== */
+        form {
+            background: rgba(255, 255, 255, 0.92);
+            padding: 25px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        textarea {
+            height: 120px;
+        }
+
+        .btn-submit {
+            margin-top: 20px;
+            width: 100%;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="overlay">
+        <h1>Créer une nouvelle manifestation</h1>
+
+        <!-- Bouton retour au menu -->
+        <a href="admin-menu.html" class="btn">← Retour au menu</a>
+
+        <form id="manifestForm">
+            <label>Titre</label>
+            <input type="text" id="title" required>
+
+            <label>Description</label>
+            <textarea id="description"></textarea>
+
+            <label>Date</label>
+            <input type="date" id="date" required>
+
+            <label>Date limite d'inscription</label>
+            <input type="date" id="date_limite">
+
+            <label>Places maximum</label>
+            <input type="number" id="places_max" min="1">
+
+            <button type="submit" class="btn btn-submit">Créer la manifestation</button>
+        </form>
+    </div>
+
+    <!-- PocketBase -->
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <!-- Auth + API -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+
+    <script>
+        // Vérifier que l'utilisateur est connecté
+        if (!pb.authStore.isValid) {
+            window.location.href = "../login.html";
+        }
+
+        // Soumission du formulaire
+        document.getElementById("manifestForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            await createManifestation();
+        });
+    </script>
+</body>
+</html>
