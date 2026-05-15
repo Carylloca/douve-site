@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin – Modifier une manifestation</title>
+
+    <style>
+        /* ======== IMAGE DE FOND PERSONNALISABLE ======== */
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("../img/page-admin-manifestation-modifier.jpg"); /* ← CHANGE ICI */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+        }
+
+        /* ======== OVERLAY ======== */
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        /* ======== TITRE ======== */
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px black;
+        }
+
+        /* ======== BOUTONS ======== */
+        .btn {
+            display: block;
+            width: fit-content;
+            margin: 0 auto 30px auto;
+            padding: 12px 20px;
+            background: #7A0010; /* couleur bordeaux */
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #5A000C;
+        }
+
+        /* ======== FORMULAIRE ======== */
+        form {
+            background: rgba(255, 255, 255, 0.92);
+            padding: 25px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        textarea {
+            height: 120px;
+        }
+
+        .btn-submit {
+            margin-top: 20px;
+            width: 100%;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="overlay">
+        <h1>Modifier la manifestation</h1>
+
+        <!-- Bouton retour au menu -->
+        <a href="admin-menu.html" class="btn">← Retour au menu</a>
+
+        <form id="manifestForm">
+            <label>Titre</label>
+            <input type="text" id="title" required>
+
+            <label>Description</label>
+            <textarea id="description"></textarea>
+
+            <label>Date</label>
+            <input type="date" id="date" required>
+
+            <label>Date limite d'inscription</label>
+            <input type="date" id="date_limite">
+
+            <label>Places maximum</label>
+            <input type="number" id="places_max" min="1">
+
+            <button type="submit" class="btn btn-submit">Enregistrer les modifications</button>
+        </form>
+    </div>
+
+    <!-- PocketBase -->
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <!-- Auth + API -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+
+    <script>
+        // Vérifier que l'utilisateur est connecté
+        if (!pb.authStore.isValid) {
+            window.location.href = "../login.html";
+        }
+
+        // Récupérer l'ID dans l'URL
+        const url = new URL(window.location.href);
+        const manifestationId = url.searchParams.get("id");
+
+        if (!manifestationId) {
+            document.body.innerHTML = "<p style='color:white;'>Aucune manifestation sélectionnée.</p>";
+        }
+
+        // Charger les données existantes
+        async function loadManifestation() {
+            try {
+                const m = await pb.collection("manifestations").getOne(manifestationId);
+
+                document.getElementById("title").value = m.title;
+                document.getElementById("description").value = m.description || "";
+                document.getElementById("date").value = m.date;
+                document.getElementById("date_limite").value = m.date_limite || "";
+                document.getElementById("places_max").value = m.places_max || "";
+            } catch (err) {
+                alert("Erreur lors du chargement.");
+                console.error(err);
+            }
+        }
+
+        // Enregistrer les modifications
+        document.getElementById("manifestForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const data = {
+                title: document.getElementById("title").value,
+                description: document.getElementById("description").value,
+                date: document.getElementById("date").value,
+                date_limite: document.getElementById("date_limite").value || null,
+                places_max: document.getElementById("places_max").value || null
+            };
+
+            try {
+                await pb.collection("manifestations").update(manifestationId, data);
+                alert("Modifications enregistrées !");
+                window.location.href = "admin-manifestations.html";
+            } catch (err) {
+                alert("Erreur lors de l'enregistrement.");
+                console.error(err);
+            }
+        });
+
+        loadManifestation();
+    </script>
+</body>
+</html>
