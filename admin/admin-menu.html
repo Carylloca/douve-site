@@ -9,7 +9,7 @@
         body {
             margin: 0;
             padding: 0;
-            background-image: url("../img/page-admin-menu.jpg"); /* ← CHANGE ICI */
+            background-image: url("../img/page-admin-menu.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -37,7 +37,7 @@
             width: 260px;
             margin: 15px auto;
             padding: 15px 20px;
-            background: #7A0010; /* couleur bordeaux */
+            background: #7A0010;
             color: white;
             border-radius: 6px;
             text-decoration: none;
@@ -70,7 +70,8 @@
         <a href="admin-inscrits.html" class="btn">🧾 Liste des inscrits</a>
         <a href="admin-compagnons.html" class="btn">👥 Gestion des compagnons</a>
 
-        <a href="../index.html" class="btn btn-logout">⏻ Déconnexion</a>
+        <!-- BOUTON DECONNEXION CORRIGÉ -->
+        <button onclick="logout()" class="btn btn-logout">⏻ Déconnexion</button>
     </div>
 
     <!-- PocketBase -->
@@ -80,10 +81,8 @@
     <script src="../js/auth.js"></script>
 
     <script>
-        // Vérifier que l'utilisateur est connecté
-        if (!pb.authStore.isValid) {
-            window.location.href = "../login.html";
-        }
+        // Vérifier que l'utilisateur est comité (users OU companions comite)
+        requireComite();
     </script>
 </body>
 </html>
