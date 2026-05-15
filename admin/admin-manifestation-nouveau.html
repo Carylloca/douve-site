@@ -128,10 +128,8 @@
     <script src="../js/auth.js"></script>
 
     <script>
-        // Vérifier que l'utilisateur est connecté
-        if (!pb.authStore.isValid) {
-            window.location.href = "../login.html";
-        }
+        // 🔒 Sécurisation admin
+        requireComite();
 
         // Charger la liste des compagnons sous forme de cases à cocher
         async function loadResponsables() {
@@ -175,12 +173,17 @@
 
             const user = pb.authStore.model;
 
+            // Vérifier que l'utilisateur est bien un USER (comité)
+            if (user.collectionName !== "users") {
+                alert("Seuls les membres du comité peuvent créer une manifestation.");
+                return;
+            }
+
             // Récupérer les responsables cochés
             const responsables = Array.from(
                 document.querySelectorAll("#responsables input[type='checkbox']:checked")
             ).map(cb => cb.value);
 
-            // Vérification obligatoire
             if (responsables.length === 0) {
                 alert("Veuillez sélectionner au moins un responsable.");
                 return;
