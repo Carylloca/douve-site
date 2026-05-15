@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Détails de la manifestation</title>
+
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- SheetJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("page-manifestations.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: white;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px black;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.92);
+            color: black;
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 700px;
+            margin: 0 auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            background: #7A0010;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background: #5A000C;
+        }
+
+        .btn-secondary {
+            background: #444;
+        }
+
+        .btn-secondary:hover {
+            background: #222;
+        }
+
+        .export-buttons {
+            margin-top: 20px;
+        }
+
+        .export-buttons button {
+            padding: 10px 16px;
+            margin-right: 10px;
+            background: #7A0010;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .export-buttons button:hover {
+            background: #5A000C;
+        }
+
+        .info {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+
+<body>
+<div class="overlay">
+
+    <h1 id="title">Manifestation</h1>
+
+    <div class="card">
+        <p class="info"><strong>Date :</strong> <span id="date"></span></p>
+        <p class="info"><strong>Description :</strong><br><span id="description"></span></p>
+        <p class="info"><strong>Places maximum :</strong> <span id="places"></span></p>
+        <p class="info"><strong>Date limite :</strong> <span id="limite"></span></p>
+        <p class="info"><strong>Responsables :</strong><br><span id="responsables"></span></p>
+
+        <div id="actions"></div>
+
+        <div class="export-buttons">
+            <button onclick="exportPDF()">Export PDF</button>
+            <button onclick="exportExcel()">Export Excel</button>
+        </div>
+
+        <a href="manifestations.html" class="btn btn-secondary">← Retour</a>
+    </div>
+
+</div>
+
+<!-- PocketBase -->
+<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+<!-- Auth -->
+<script src="js/auth.js"></script>
+
+<script>
+    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+    if (!isLoggedIn()) {
+        window.location.href = "login.html";
+    }
+
+    const user = getUser();
+
+    const url = new URL(window.location.href);
+    const id = url.searchParams.get("id");
+
+    let manifestation = null;
+    let inscrits = [];
+
+    async function loadDetails() {
+        try {
+            manifestation = await pb.collection("manifestations").getOne(id, {
+                expand: "responsables"
+            });
+
+            document.getElementById("title").textContent = manifestation.title;
+            document.getElementById("date").textContent = manifestation.date;
+            document.getElementById("description").textContent = manifestation.description || "-";
+            document.getElementById("places").textContent = manifestation.places_max || "-";
+            document.getElementById("limite").textContent = manifestation.date_limite || "-";
+
+            const resp = manifestation.expand?.responsables || [];
+            document.getElementById("responsables").innerHTML =
+                resp.map(r => `${r.nom} ${r.prenom} (${r.initiales})`).join("<br>");
+
+            inscrits = await pb.collection("inscrits").getFullList({
+                filter: `manifestation = "${id}"`,
+                expand: "companion"
+            });
+
+            updateActions();
+
+        } catch (err) {
+            console.error(err);
+            document.body.innerHTML = "<p style='color:white;'>Erreur lors du chargement.</p>";
+        }
+    }
+
+    function updateActions() {
+        const actions = document.getElementById("actions");
+        actions.innerHTML = "";
+
+        const now = new Date().toISOString().split("T")[0];
+        const limite = manifestation.date_limite;
+        const limiteDepassee = limite && now > limite;
+
+        const dejaInscrit = inscrits.some(i => i.expand?.companion?.id === user.id);
+
+        const totalInscrits = inscrits.length;
+        const complet = manifestation.places_max && totalInscrits >= manifestation.places_max;
+
+        if (dejaInscrit) {
+            actions.innerHTML = `
+                <p><strong>Vous êtes inscrit à cette manifestation.</strong></p>
+                <button class="btn" onclick="desinscription()">Se désinscrire</button>
+            `;
+            return;
+        }
+
+        if (limiteDepassee) {
+            actions.innerHTML = `<p><strong>La date limite d'inscription est dépassée.</strong></p>`;
+            return;
+        }
+
+        if (complet) {
+            actions.innerHTML = `<p><strong>La manifestation est complète.</strong></p>`;
+            return;
+        }
+
+        actions.innerHTML = `<button class="btn" onclick="inscription()">S'inscrire</button>`;
+    }
+
+    async function inscription() {
+        try {
+            await pb.collection("inscrits").create({
+                manifestation: id,
+                companion: user.id
+            });
+
+            alert("Inscription réussie !");
+            loadDetails();
+
+        } catch (err) {
+            console.error(err);
+            alert("Erreur lors de l'inscription.");
+        }
+    }
+
+    async function desinscription() {
+        try {
+            const record = inscrits.find(i => i.expand?.companion?.id === user.id);
+            await pb.collection("inscrits").delete(record.id);
+
+            alert("Vous êtes désinscrit.");
+            loadDetails();
+
+        } catch (err) {
+            console.error(err);
+            alert("Erreur lors de la désinscription.");
+        }
+    }
+
+    /* --- Format nom fichier --- */
+    function formatFileName() {
+        const cleanTitle = manifestation.title
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-zA-Z0-9]/g, "_");
+
+        return `${cleanTitle}_${manifestation.date}`;
+    }
+
+    /* --- Export PDF --- */
+    function exportPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let y = 10;
+
+        doc.text(`Manifestation : ${manifestation.title}`, 10, y); y += 8;
+        doc.text(`Date : ${manifestation.date}`, 10, y); y += 8;
+        doc.text(`Places max : ${manifestation.places_max || "-"}`, 10, y); y += 8;
+        doc.text(`Date limite : ${manifestation.date_limite || "-"}`, 10, y); y += 12;
+
+        doc.text("Responsables :", 10, y); y += 8;
+        manifestation.expand.responsables.forEach(r => {
+            doc.text(`- ${r.nom} ${r.prenom} (${r.initiales})`, 10, y);
+            y += 8;
+        });
+
+        y += 10;
+        doc.text("Inscrits :", 10, y); y += 8;
+
+        inscrits.forEach(i => {
+            const c = i.expand?.companion;
+            doc.text(`- ${c.nom} ${c.prenom} (${c.email})`, 10, y);
+            y += 8;
+        });
+
+        doc.save(formatFileName() + ".pdf");
+    }
+
+    /* --- Export Excel --- */
+    function exportExcel() {
+        const data = inscrits.map(i => {
+            const c = i.expand?.companion;
+            return {
+                Nom: c.nom,
+                Prénom: c.prenom,
+                Email: c.email
+            };
+        });
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Inscrits");
+
+        XLSX.writeFile(wb, formatFileName() + ".xlsx");
+    }
+
+    loadDetails();
+</script>
+
+</body>
+</html>
