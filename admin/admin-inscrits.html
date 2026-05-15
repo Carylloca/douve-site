@@ -120,6 +120,9 @@
     <script src="../js/auth.js"></script>
 
     <script>
+        // 🔒 Sécurisation admin
+        requireComite();
+
         let manifestation = null;
         let inscrits = [];
 
@@ -153,8 +156,8 @@
 
                     const row = document.createElement("tr");
                     row.innerHTML = `
-                        <td>${c?.name || "-"}</td>
-                        <td>${c?.firstname || "-"}</td>
+                        <td>${c?.nom || "-"}</td>
+                        <td>${c?.prenom || "-"}</td>
                         <td>${c?.email || "-"}</td>
                         <td class="actions">
                             <button class="btn-delete" onclick="deleteInscrit('${i.id}')">Supprimer</button>
@@ -203,7 +206,7 @@
 
             inscrits.forEach(i => {
                 const c = i.expand?.companion;
-                doc.text(`${c?.name || "-"} ${c?.firstname || "-"} – ${c?.email || "-"}`, 10, y);
+                doc.text(`${c?.nom || "-"} ${c?.prenom || "-"} – ${c?.email || "-"}`, 10, y);
                 y += 8;
             });
 
@@ -217,8 +220,8 @@
             const data = inscrits.map(i => {
                 const c = i.expand?.companion;
                 return {
-                    Nom: c?.name || "-",
-                    Prénom: c?.firstname || "-",
+                    Nom: c?.nom || "-",
+                    Prénom: c?.prenom || "-",
                     Email: c?.email || "-"
                 };
             });
