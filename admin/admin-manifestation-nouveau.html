@@ -120,7 +120,7 @@
     <!-- PocketBase -->
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
-    <!-- Auth + API -->
+    <!-- Auth -->
     <script src="../js/auth.js"></script>
 
     <script>
@@ -129,7 +129,7 @@
             window.location.href = "../login.html";
         }
 
-        // Charger la liste des compagnons pour le champ "responsables"
+        // Charger la liste des compagnons
         async function loadResponsables() {
             const select = document.getElementById("responsables");
             select.innerHTML = "<option>Chargement...</option>";
