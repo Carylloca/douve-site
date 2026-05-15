@@ -4,91 +4,230 @@
     <meta charset="UTF-8">
     <title>Admin – Liste des inscrits</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../favicon.png">
+
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- SheetJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
-        /* ======== IMAGE DE FOND PERSONNALISABLE ======== */
         body {
             margin: 0;
             padding: 0;
-            background-image: url("../img/page-admin-inscrits.jpg"); /* ← CHANGE ICI */
+            background-image: url("../img/page-admin-inscrits.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             font-family: Arial, sans-serif;
         }
 
-        /* ======== OVERLAY ======== */
         .overlay {
             background: rgba(0, 0, 0, 0.55);
             min-height: 100vh;
             padding: 40px 20px;
         }
 
-        /* ======== TITRE ======== */
         h1 {
             text-align: center;
             color: white;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             text-shadow: 0 0 10px black;
         }
 
-        /* ======== BOUTONS ======== */
         .btn {
-            display: block;
-            width: fit-content;
-            margin: 0 auto 30px auto;
-            padding: 12px 20px;
-            background: #7A0010; /* couleur bordeaux */
+            display: inline-block;
+            padding: 10px 16px;
+            background: #7A0010;
             color: white;
             border-radius: 6px;
             text-decoration: none;
             font-weight: bold;
             transition: 0.2s;
+            margin: 5px;
         }
 
         .btn:hover {
             background: #5A000C;
         }
 
-        /* ======== CARTE INSCRIT ======== */
-        .inscrit-card {
-            background: rgba(255, 255, 255, 0.92);
-            border-radius: 10px;
-            padding: 20px;
-            margin: 15px auto;
-            max-width: 600px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        .btn-delete {
+            background: #d50000;
         }
 
-        .inscrit-card strong {
-            font-size: 18px;
+        .btn-delete:hover {
+            background: #9b0000;
+        }
+
+        table {
+            width: 100%;
+            max-width: 900px;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: rgba(255,255,255,0.95);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #7A0010;
+            color: white;
+        }
+
+        tr:hover {
+            background: #f2f2f2;
+        }
+
+        .actions {
+            white-space: nowrap;
         }
     </style>
 </head>
 
 <body>
     <div class="overlay">
-        <h1>Liste des inscrits</h1>
+        <h1 id="manifestTitle">Liste des inscrits</h1>
 
-        <!-- Bouton retour au menu -->
-        <a href="admin-menu.html" class="btn">← Retour au menu</a>
-
-        <div id="inscrits">
-            <p style="color:white;">Chargement...</p>
+        <div style="text-align:center;">
+            <a href="admin-manifestations.html" class="btn">← Retour</a>
+            <button class="btn" onclick="exportPDF()">Export PDF</button>
+            <button class="btn" onclick="exportExcel()">Export Excel</button>
         </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Email</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="inscritsBody"></tbody>
+        </table>
     </div>
 
     <!-- PocketBase -->
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
-
-    <!-- Auth + API -->
     <script src="../js/auth.js"></script>
-    <script src="../js/api.js"></script>
 
-    <!-- Lancement -->
     <script>
-        // Vérifier que l'utilisateur est connecté
-        if (!pb.authStore.isValid) {
-            window.location.href = "../login.html";
+        let manifestation = null;
+        let inscrits = [];
+
+        // Récupérer l'ID de la manifestation
+        const url = new URL(window.location.href);
+        const manifestationId = url.searchParams.get("id");
+
+        if (!manifestationId) {
+            document.body.innerHTML = "<p style='color:white;'>Aucune manifestation sélectionnée.</p>";
+        }
+
+        // Charger la manifestation + inscrits
+        async function loadInscrits() {
+            const tbody = document.getElementById("inscritsBody");
+            tbody.innerHTML = "<tr><td colspan='4'>Chargement...</td></tr>";
+
+            try {
+                manifestation = await pb.collection("manifestations").getOne(manifestationId);
+                document.getElementById("manifestTitle").textContent =
+                    "Inscrits – " + manifestation.title + " (" + manifestation.date + ")";
+
+                inscrits = await pb.collection("inscrits").getFullList({
+                    filter: `manifestation = "${manifestationId}"`,
+                    expand: "companion"
+                });
+
+                tbody.innerHTML = "";
+
+                inscrits.forEach(i => {
+                    const c = i.expand?.companion;
+
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${c?.name || "-"}</td>
+                        <td>${c?.firstname || "-"}</td>
+                        <td>${c?.email || "-"}</td>
+                        <td class="actions">
+                            <button class="btn-delete" onclick="deleteInscrit('${i.id}')">Supprimer</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = "<tr><td colspan='4'>Erreur de chargement</td></tr>";
+            }
+        }
+
+        async function deleteInscrit(id) {
+            if (!confirm("Supprimer cet inscrit ?")) return;
+
+            try {
+                await pb.collection("inscrits").delete(id);
+                loadInscrits();
+            } catch (err) {
+                alert("Erreur lors de la suppression.");
+                console.error(err);
+            }
+        }
+
+        /* --- Format nom fichier --- */
+        function formatFileName() {
+            const cleanTitle = manifestation.title
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-zA-Z0-9]/g, "_");
+
+            return `${cleanTitle}_${manifestation.date}`;
+        }
+
+        /* --- Export PDF --- */
+        function exportPDF() {
+            if (inscrits.length === 0) return;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let y = 10;
+
+            doc.text(`Manifestation : ${manifestation.title}`, 10, y); y += 8;
+            doc.text(`Date : ${manifestation.date}`, 10, y); y += 12;
+
+            inscrits.forEach(i => {
+                const c = i.expand?.companion;
+                doc.text(`${c?.name || "-"} ${c?.firstname || "-"} – ${c?.email || "-"}`, 10, y);
+                y += 8;
+            });
+
+            doc.save(formatFileName() + ".pdf");
+        }
+
+        /* --- Export Excel --- */
+        function exportExcel() {
+            if (inscrits.length === 0) return;
+
+            const data = inscrits.map(i => {
+                const c = i.expand?.companion;
+                return {
+                    Nom: c?.name || "-",
+                    Prénom: c?.firstname || "-",
+                    Email: c?.email || "-"
+                };
+            });
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Inscrits");
+
+            XLSX.writeFile(wb, formatFileName() + ".xlsx");
         }
 
         loadInscrits();
