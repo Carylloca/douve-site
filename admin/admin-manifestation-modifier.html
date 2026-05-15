@@ -7,6 +7,12 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="../favicon.png">
 
+    <!-- jsPDF (PDF export) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- SheetJS (Excel export) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
         body {
             margin: 0;
@@ -32,9 +38,7 @@
         }
 
         .btn {
-            display: block;
-            width: fit-content;
-            margin: 0 auto 30px auto;
+            display: inline-block;
             padding: 12px 20px;
             background: #7A0010;
             color: white;
@@ -42,6 +46,7 @@
             text-decoration: none;
             font-weight: bold;
             transition: 0.2s;
+            margin: 5px;
         }
 
         .btn:hover {
@@ -93,6 +98,8 @@
         <h1>Modifier la manifestation</h1>
 
         <a href="admin-manifestations.html" class="btn">← Retour</a>
+        <button class="btn" onclick="exportPDF()">Export PDF</button>
+        <button class="btn" onclick="exportExcel()">Export Excel</button>
 
         <form id="manifestForm">
             <label>Titre</label>
@@ -124,10 +131,8 @@
     <script src="../js/auth.js"></script>
 
     <script>
-        // Vérifier que l'utilisateur est connecté
-        if (!pb.authStore.isValid) {
-            window.location.href = "../login.html";
-        }
+        // 🔒 Sécurisation admin
+        requireComite();
 
         // Récupérer l'ID dans l'URL
         const url = new URL(window.location.href);
@@ -137,6 +142,8 @@
             document.body.innerHTML = "<p style='color:white;'>Aucune manifestation sélectionnée.</p>";
         }
 
+        let manifestationData = null;
+
         // Charger la liste des compagnons
         async function loadResponsablesList(selectedIds = []) {
             const select = document.getElementById("responsables");
@@ -144,7 +151,7 @@
 
             try {
                 const companions = await pb.collection("companions").getFullList({
-                    sort: "name"
+                    sort: "nom"
                 });
 
                 select.innerHTML = "";
@@ -152,7 +159,7 @@
                 companions.forEach(c => {
                     const opt = document.createElement("option");
                     opt.value = c.id;
-                    opt.textContent = c.name + " (" + c.initiales + ")";
+                    opt.textContent = `${c.nom} ${c.prenom} (${c.initiales})`;
 
                     if (selectedIds.includes(c.id)) {
                         opt.selected = true;
@@ -171,6 +178,7 @@
         async function loadManifestation() {
             try {
                 const m = await pb.collection("manifestations").getOne(manifestationId);
+                manifestationData = m;
 
                 document.getElementById("title").value = m.title;
                 document.getElementById("description").value = m.description || "";
@@ -178,7 +186,6 @@
                 document.getElementById("date_limite").value = m.date_limite || "";
                 document.getElementById("places_max").value = m.places_max || "";
 
-                // Charger les responsables sélectionnés
                 await loadResponsablesList(m.responsables || []);
 
             } catch (err) {
@@ -214,6 +221,51 @@
                 console.error(err);
             }
         });
+
+        /* --- Format nom fichier --- */
+        function formatFileName(title, date) {
+            const cleanTitle = title.normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-zA-Z0-9]/g, "_");
+
+            return `${cleanTitle}_${date}`;
+        }
+
+        /* --- Export PDF --- */
+        function exportPDF() {
+            if (!manifestationData) return;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let y = 10;
+
+            doc.text(`Titre : ${manifestationData.title}`, 10, y); y += 8;
+            doc.text(`Date : ${manifestationData.date}`, 10, y); y += 8;
+            doc.text(`Places max : ${manifestationData.places_max || "-"}`, 10, y); y += 8;
+            doc.text(`Date limite : ${manifestationData.date_limite || "-"}`, 10, y); y += 12;
+
+            const fileName = formatFileName(manifestationData.title, manifestationData.date) + ".pdf";
+            doc.save(fileName);
+        }
+
+        /* --- Export Excel --- */
+        function exportExcel() {
+            if (!manifestationData) return;
+
+            const data = [{
+                Titre: manifestationData.title,
+                Date: manifestationData.date,
+                Places_max: manifestationData.places_max || "-",
+                Date_limite: manifestationData.date_limite || "-"
+            }];
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Manifestation");
+
+            const fileName = formatFileName(manifestationData.title, manifestationData.date) + ".xlsx";
+            XLSX.writeFile(wb, fileName);
+        }
     </script>
 </body>
 </html>
