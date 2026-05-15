@@ -63,7 +63,7 @@
             margin-top: 15px;
         }
 
-        input, textarea, select {
+        input, textarea {
             width: 100%;
             padding: 10px;
             margin-top: 5px;
@@ -76,8 +76,12 @@
             height: 120px;
         }
 
-        select[multiple] {
-            height: 120px;
+        .checkbox-list label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0;
+            font-size: 15px;
         }
 
         .btn-submit {
@@ -111,7 +115,7 @@
             <input type="number" id="places_max" min="1">
 
             <label>Responsables</label>
-            <select id="responsables" multiple></select>
+            <div id="responsables" class="checkbox-list"></div>
 
             <button type="submit" class="btn btn-submit">Créer la manifestation</button>
         </form>
@@ -129,28 +133,37 @@
             window.location.href = "../login.html";
         }
 
-        // Charger la liste des compagnons
+        // Charger la liste des compagnons sous forme de cases à cocher
         async function loadResponsables() {
-            const select = document.getElementById("responsables");
-            select.innerHTML = "<option>Chargement...</option>";
+            const container = document.getElementById("responsables");
+            container.innerHTML = "<p style='color:white;'>Chargement...</p>";
 
             try {
                 const companions = await pb.collection("companions").getFullList({
                     sort: "nom"
                 });
 
-                select.innerHTML = "";
+                container.innerHTML = "";
 
                 companions.forEach(c => {
-                    const opt = document.createElement("option");
-                    opt.value = c.id;
-                    opt.textContent = c.name + " (" + c.initiales + ")";
-                    select.appendChild(opt);
+                    const wrapper = document.createElement("label");
+
+                    const checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.value = c.id;
+
+                    const text = document.createElement("span");
+                    text.textContent = `${c.nom} – ${c.prenom} (${c.initiales})`;
+
+                    wrapper.appendChild(checkbox);
+                    wrapper.appendChild(text);
+
+                    container.appendChild(wrapper);
                 });
 
             } catch (err) {
                 console.error(err);
-                select.innerHTML = "<option>Erreur de chargement</option>";
+                container.innerHTML = "<p style='color:red;'>Erreur de chargement</p>";
             }
         }
 
@@ -162,8 +175,10 @@
 
             const user = pb.authStore.model;
 
-            const responsablesSelect = document.getElementById("responsables");
-            const responsables = Array.from(responsablesSelect.selectedOptions).map(o => o.value);
+            // Récupérer les responsables cochés
+            const responsables = Array.from(
+                document.querySelectorAll("#responsables input[type='checkbox']:checked")
+            ).map(cb => cb.value);
 
             const data = {
                 title: document.getElementById("title").value.trim(),
