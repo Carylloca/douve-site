@@ -3,18 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <title>Manifestations</title>
-    <script src="js/pocketbase.min.js"></script>
-    <script src="js/api.js"></script>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* ======== IMAGE DE FOND PERSONNALISABLE ======== */
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("img/fond-manifestations.jpg"); /* ← CHANGE ICI */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+        }
+
+        /* ======== OVERLAY POUR LIRE LE TEXTE ======== */
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        /* ======== TITRE ======== */
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px black;
+        }
+
+        /* ======== CARTE MANIFESTATION ======== */
+        .manifest-card {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px auto;
+            max-width: 600px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .manifest-card h3 {
+            margin-top: 0;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background: #0078ff;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #005fcc;
+        }
+    </style>
 </head>
+
 <body>
+    <div class="overlay">
+        <h1>Manifestations</h1>
 
-<h1>Manifestations</h1>
+        <div id="manifestations">
+            <p style="color:white;">Chargement...</p>
+        </div>
+    </div>
 
-<div id="manifestations"></div>
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
 
-<script>
-loadManifestations();
-</script>
-
+    <script>
+        loadManifestations();
+    </script>
 </body>
 </html>
