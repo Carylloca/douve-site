@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin – Menu</title>
+
+    <style>
+        /* ======== IMAGE DE FOND PERSONNALISABLE ======== */
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("../img/page-admin-menu.jpg"); /* ← CHANGE ICI */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+        }
+
+        /* ======== OVERLAY ======== */
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        /* ======== TITRE ======== */
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            text-shadow: 0 0 10px black;
+        }
+
+        /* ======== BOUTONS ======== */
+        .btn {
+            display: block;
+            width: 260px;
+            margin: 15px auto;
+            padding: 15px 20px;
+            background: #7A0010; /* couleur bordeaux */
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            text-align: center;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #5A000C;
+        }
+
+        /* ======== BOUTON DÉCONNEXION ======== */
+        .btn-logout {
+            background: #444;
+        }
+
+        .btn-logout:hover {
+            background: #222;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="overlay">
+        <h1>Menu Administrateur</h1>
+
+        <a href="admin-manifestations.html" class="btn">📅 Gestion des manifestations</a>
+        <a href="admin-inscrits.html" class="btn">🧾 Liste des inscrits</a>
+        <a href="admin-compagnons.html" class="btn">👥 Gestion des compagnons</a>
+
+        <a href="../index.html" class="btn btn-logout">⏻ Déconnexion</a>
+    </div>
+
+    <!-- PocketBase -->
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <!-- Auth -->
+    <script src="../js/auth.js"></script>
+
+    <script>
+        // Vérifier que l'utilisateur est connecté
+        if (!pb.authStore.isValid) {
+            window.location.href = "../login.html";
+        }
+    </script>
+</body>
+</html>
