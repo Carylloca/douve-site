@@ -156,6 +156,9 @@
     <script src="../js/auth.js"></script>
 
     <script>
+        // 🔒 Sécurisation de la page admin
+        requireComite();
+
         let manifestations = [];
 
         function showCards() {
@@ -230,6 +233,11 @@
             }
         }
 
+        // Charger les manifestations au démarrage
+        loadAdminManifestations();
+    </script>
+</body>
+</html>
         /* --- Tri du tableau --- */
         function sortTable(col) {
             const table = document.getElementById("manifestTable");
@@ -313,6 +321,7 @@
             XLSX.writeFile(wb, fileName);
         }
 
+        // Charger les manifestations au démarrage
         loadAdminManifestations();
     </script>
 </body>
