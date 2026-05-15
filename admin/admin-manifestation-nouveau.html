@@ -180,6 +180,12 @@
                 document.querySelectorAll("#responsables input[type='checkbox']:checked")
             ).map(cb => cb.value);
 
+            // Vérification obligatoire
+            if (responsables.length === 0) {
+                alert("Veuillez sélectionner au moins un responsable.");
+                return;
+            }
+
             const data = {
                 title: document.getElementById("title").value.trim(),
                 description: document.getElementById("description").value.trim(),
