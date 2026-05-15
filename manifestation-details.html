@@ -106,6 +106,13 @@
 
         <div id="actions"></div>
 
+        <hr style="margin:20px 0; border:0; border-top:1px solid #ccc;">
+
+        <h3>Liste des inscrits</h3>
+        <div id="listeInscrits">
+            <p>Chargement...</p>
+        </div>
+
         <div class="export-buttons">
             <button onclick="exportPDF()">Export PDF</button>
             <button onclick="exportExcel()">Export Excel</button>
@@ -125,12 +132,14 @@
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
+    // 🔒 Redirection si non connecté
     if (!isLoggedIn()) {
         window.location.href = "login.html";
     }
 
     const user = getUser();
 
+    // Récupérer l'ID dans l'URL
     const url = new URL(window.location.href);
     const id = url.searchParams.get("id");
 
@@ -153,17 +162,39 @@
             document.getElementById("responsables").innerHTML =
                 resp.map(r => `${r.nom} ${r.prenom} (${r.initiales})`).join("<br>");
 
+            // Charger TOUS les inscrits
             inscrits = await pb.collection("inscrits").getFullList({
                 filter: `manifestation = "${id}"`,
                 expand: "companion"
             });
 
+            afficherListeInscrits();
             updateActions();
 
         } catch (err) {
             console.error(err);
             document.body.innerHTML = "<p style='color:white;'>Erreur lors du chargement.</p>";
         }
+    }
+
+    function afficherListeInscrits() {
+        const container = document.getElementById("listeInscrits");
+
+        if (inscrits.length === 0) {
+            container.innerHTML = "<p>Aucun inscrit pour le moment.</p>";
+            return;
+        }
+
+        let html = "<ul>";
+
+        inscrits.forEach(i => {
+            const c = i.expand?.companion;
+            html += `<li>${c.nom} ${c.prenom} – ${c.email}</li>`;
+        });
+
+        html += "</ul>";
+
+        container.innerHTML = html;
     }
 
     function updateActions() {
