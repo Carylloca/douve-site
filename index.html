@@ -96,19 +96,9 @@
     <!-- Auth -->
     <script src="js/auth.js"></script>
 
+    <!-- Option A : aucune redirection -->
     <script>
-        // 🔒 Si l’utilisateur est déjà connecté → redirection automatique
-        if (isLoggedIn()) {
-            const user = getUser();
-
-            if (user.collectionName === "users") {
-                // Comité → redirection vers l’admin
-                window.location.href = "admin/admin-manifestations.html";
-            } else {
-                // Compagnon → redirection vers la page compagnon
-                window.location.href = "compagnon/compagnon-menu.html";
-            }
-        }
+        // On ne redirige plus automatiquement
     </script>
 
 </body>
