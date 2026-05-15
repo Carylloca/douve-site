@@ -1,10 +1,4 @@
 // =====================================
-//  CONFIGURATION POCKETBASE
-// =====================================
-const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
-
-
-// =====================================
 //  MANIFESTATIONS – ADMIN
 // =====================================
 
