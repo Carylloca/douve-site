@@ -100,9 +100,17 @@
     <div class="card">
         <p class="info"><strong>Date :</strong> <span id="date"></span></p>
         <p class="info"><strong>Description :</strong><br><span id="description"></span></p>
-        <p class="info"><strong>Places maximum :</strong> <span id="places"></span></p>
+
+        <p class="info">
+            <strong>Places :</strong>
+            <span id="compteur"></span>
+        </p>
+
         <p class="info"><strong>Date limite :</strong> <span id="limite"></span></p>
+
         <p class="info"><strong>Responsables :</strong><br><span id="responsables"></span></p>
+
+        <button class="btn" id="btnContact" onclick="contacterResponsables()">Contacter les responsables</button>
 
         <div id="actions"></div>
 
@@ -132,14 +140,12 @@
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-    // 🔒 Redirection si non connecté
     if (!isLoggedIn()) {
         window.location.href = "login.html";
     }
 
     const user = getUser();
 
-    // Récupérer l'ID dans l'URL
     const url = new URL(window.location.href);
     const id = url.searchParams.get("id");
 
@@ -155,19 +161,20 @@
             document.getElementById("title").textContent = manifestation.title;
             document.getElementById("date").textContent = manifestation.date;
             document.getElementById("description").textContent = manifestation.description || "-";
-            document.getElementById("places").textContent = manifestation.places_max || "-";
             document.getElementById("limite").textContent = manifestation.date_limite || "-";
 
+            // Responsables
             const resp = manifestation.expand?.responsables || [];
             document.getElementById("responsables").innerHTML =
                 resp.map(r => `${r.nom} ${r.prenom} (${r.initiales})`).join("<br>");
 
-            // Charger TOUS les inscrits
+            // Charger inscrits
             inscrits = await pb.collection("inscrits").getFullList({
                 filter: `manifestation = "${id}"`,
                 expand: "companion"
             });
 
+            afficherCompteur();
             afficherListeInscrits();
             updateActions();
 
@@ -177,6 +184,15 @@
         }
     }
 
+    /* --- Compteur dynamique --- */
+    function afficherCompteur() {
+        const total = inscrits.length;
+        const max = manifestation.places_max || "∞";
+
+        document.getElementById("compteur").textContent = `${total} / ${max}`;
+    }
+
+    /* --- Liste des inscrits --- */
     function afficherListeInscrits() {
         const container = document.getElementById("listeInscrits");
 
@@ -197,6 +213,19 @@
         container.innerHTML = html;
     }
 
+    /* --- Bouton contacter responsables --- */
+    function contacterResponsables() {
+        const resp = manifestation.expand?.responsables || [];
+
+        const emails = resp.map(r => r.email).join(",");
+
+        const subject = encodeURIComponent("À propos de la manifestation : " + manifestation.title);
+        const body = encodeURIComponent("Bonjour,\n\nJe vous contacte concernant la manifestation \"" + manifestation.title + "\".\n\n");
+
+        window.location.href = `mailto:${emails}?subject=${subject}&body=${body}`;
+    }
+
+    /* --- Gestion inscription / désinscription --- */
     function updateActions() {
         const actions = document.getElementById("actions");
         actions.innerHTML = "";
@@ -278,12 +307,12 @@
 
         doc.text(`Manifestation : ${manifestation.title}`, 10, y); y += 8;
         doc.text(`Date : ${manifestation.date}`, 10, y); y += 8;
-        doc.text(`Places max : ${manifestation.places_max || "-"}`, 10, y); y += 8;
+        doc.text(`Places : ${inscrits.length} / ${manifestation.places_max || "-"}`, 10, y); y += 8;
         doc.text(`Date limite : ${manifestation.date_limite || "-"}`, 10, y); y += 12;
 
         doc.text("Responsables :", 10, y); y += 8;
         manifestation.expand.responsables.forEach(r => {
-            doc.text(`- ${r.nom} ${r.prenom} (${r.initiales})`, 10, y);
+            doc.text(`- ${r.nom} ${r.prenom} (${r.email})`, 10, y);
             y += 8;
         });
 
