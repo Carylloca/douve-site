@@ -136,7 +136,7 @@
 
             try {
                 const companions = await pb.collection("companions").getFullList({
-                    sort: "name"
+                    sort: "nom"
                 });
 
                 select.innerHTML = "";
