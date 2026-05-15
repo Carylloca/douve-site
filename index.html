@@ -10,7 +10,7 @@
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            background-image: url('index.png'); /* ton image de fond */
+            background-image: url('index.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -20,7 +20,6 @@
             color: white;
         }
 
-        /* Titre en haut */
         header {
             text-align: center;
             padding: 25px 0;
@@ -33,7 +32,6 @@
             font-weight: 600;
         }
 
-        /* Boutons à gauche */
         .buttons {
             position: absolute;
             top: 50%;
@@ -47,7 +45,7 @@
         .btn {
             display: inline-block;
             padding: 12px 24px;
-            background: rgba(139, 0, 0, 0.5); /* bordeaux transparent */
+            background: rgba(139, 0, 0, 0.5);
             color: white;
             text-decoration: none;
             border-radius: 8px;
@@ -62,7 +60,6 @@
             background: rgba(179, 0, 0, 0.8);
         }
 
-        /* Footer */
         footer {
             position: absolute;
             bottom: 10px;
@@ -86,12 +83,33 @@
         <a href="calendrier.html" class="btn">Calendrier</a>
         <a href="chalet.html" class="btn">Occupation du chalet</a>
         <a href="compagnons.html" class="btn">Liste des compagnons</a>
-        <a href="login.html" class="btn">Connexion</a>
+        <a href="login.html" class="btn" id="loginBtn">Connexion</a>
     </div>
 
     <footer>
         © Confrérie des Compagnons de la Douve
     </footer>
+
+    <!-- PocketBase -->
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <!-- Auth -->
+    <script src="js/auth.js"></script>
+
+    <script>
+        // 🔒 Si l’utilisateur est déjà connecté → redirection automatique
+        if (isLoggedIn()) {
+            const user = getUser();
+
+            if (user.collectionName === "users") {
+                // Comité → redirection vers l’admin
+                window.location.href = "admin/admin-manifestations.html";
+            } else {
+                // Compagnon → redirection vers la page compagnon
+                window.location.href = "compagnon/compagnon-menu.html";
+            }
+        }
+    </script>
 
 </body>
 </html>
