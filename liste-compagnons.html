@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des compagnons</title>
+
+    <!-- Favicon (racine du site) -->
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("img/page-admin-compagnons.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px black;
+        }
+
+        .btn {
+            display: block;
+            width: fit-content;
+            margin: 0 auto 30px auto;
+            padding: 12px 20px;
+            background: #7A0010;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #5A000C;
+        }
+
+        table {
+            width: 95%;
+            margin: 0 auto;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #7A0010;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="overlay">
+        <h1>Liste des compagnons</h1>
+
+        <a href="index.html" class="btn">← Retour au menu</a>
+
+        <table id="tableCompagnons">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Initiales</th>
+                    <th>Adresse</th>
+                    <th>N° postal</th>
+                    <th>Lieu</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Date de naissance</th>
+                    <th>Conjoint</th>
+                    <th>Téléphone prof</th>
+                    <th>Email prof</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- PocketBase -->
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <script>
+        // Vérification connexion
+        const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+        if (!pb.authStore.isValid) {
+            window.location.href = "login.html";
+        }
+
+        async function chargerCompagnons() {
+            const tbody = document.querySelector("#tableCompagnons tbody");
+            tbody.innerHTML = "<tr><td colspan='12'>Chargement...</td></tr>";
+
+            try {
+                const records = await pb.collection("companions").getFullList({
+                    sort: "nom"
+                });
+
+                tbody.innerHTML = "";
+
+                records.forEach(c => {
+                    const tr = document.createElement("tr");
+
+                    tr.innerHTML = `
+                        <td>${c.nom || ""}</td>
+                        <td>${c.prenom || ""}</td>
+                        <td>${c.initiales || ""}</td>
+                        <td>${c.adresse || ""}</td>
+                        <td>${c.npa || ""}</td>
+                        <td>${c.lieu || ""}</td>
+                        <td>${c.email_public || ""}</td>
+                        <td>${c.telephone || ""}</td>
+                        <td>${c.date_naissance || ""}</td>
+                        <td>${(c.conjoint_prenom || "") + " " + (c.conjoint_nom || "")}</td>
+                        <td>${c.telephone_prof || ""}</td>
+                        <td>${c.email_prof || ""}</td>
+                    `;
+
+                    tbody.appendChild(tr);
+                });
+
+            } catch (err) {
+                tbody.innerHTML = "<tr><td colspan='12'>Erreur lors du chargement.</td></tr>";
+                console.error(err);
+            }
+        }
+
+        chargerCompagnons();
+    </script>
+</body>
+</html>
