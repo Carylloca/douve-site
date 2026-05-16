@@ -159,6 +159,7 @@
                 <th onclick="sortTable('nom')">Nom</th>
                 <th onclick="sortTable('prenom')">Prénom</th>
                 <th onclick="sortTable('email')">Email</th>
+                <th onclick="sortTable('nb_personnes')">Nb pers.</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -187,7 +188,7 @@
 
     async function loadInscrits() {
         const tbody = document.getElementById("inscritsBody");
-        tbody.innerHTML = "<tr><td colspan='4'>Chargement...</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='5'>Chargement...</td></tr>";
 
         try {
             manifestation = await pb.collection("manifestations").getOne(manifestationId);
@@ -201,7 +202,7 @@
 
             inscrits = await pb.collection("inscriptions").getFullList({
                 filter: `manifestation = "${manifestationId}"`,
-                expand: "companion_id"
+                expand: "companion"
             });
 
             filtered = inscrits;
@@ -211,13 +212,16 @@
 
         } catch (err) {
             console.error(err);
-            tbody.innerHTML = "<tr><td colspan='4'>Erreur de chargement</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='5'>Erreur de chargement</td></tr>";
         }
     }
 
     function updateTotal() {
-        document.getElementById("totalInscrits").textContent =
-            "Total inscrits : " + filtered.length;
+        const totalPersonnes = filtered.reduce((sum, i) => sum + (i.nb_personnes || 1), 0);
+
+        document.getElementById("totalInscrits").innerHTML =
+            `Total inscrits : ${filtered.length}<br>
+             Total personnes : <strong>${totalPersonnes}</strong>`;
     }
 
     function displayTable() {
@@ -225,13 +229,14 @@
         tbody.innerHTML = "";
 
         filtered.forEach(i => {
-            const c = i.expand?.companion_id;
+            const c = i.expand?.companion;
 
             const row = document.createElement("tr");
             row.innerHTML = `
                 <td>${c?.nom || "-"}</td>
                 <td>${c?.prenom || "-"}</td>
                 <td>${c?.email || "-"}</td>
+                <td>${i.nb_personnes || 1}</td>
                 <td>
                     <button class="btn-delete" onclick="deleteInscrit('${i.id}')">Supprimer</button>
                 </td>
@@ -244,8 +249,12 @@
         sortDirection *= -1;
 
         filtered.sort((a, b) => {
-            const ca = a.expand?.companion_id;
-            const cb = b.expand?.companion_id;
+            const ca = a.expand?.companion;
+            const cb = b.expand?.companion;
+
+            if (field === "nb_personnes") {
+                return ((a.nb_personnes || 1) - (b.nb_personnes || 1)) * sortDirection;
+            }
 
             return (ca?.[field] || "").localeCompare(cb?.[field] || "") * sortDirection;
         });
@@ -284,8 +293,12 @@
         doc.text(`Date : ${manifestation.date}`, 10, y); y += 12;
 
         filtered.forEach(i => {
-            const c = i.expand?.companion_id;
-            doc.text(`${c?.nom || "-"} ${c?.prenom || "-"} – ${c?.email || "-"}`, 10, y);
+            const c = i.expand?.companion;
+            doc.text(
+                `${c?.nom || "-"} ${c?.prenom || "-"} – ${c?.email || "-"} – ${i.nb_personnes || 1} pers.`,
+                10,
+                y
+            );
             y += 8;
         });
 
@@ -296,11 +309,12 @@
         if (filtered.length === 0) return;
 
         const data = filtered.map(i => {
-            const c = i.expand?.companion_id;
+            const c = i.expand?.companion;
             return {
                 Nom: c?.nom || "-",
                 Prénom: c?.prenom || "-",
-                Email: c?.email || "-"
+                Email: c?.email || "-",
+                "Nb personnes": i.nb_personnes || 1
             };
         });
 
