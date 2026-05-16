@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier un compagnon</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("../img/page-admin-compagnons.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: white;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px black;
+        }
+
+        .card {
+            width: 70%;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.92);
+            color: black;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.4);
+        }
+
+        label {
+            font-weight: bold;
+            color: #7A0010;
+            display: block;
+            margin-top: 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 6px;
+            border: 1px solid #aaa;
+            font-size: 16px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            background: #7A0010;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 25px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #5A000C;
+        }
+
+        .photo-preview {
+            margin-top: 10px;
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 3px solid #7A0010;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="overlay">
+        <h1>Modifier un compagnon</h1>
+
+        <div class="card">
+
+            <label>Nom :</label>
+            <input type="text" id="nom">
+
+            <label>Prénom :</label>
+            <input type="text" id="prenom">
+
+            <label>Initiales :</label>
+            <input type="text" id="initiales">
+
+            <label>Fonction :</label>
+            <input type="text" id="fonction">
+
+            <label>Adresse :</label>
+            <input type="text" id="adresse">
+
+            <label>N° postal :</label>
+            <input type="text" id="npa">
+
+            <label>Lieu :</label>
+            <input type="text" id="lieu">
+
+            <label>Email :</label>
+            <input type="email" id="email_public">
+
+            <label>Téléphone :</label>
+            <input type="text" id="telephone">
+
+            <label>Date de naissance :</label>
+            <input type="date" id="date_naissance">
+
+            <label>Conjoint - prénom :</label>
+            <input type="text" id="conjoint_prenom">
+
+            <label>Conjoint - nom :</label>
+            <input type="text" id="conjoint_nom">
+
+            <label>Téléphone professionnel :</label>
+            <input type="text" id="telephone_prof">
+
+            <label>Email professionnel :</label>
+            <input type="email" id="email_prof">
+
+            <label>Photo :</label>
+            <input type="file" id="photo" accept="image/*">
+            <img id="photoPreview" class="photo-preview" style="display:none;">
+
+            <button class="btn" onclick="sauvegarder()">Enregistrer</button>
+            <a href="admin-compagnons.html" class="btn">Annuler</a>
+
+        </div>
+    </div>
+
+    <!-- PocketBase -->
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <script>
+        const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+        if (!pb.authStore.isValid) {
+            window.location.href = "../login.html";
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+
+        /* 🔧 Charger les données existantes */
+        async function charger() {
+            try {
+                const c = await pb.collection("companions").getOne(id);
+
+                document.getElementById("nom").value = c.nom;
+                document.getElementById("prenom").value = c.prenom;
+                document.getElementById("initiales").value = c.initiales || "";
+                document.getElementById("fonction").value = c.fonction || "";
+                document.getElementById("adresse").value = c.adresse || "";
+                document.getElementById("npa").value = c.npa || "";
+                document.getElementById("lieu").value = c.lieu || "";
+                document.getElementById("email_public").value = c.email_public || "";
+                document.getElementById("telephone").value = c.telephone || "";
+                document.getElementById("date_naissance").value = c.date_naissance?.split("T")[0] || "";
+                document.getElementById("conjoint_prenom").value = c.conjoint_prenom || "";
+                document.getElementById("conjoint_nom").value = c.conjoint_nom || "";
+                document.getElementById("telephone_prof").value = c.telephone_prof || "";
+                document.getElementById("email_prof").value = c.email_prof || "";
+
+                if (c.photo) {
+                    const url = pb.files.getUrl(c, c.photo);
+                    const preview = document.getElementById("photoPreview");
+                    preview.src = url;
+                    preview.style.display = "block";
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("Erreur lors du chargement.");
+            }
+        }
+
+        charger();
+
+        /* 🔧 Sauvegarder les modifications */
+        async function sauvegarder() {
+            const formData = new FormData();
+
+            formData.append("nom", document.getElementById("nom").value);
+            formData.append("prenom", document.getElementById("prenom").value);
+            formData.append("initiales", document.getElementById("initiales").value);
+            formData.append("fonction", document.getElementById("fonction").value);
+            formData.append("adresse", document.getElementById("adresse").value);
+            formData.append("npa", document.getElementById("npa").value);
+            formData.append("lieu", document.getElementById("lieu").value);
+            formData.append("email_public", document.getElementById("email_public").value);
+            formData.append("telephone", document.getElementById("telephone").value);
+            formData.append("date_naissance", document.getElementById("date_naissance").value);
+            formData.append("conjoint_prenom", document.getElementById("conjoint_prenom").value);
+            formData.append("conjoint_nom", document.getElementById("conjoint_nom").value);
+            formData.append("telephone_prof", document.getElementById("telephone_prof").value);
+            formData.append("email_prof", document.getElementById("email_prof").value);
+
+            const fileInput = document.getElementById("photo");
+            if (fileInput.files.length > 0) {
+                formData.append("photo", fileInput.files[0]);
+            }
+
+            try {
+                await pb.collection("companions").update(id, formData);
+                alert("Modifications enregistrées !");
+                window.location.href = "../compagnon-details.html?id=" + id;
+            } catch (err) {
+                console.error(err);
+                alert("Erreur lors de la sauvegarde.");
+            }
+        }
+    </script>
+
+</body>
+</html>
