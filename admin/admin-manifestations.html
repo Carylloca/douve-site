@@ -102,6 +102,11 @@
 <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 <script src="../js/auth.js"></script>
 
+<!-- 🔥 Correction : définition de pb -->
+<script>
+    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+</script>
+
 <script>
     requireComite();
 
@@ -152,7 +157,7 @@
                         <td>${dateLimite}</td>
 
                         <td class="actions">
-                            <a class="btn-small" href="admin-inscrits.html?id=${m.id}">Liste des inscrits</a>
+                            <a class="btn-small" href="liste-inscrits.html?id=${m.id}">Liste des inscrits</a>
                             <a class="btn-small" href="admin-manifestation-modifier.html?id=${m.id}">Modifier</a>
                             <button class="btn-small" onclick="supprimer('${m.id}')">Supprimer</button>
                         </td>
