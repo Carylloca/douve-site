@@ -95,7 +95,7 @@
             background: #9c1a33;
         }
 
-        /* 🔥 Nouveau bloc d’avertissement amélioré */
+        /* 🔥 Bloc d’avertissement */
         .warning-block {
             display: flex;
             background: #fff3cd;
@@ -118,6 +118,14 @@
         .warning-text {
             flex: 1;
         }
+
+        /* 🔵 Description sous le titre */
+        #desc {
+            display: block;
+            margin: 10px 0 20px 0;
+            font-size: 15px;
+            color: #333;
+        }
     </style>
 </head>
 
@@ -139,19 +147,20 @@
     <div class="container">
         <div class="card">
             <h2 id="title">Chargement...</h2>
+
+            <!-- 🔵 Description sous le titre -->
+            <span id="desc"></span>
+
             <div id="limite" style="margin-bottom:10px;"></div>
 
             <label>Nombre de personnes :</label>
             <input type="number" id="nb" min="1" value="1">
 
-            <!-- 🔥 Nouveau bloc séparé, percutant + description -->
+            <!-- 🔥 Bloc d’avertissement percutant -->
             <div class="warning-block">
                 <div class="warning-icon">⚠️</div>
                 <div class="warning-text">
                     <strong>En cas de modification d'inscription après la date limite, veuillez contacter l'organisateur.</strong>
-                    <br><br>
-                    <strong>Description :</strong><br>
-                    <span id="desc"></span>
                 </div>
             </div>
 
@@ -220,7 +229,7 @@
 
             document.getElementById("title").innerHTML = html;
 
-            // 🔥 Ajout de la description dans le bloc
+            // 🔵 Description sous le titre
             document.getElementById("desc").textContent = m.description || "Aucune description.";
 
             if (limiteDate && new Date() > limiteDate) {
