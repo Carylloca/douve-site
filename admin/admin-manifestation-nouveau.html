@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <title>Admin – Nouvelle manifestation</title>
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
 
     <style>
         body {
@@ -15,7 +14,7 @@
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            font-family: Arial, sans-serif;
+            font-family: "DM Sans", sans-serif; /* même police partout */
         }
 
         .overlay {
@@ -29,23 +28,7 @@
             color: white;
             margin-bottom: 30px;
             text-shadow: 0 0 10px black;
-        }
-
-        .btn {
-            display: block;
-            width: fit-content;
-            margin: 0 auto 30px auto;
-            padding: 12px 20px;
-            background: #7A0010;
-            color: white;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-
-        .btn:hover {
-            background: #5A000C;
+            font-family: "DM Sans", sans-serif;
         }
 
         form {
@@ -55,21 +38,24 @@
             max-width: 600px;
             margin: 0 auto;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-family: "DM Sans", sans-serif;
         }
 
         label {
             font-weight: bold;
             display: block;
             margin-top: 15px;
+            font-family: "DM Sans", sans-serif;
         }
 
-        input, textarea {
+        input, textarea, select {
             width: 100%;
             padding: 10px;
             margin-top: 5px;
             border-radius: 6px;
             border: 1px solid #ccc;
             font-size: 16px;
+            font-family: "DM Sans", sans-serif;
         }
 
         textarea {
@@ -82,6 +68,7 @@
             gap: 8px;
             margin: 4px 0;
             font-size: 15px;
+            font-family: "DM Sans", sans-serif;
         }
 
         .btn-submit {
@@ -89,138 +76,165 @@
             width: 100%;
             text-align: center;
         }
+
+        .time-row {
+            display: flex;
+            gap: 10px;
+        }
     </style>
 </head>
 
 <body>
-    <div class="overlay">
-        <h1>Créer une nouvelle manifestation</h1>
+<div class="overlay">
+    <h1>Créer une nouvelle manifestation</h1>
 
-        <div style="text-align:center;">
-            <a href="admin-menu.html" class="btn">← Retour au menu</a>
-            <button class="btn" onclick="logout()">⏻ Déconnexion</button>
+    <a href="admin-menu.html" class="btn">← Retour au menu</a>
+
+    <form id="manifestForm">
+
+        <label>Titre</label>
+        <input type="text" id="title" required>
+
+        <label>Description</label>
+        <textarea id="description"></textarea>
+
+        <label>Date</label>
+        <input type="date" id="date" required>
+
+        <label>Heure</label>
+        <div class="time-row">
+            <select id="heure" required>
+                <option value="">HH</option>
+                <!-- heures 00 à 23 -->
+                <script>
+                    for (let i = 0; i < 24; i++) {
+                        document.write(`<option value="${String(i).padStart(2, '0')}">${String(i).padStart(2, '0')}</option>`);
+                    }
+                </script>
+            </select>
+
+            <select id="minutes" required>
+                <option value="">MM</option>
+                <option value="00">00</option>
+                <option value="15">15</option>
+                <option value="30">30</option>
+                <option value="45">45</option>
+            </select>
         </div>
 
-        <form id="manifestForm">
-            <label>Titre</label>
-            <input type="text" id="title" required>
+        <label>Date limite d'inscription</label>
+        <input type="date" id="date_limite">
 
-            <label>Description</label>
-            <textarea id="description"></textarea>
+        <label>Places maximum</label>
+        <input type="number" id="places_max" min="1">
 
-            <label>Date</label>
-            <input type="date" id="date" required>
+        <label>Responsables</label>
+        <div id="responsables" class="checkbox-list"></div>
 
-            <label>Heure</label>
-            <input type="time" id="heure" required>
+        <button type="submit" class="btn btn-submit">Créer la manifestation</button>
+    </form>
+</div>
 
-            <label>Date limite d'inscription</label>
-            <input type="date" id="date_limite">
+<!-- PocketBase -->
+<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
-            <label>Places maximum</label>
-            <input type="number" id="places_max" min="1">
+<!-- Auth -->
+<script src="../js/auth.js"></script>
 
-            <label>Responsables</label>
-            <div id="responsables" class="checkbox-list"></div>
+<script>
+    // Sécurisation admin
+    requireComite();
 
-            <button type="submit" class="btn btn-submit">Créer la manifestation</button>
-        </form>
-    </div>
+    // Charger la liste des compagnons
+    async function loadResponsables() {
+        const container = document.getElementById("responsables");
+        container.innerHTML = "<p style='color:white;'>Chargement...</p>";
 
-    <!-- PocketBase -->
-    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+        try {
+            const companions = await pb.collection("companions").getFullList({
+                sort: "nom"
+            });
 
-    <!-- Auth -->
-    <script src="../js/auth.js"></script>
+            container.innerHTML = "";
 
-    <script>
-        // 🔒 Sécurisation admin
-        requireComite();
+            companions.forEach(c => {
+                const wrapper = document.createElement("label");
 
-        // Charger la liste des compagnons sous forme de cases à cocher
-        async function loadResponsables() {
-            const container = document.getElementById("responsables");
-            container.innerHTML = "<p style='color:white;'>Chargement...</p>";
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.value = c.id;
 
-            try {
-                const companions = await pb.collection("companions").getFullList({
-                    sort: "nom"
-                });
+                const text = document.createElement("span");
+                text.textContent = `${c.nom} – ${c.prenom} (${c.initiales})`;
 
-                container.innerHTML = "";
+                wrapper.appendChild(checkbox);
+                wrapper.appendChild(text);
 
-                companions.forEach(c => {
-                    const wrapper = document.createElement("label");
+                container.appendChild(wrapper);
+            });
 
-                    const checkbox = document.createElement("input");
-                    checkbox.type = "checkbox";
-                    checkbox.value = c.id;
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = "<p style='color:red;'>Erreur de chargement</p>";
+        }
+    }
 
-                    const text = document.createElement("span");
-                    text.textContent = `${c.nom} – ${c.prenom} (${c.initiales})`;
+    loadResponsables();
 
-                    wrapper.appendChild(checkbox);
-                    wrapper.appendChild(text);
+    // Création de la manifestation
+    document.getElementById("manifestForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-                    container.appendChild(wrapper);
-                });
+        const user = pb.authStore.model;
 
-            } catch (err) {
-                console.error(err);
-                container.innerHTML = "<p style='color:red;'>Erreur de chargement</p>";
-            }
+        if (user.collectionName !== "users") {
+            alert("Seuls les membres du comité peuvent créer une manifestation.");
+            return;
         }
 
-        loadResponsables();
+        // Récupérer les responsables cochés
+        const responsables = Array.from(
+            document.querySelectorAll("#responsables input[type='checkbox']:checked")
+        ).map(cb => cb.value);
 
-        // Création de la manifestation
-        document.getElementById("manifestForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
+        if (responsables.length === 0) {
+            alert("Veuillez sélectionner au moins un responsable.");
+            return;
+        }
 
-            const user = pb.authStore.model;
+        // Récupérer date + heure
+        const date = document.getElementById("date").value;
+        const heure = document.getElementById("heure").value;
+        const minutes = document.getElementById("minutes").value;
 
-            // Vérifier comité
-            if (user.collectionName !== "users") {
-                alert("Seuls les membres du comité peuvent créer une manifestation.");
-                return;
-            }
+        if (!date || !heure || !minutes) {
+            alert("Veuillez sélectionner une date et une heure complètes.");
+            return;
+        }
 
-            // Récupérer les responsables cochés
-            const responsables = Array.from(
-                document.querySelectorAll("#responsables input[type='checkbox']:checked")
-            ).map(cb => cb.value);
+        const dateFinale = `${date} ${heure}:${minutes}`;
 
-            if (responsables.length === 0) {
-                alert("Veuillez sélectionner au moins un responsable.");
-                return;
-            }
+        const data = {
+            title: document.getElementById("title").value.trim(),
+            description: document.getElementById("description").value.trim(),
+            date: dateFinale,
+            date_limite: document.getElementById("date_limite").value || null,
+            places_max: document.getElementById("places_max").value || null,
+            created_by: user.id,
+            responsables: responsables
+        };
 
-            // Récupérer date + heure
-            const date = document.getElementById("date").value;
-            const heure = document.getElementById("heure").value;
+        try {
+            await pb.collection("manifestations").create(data);
+            alert("Manifestation créée !");
+            window.location.href = "admin-manifestations.html";
 
-            // Fusionner date + heure → format ISO PocketBase
-            const dateTime = `${date} ${heure}`;
+        } catch (err) {
+            console.error(err);
+            alert("Erreur lors de la création : " + (err?.message || "Vérifiez les champs obligatoires."));
+        }
+    });
+</script>
 
-            const data = {
-                title: document.getElementById("title").value.trim(),
-                description: document.getElementById("description").value.trim(),
-                date: dateTime, // <-- NOUVEAU : date + heure
-                date_limite: document.getElementById("date_limite").value || null,
-                places_max: document.getElementById("places_max").value || null,
-                created_by: user.id,
-                responsables: responsables
-            };
-
-            try {
-                await pb.collection("manifestations").create(data);
-                alert("Manifestation créée !");
-                window.location.href = "admin-manifestations.html";
-            } catch (err) {
-                console.error(err);
-                alert("Erreur lors de la création : " + (err?.message || "Vérifiez les champs obligatoires."));
-            }
-        });
-    </script>
 </body>
 </html>
