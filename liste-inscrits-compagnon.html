@@ -11,7 +11,7 @@
     <style>
         body {
             margin: 0;
-            background-image: url("img/page-liste-inscrits-compagnon.jpg");
+            background-image: url("img/page-compagnons.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -120,11 +120,12 @@
                         <th>Nom</th>
                         <th>Prénom</th>
                         <th>Email</th>
+                        <th>Téléphone</th>
                         <th>Nb pers.</th>
                     </tr>
                 </thead>
                 <tbody id="tableInscrits">
-                    <tr><td colspan="4">Chargement…</td></tr>
+                    <tr><td colspan="5">Chargement…</td></tr>
                 </tbody>
             </table>
 
@@ -166,6 +167,7 @@
                         <td>${c?.nom || "-"}</td>
                         <td>${c?.prenom || "-"}</td>
                         <td>${c?.email || "-"}</td>
+                        <td>${c?.telephone || "-"}</td>
                         <td>${nb}</td>
                     </tr>
                 `;
@@ -177,7 +179,7 @@
         } catch (err) {
             console.error(err);
             document.getElementById("tableInscrits").innerHTML =
-                "<tr><td colspan='4'>Erreur de chargement.</td></tr>";
+                "<tr><td colspan='5'>Erreur de chargement.</td></tr>";
         }
     }
 
