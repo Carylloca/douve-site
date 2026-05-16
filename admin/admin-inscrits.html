@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Admin – Liste des inscrits</title>
 
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="../favicon.png">
 
     <!-- jsPDF -->
@@ -17,11 +16,11 @@
         body {
             margin: 0;
             padding: 0;
-            background-image: url("../img/page-admin-inscrits.jpg");
+            background-image: url("../img/page-admin-manifestations.jpg"); /* image existante */
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            font-family: Arial, sans-serif;
+            font-family: "DM Sans", sans-serif;
         }
 
         .overlay {
@@ -40,7 +39,7 @@
         .btn {
             display: inline-block;
             padding: 10px 16px;
-            background: #7A0010;
+            background: #7b0f23;
             color: white;
             border-radius: 6px;
             text-decoration: none;
@@ -78,7 +77,7 @@
         }
 
         th {
-            background: #7A0010;
+            background: #7b0f23;
             color: white;
         }
 
@@ -121,13 +120,11 @@
     <script src="../js/auth.js"></script>
 
     <script>
-        // 🔒 Sécurisation admin
         requireComite();
 
         let manifestation = null;
         let inscrits = [];
 
-        // Récupérer l'ID de la manifestation
         const url = new URL(window.location.href);
         const manifestationId = url.searchParams.get("id");
 
@@ -135,25 +132,26 @@
             document.body.innerHTML = "<p style='color:white;'>Aucune manifestation sélectionnée.</p>";
         }
 
-        // Charger la manifestation + inscrits
         async function loadInscrits() {
             const tbody = document.getElementById("inscritsBody");
             tbody.innerHTML = "<tr><td colspan='4'>Chargement...</td></tr>";
 
             try {
                 manifestation = await pb.collection("manifestations").getOne(manifestationId);
+
                 document.getElementById("manifestTitle").textContent =
                     "Inscrits – " + manifestation.title + " (" + manifestation.date + ")";
 
-                inscrits = await pb.collection("inscrits").getFullList({
+                /* 🔥 Correction : collection = inscriptions */
+                inscrits = await pb.collection("inscriptions").getFullList({
                     filter: `manifestation = "${manifestationId}"`,
-                    expand: "companion"
+                    expand: "companion_id" /* 🔥 Correction */
                 });
 
                 tbody.innerHTML = "";
 
                 inscrits.forEach(i => {
-                    const c = i.expand?.companion;
+                    const c = i.expand?.companion_id; /* 🔥 Correction */
 
                     const row = document.createElement("tr");
                     row.innerHTML = `
@@ -177,7 +175,7 @@
             if (!confirm("Supprimer cet inscrit ?")) return;
 
             try {
-                await pb.collection("inscrits").delete(id);
+                await pb.collection("inscriptions").delete(id); /* 🔥 Correction */
                 loadInscrits();
             } catch (err) {
                 alert("Erreur lors de la suppression.");
@@ -185,7 +183,6 @@
             }
         }
 
-        /* --- Format nom fichier --- */
         function formatFileName() {
             const cleanTitle = manifestation.title
                 .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -194,7 +191,6 @@
             return `${cleanTitle}_${manifestation.date}`;
         }
 
-        /* --- Export PDF --- */
         function exportPDF() {
             if (inscrits.length === 0) return;
 
@@ -206,7 +202,7 @@
             doc.text(`Date : ${manifestation.date}`, 10, y); y += 12;
 
             inscrits.forEach(i => {
-                const c = i.expand?.companion;
+                const c = i.expand?.companion_id;
                 doc.text(`${c?.nom || "-"} ${c?.prenom || "-"} – ${c?.email || "-"}`, 10, y);
                 y += 8;
             });
@@ -214,12 +210,11 @@
             doc.save(formatFileName() + ".pdf");
         }
 
-        /* --- Export Excel --- */
         function exportExcel() {
             if (inscrits.length === 0) return;
 
             const data = inscrits.map(i => {
-                const c = i.expand?.companion;
+                const c = i.expand?.companion_id;
                 return {
                     Nom: c?.nom || "-",
                     Prénom: c?.prenom || "-",
@@ -232,6 +227,11 @@
             XLSX.utils.book_append_sheet(wb, ws, "Inscrits");
 
             XLSX.writeFile(wb, formatFileName() + ".xlsx");
+        }
+
+        function logout() {
+            pb.authStore.clear();
+            window.location.href = "../index.html";
         }
 
         loadInscrits();
