@@ -69,6 +69,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
+        /* TITRE À GAUCHE, CHAMP À DROITE */
         .row {
             display: flex;
             align-items: center;
@@ -84,8 +85,7 @@
         }
 
         .row input,
-        .row textarea,
-        .row select {
+        .row textarea {
             width: 78%;
             padding: 6px 7px;
             border-radius: 5px;
@@ -97,6 +97,7 @@
             height: 80px;
         }
 
+        /* DATE + HEURE SUR UNE LIGNE */
         .row-inline {
             display: flex;
             align-items: center;
@@ -104,6 +105,7 @@
             width: 78%;
         }
 
+        /* RESPONSABLES EN 2 COLONNES (comme NOUVEAU) */
         #responsables {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -118,6 +120,18 @@
             font-size: 13px;
             padding: 1px 0;
             white-space: nowrap;
+        }
+
+        .responsable-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+        }
+
+        .responsable-item span {
+            flex: 1;
+            text-align: left;
+            padding-left: 2px;
         }
 
         .btn-submit {
