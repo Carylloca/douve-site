@@ -108,6 +108,16 @@
 
         let compagnonData = null;
 
+        /* 🔧 Formatage de la date en 12.04.1975 */
+        function formatDate(d) {
+            if (!d) return "";
+            const date = new Date(d);
+            const jour = String(date.getUTCDate()).padStart(2, "0");
+            const mois = String(date.getUTCMonth() + 1).padStart(2, "0");
+            const annee = date.getUTCFullYear();
+            return `${jour}.${mois}.${annee}`;
+        }
+
         async function chargerDetails() {
             try {
                 const c = await pb.collection("companions").getOne(id);
@@ -136,7 +146,7 @@
                     <div class="row"><span class="label">Email :</span> ${c.email_public || ""}</div>
                     <div class="row"><span class="label">Téléphone :</span> ${c.telephone || ""}</div>
 
-                    <div class="row"><span class="label">Date de naissance :</span> ${c.date_naissance || ""}</div>
+                    <div class="row"><span class="label">Date de naissance :</span> ${formatDate(c.date_naissance)}</div>
 
                     <div class="row"><span class="label">Conjoint :</span> 
                         ${(c.conjoint_prenom || "") + " " + (c.conjoint_nom || "")}
@@ -195,7 +205,7 @@
                 `Lieu : ${compagnonData.lieu || ""}`,
                 `Email : ${compagnonData.email_public || ""}`,
                 `Téléphone : ${compagnonData.telephone || ""}`,
-                `Date de naissance : ${compagnonData.date_naissance || ""}`,
+                `Date de naissance : ${formatDate(compagnonData.date_naissance)}`,
                 `Conjoint : ${(compagnonData.conjoint_prenom || "") + " " + (compagnonData.conjoint_nom || "")}`,
                 `Téléphone prof : ${compagnonData.telephone_prof || ""}`,
                 `Email prof : ${compagnonData.email_prof || ""}`
