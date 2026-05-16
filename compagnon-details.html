@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Détails du compagnon</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("img/page-admin-compagnons.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: white;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px black;
+        }
+
+        .card {
+            width: 70%;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.92);
+            color: black;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.4);
+        }
+
+        .row {
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #7A0010;
+        }
+
+        .photo {
+            width: 160px;
+            height: 160px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 3px solid #7A0010;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 18px;
+            background: #7A0010;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background: #5A000C;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="overlay">
+        <h1>Détails du compagnon</h1>
+
+        <div class="card" id="details">
+            Chargement...
+        </div>
+
+        <a href="liste-compagnons.html" class="btn">← Retour à la liste</a>
+    </div>
+
+    <!-- PocketBase -->
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <script>
+        const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+        if (!pb.authStore.isValid) {
+            window.location.href = "login.html";
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+
+        async function chargerDetails() {
+            try {
+                const c = await pb.collection("companions").getOne(id);
+
+                // Construction URL photo
+                let photoHTML = "";
+                if (c.photo) {
+                    const urlPhoto = pb.files.getUrl(c, c.photo);
+                    photoHTML = `<img src="${urlPhoto}" class="photo">`;
+                }
+
+                document.getElementById("details").innerHTML = `
+                    ${photoHTML}
+
+                    <div class="row"><span class="label">Nom :</span> ${c.nom}</div>
+                    <div class="row"><span class="label">Prénom :</span> ${c.prenom}</div>
+                    <div class="row"><span class="label">Initiales :</span> ${c.initiales || ""}</div>
+                    <div class="row"><span class="label">Fonction :</span> ${c.fonction || ""}</div>
+
+                    <div class="row"><span class="label">Adresse :</span> ${c.adresse || ""}</div>
+                    <div class="row"><span class="label">N° postal :</span> ${c.npa || ""}</div>
+                    <div class="row"><span class="label">Lieu :</span> ${c.lieu || ""}</div>
+
+                    <div class="row"><span class="label">Email :</span> ${c.email_public || ""}</div>
+                    <div class="row"><span class="label">Téléphone :</span> ${c.telephone || ""}</div>
+
+                    <div class="row"><span class="label">Date de naissance :</span> ${c.date_naissance || ""}</div>
+
+                    <div class="row"><span class="label">Conjoint :</span> 
+                        ${(c.conjoint_prenom || "") + " " + (c.conjoint_nom || "")}
+                    </div>
+
+                    <div class="row"><span class="label">Téléphone professionnel :</span> ${c.telephone_prof || ""}</div>
+                    <div class="row"><span class="label">Email professionnel :</span> ${c.email_prof || ""}</div>
+                `;
+
+            } catch (err) {
+                document.getElementById("details").innerHTML =
+                    "<p>Erreur lors du chargement des informations.</p>";
+                console.error(err);
+            }
+        }
+
+        chargerDetails();
+    </script>
+
+</body>
+</html>
