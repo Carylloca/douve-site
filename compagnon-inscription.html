@@ -108,7 +108,7 @@
 <div class="overlay">
 
     <div class="header">
-        <a href="compagnons.html" class="btn">← Liste des manifestations</a>
+        <a href="compagnons.html" class="btn">← Calendrier</a>
         <div>Inscription</div>
 
         <div style="display:flex; gap:10px;">
@@ -141,7 +141,6 @@
 
     const url = new URL(window.location.href);
     const manifestId = url.searchParams.get("m");
-    const inscriptionId = url.searchParams.get("i");
 
     document.getElementById("btnInscrits").href =
         "liste-inscrits-compagnon.html?id=" + manifestId;
@@ -199,11 +198,6 @@
                     `<span style="color:red;font-weight:bold;">⛔ Date limite dépassée</span>`;
             }
 
-            if (inscriptionId) {
-                const ins = await pb.collection("inscriptions").getOne(inscriptionId);
-                if (ins.nb_personnes) document.getElementById("nb").value = ins.nb_personnes;
-            }
-
         } catch (err) {
             console.error(err);
             alert("Erreur de chargement.");
@@ -223,15 +217,26 @@
         const prenom = user.prenom || "";
 
         try {
-            if (inscriptionId) {
-                await pb.collection("inscriptions").update(inscriptionId, {
+            // 🔍 Vérifier si une inscription existe déjà
+            const existing = await pb.collection("inscriptions").getFullList({
+                filter: `companion = "${user.id}" && manifestation = "${manifestId}"`,
+                sort: "-updated"
+            });
+
+            if (existing.length > 0) {
+                // 🟦 Mise à jour de la dernière inscription
+                const last = existing[0];
+
+                await pb.collection("inscriptions").update(last.id, {
                     nb_personnes: nb,
                     nom: nom,
                     prenom: prenom
                 });
+
             } else {
+                // 🟩 Création d'une nouvelle inscription
                 await pb.collection("inscriptions").create({
-                    companion: pb.authStore.model.id,
+                    companion: user.id,
                     manifestation: manifestId,
                     nb_personnes: nb,
                     nom: nom,
