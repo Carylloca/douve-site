@@ -117,16 +117,17 @@
 
 <script>
     requireCompanion();
-    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
     const url = new URL(window.location.href);
     const manifestId = url.searchParams.get("id");
 
     async function loadInscrits() {
         try {
+            // Récupération de la manifestation
             const m = await pb.collection("manifestations").getOne(manifestId);
             document.getElementById("manifestTitle").textContent = m.title;
 
+            // Récupération des inscriptions
             const inscrits = await pb.collection("inscriptions").getFullList({
                 filter: `manifestation = "${manifestId}"`,
                 expand: "companion"
