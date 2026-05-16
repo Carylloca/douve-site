@@ -212,13 +212,13 @@
         const user = pb.authStore.model;
 
         /* --- RESPONSABLES --- */
-        const responsables = Array.from(
+        let responsables = Array.from(
             document.querySelectorAll("#responsables input[type='checkbox']:checked")
         ).map(cb => cb.value);
 
+        // Sécurité : si aucun responsable n'est coché → l'admin devient responsable
         if (responsables.length === 0) {
-            alert("Veuillez sélectionner au moins un responsable.");
-            return;
+            responsables = [user.id];
         }
 
         /* --- DATE + HEURE --- */
@@ -233,24 +233,25 @@
 
         const dateFinale = `${date} ${hh}:${mm}`;
 
-/* --- PLACES MAX --- */
-let places = document.getElementById("places_max").value.trim();
-places = places === "" ? null : Number(places);
+        /* --- PLACES MAX --- */
+        let places = document.getElementById("places_max").value.trim();
+        places = places === "" ? null : Number(places);
 
-if (places !== null && isNaN(places)) {
-    alert("Le nombre de places est invalide.");
-    return;
-}
+        if (places !== null && isNaN(places)) {
+            alert("Le nombre de places est invalide.");
+            return;
+        }
 
-const data = {
-    title: document.getElementById("title").value.trim(),
-    description: document.getElementById("description").value.trim(),
-    date: dateFinale,
-    date_limite: document.getElementById("date_limite").value || null,
-    places_max: places,
-    created_by: user.id,
-    responsables: responsables
-};
+        /* --- DATA --- */
+        const data = {
+            title: document.getElementById("title").value.trim(),
+            description: document.getElementById("description").value.trim(),
+            date: dateFinale,
+            date_limite: document.getElementById("date_limite").value || null,
+            places_max: places,
+            created_by: user.id,
+            responsables: responsables
+        };
 
         try {
             await pb.collection("manifestations").create(data);
@@ -263,7 +264,6 @@ const data = {
         }
     });
 </script>
-
 
 </body>
 </html>
