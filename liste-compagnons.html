@@ -118,15 +118,13 @@
                     <th onclick="sortTable(0)">Nom</th>
                     <th onclick="sortTable(1)">Prénom</th>
                     <th onclick="sortTable(2)">Initiales</th>
-                    <th onclick="sortTable(3)">Adresse</th>
-                    <th onclick="sortTable(4)">N° postal</th>
-                    <th onclick="sortTable(5)">Lieu</th>
-                    <th onclick="sortTable(6)">Email</th>
-                    <th onclick="sortTable(7)">Téléphone</th>
-                    <th onclick="sortTable(8)">Date de naissance</th>
-                    <th onclick="sortTable(9)">Conjoint</th>
-                    <th onclick="sortTable(10)">Téléphone prof</th>
-                    <th onclick="sortTable(11)">Email prof</th>
+                    <th onclick="sortTable(3)">Fonction</th>
+                    <th onclick="sortTable(4)">Adresse</th>
+                    <th onclick="sortTable(5)">N° postal</th>
+                    <th onclick="sortTable(6)">Lieu</th>
+                    <th onclick="sortTable(7)">Email</th>
+                    <th onclick="sortTable(8)">Téléphone</th>
+                    <th>Détails</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -147,13 +145,13 @@
 
         async function chargerCompagnons() {
             const tbody = document.querySelector("#tableCompagnons tbody");
-            tbody.innerHTML = "<tr><td colspan='12'>Chargement...</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='10'>Chargement...</td></tr>";
 
             try {
                 allCompagnons = await pb.collection("companions").getFullList({ sort: "nom" });
                 afficherTable(allCompagnons);
             } catch (err) {
-                tbody.innerHTML = "<tr><td colspan='12'>Erreur lors du chargement.</td></tr>";
+                tbody.innerHTML = "<tr><td colspan='10'>Erreur lors du chargement.</td></tr>";
                 console.error(err);
             }
         }
@@ -169,15 +167,17 @@
                     <td>${c.nom || ""}</td>
                     <td>${c.prenom || ""}</td>
                     <td>${c.initiales || ""}</td>
+                    <td>${c.fonction || ""}</td>
                     <td>${c.adresse || ""}</td>
                     <td>${c.npa || ""}</td>
                     <td>${c.lieu || ""}</td>
                     <td>${c.email_public || ""}</td>
                     <td>${c.telephone || ""}</td>
-                    <td>${c.date_naissance || ""}</td>
-                    <td>${(c.conjoint_prenom || "") + " " + (c.conjoint_nom || "")}</td>
-                    <td>${c.telephone_prof || ""}</td>
-                    <td>${c.email_prof || ""}</td>
+                    <td>
+                        <a class="btn" href="compagnon-details.html?id=${c.id}">
+                            Détails
+                        </a>
+                    </td>
                 `;
 
                 tbody.appendChild(tr);
@@ -213,47 +213,3 @@
         /* 📄 Export PDF */
         function exportPDF() {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            doc.text("Liste des compagnons", 10, 10);
-
-            let y = 20;
-
-            allCompagnons.forEach(c => {
-                doc.text(
-                    `${c.nom} ${c.prenom} | ${c.email_public} | ${c.telephone}`,
-                    10, y
-                );
-                y += 8;
-                if (y > 280) { doc.addPage(); y = 10; }
-            });
-
-            doc.save("liste_compagnons.pdf");
-        }
-
-        /* 📊 Export Excel */
-        function exportExcel() {
-            const data = allCompagnons.map(c => ({
-                Nom: c.nom,
-                Prénom: c.prenom,
-                Initiales: c.initiales,
-                Adresse: c.adresse,
-                "N° postal": c.npa,
-                Lieu: c.lieu,
-                Email: c.email_public,
-                Téléphone: c.telephone,
-                "Date de naissance": c.date_naissance,
-                Conjoint: (c.conjoint_prenom || "") + " " + (c.conjoint_nom || ""),
-                "Téléphone prof": c.telephone_prof,
-                "Email prof": c.email_prof
-            }));
-
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Compagnons");
-
-            XLSX.writeFile(wb, "liste_compagnons.xlsx");
-        }
-    </script>
-</body>
-</html>
