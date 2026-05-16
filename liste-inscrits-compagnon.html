@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des inscrits</title>
+
+    <link rel="icon" type="image/png" href="favicon.png">
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+    <script src="js/auth.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            background: #f4f4f4;
+            font-family: "DM Sans", sans-serif;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: #7b0f23;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .header-title {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .container {
+            padding: 100px 20px;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #7b0f23;
+            color: white;
+        }
+
+        .btn {
+            padding: 10px 14px;
+            background: #7b0f23;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background: #9c1a33;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    <div class="header-title">Liste des inscrits</div>
+    <button class="btn" onclick="logout()">Déconnexion</button>
+</div>
+
+<div class="container">
+    <div class="card">
+        <h2 id="manifestTitle">Chargement…</h2>
+        <p><strong>Total inscrits :</strong> <span id="totalInscrits">0</span></p>
+        <p><strong>Total personnes :</strong> <span id="totalPersonnes">0</span></p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Email</th>
+                    <th>Nb pers.</th>
+                </tr>
+            </thead>
+            <tbody id="tableInscrits">
+                <tr><td colspan="4">Chargement…</td></tr>
+            </tbody>
+        </table>
+
+        <a href="compagnons.html" class="btn">← Retour</a>
+    </div>
+</div>
+
+<script>
+    requireCompanion();
+    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+    const url = new URL(window.location.href);
+    const manifestId = url.searchParams.get("id");
+
+    async function loadInscrits() {
+        try {
+            const m = await pb.collection("manifestations").getOne(manifestId);
+            document.getElementById("manifestTitle").textContent = m.title;
+
+            const inscrits = await pb.collection("inscriptions").getFullList({
+                filter: `manifestation = "${manifestId}"`,
+                expand: "companion"
+            });
+
+            const tbody = document.getElementById("tableInscrits");
+            tbody.innerHTML = "";
+
+            let totalPers = 0;
+
+            inscrits.forEach(i => {
+                const c = i.expand?.companion;
+                const nb = i.nb_personnes || 1;
+                totalPers += nb;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${c?.nom || "-"}</td>
+                        <td>${c?.prenom || "-"}</td>
+                        <td>${c?.email || "-"}</td>
+                        <td>${nb}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById("totalInscrits").textContent = inscrits.length;
+            document.getElementById("totalPersonnes").textContent = totalPers;
+
+        } catch (err) {
+            console.error(err);
+            document.getElementById("tableInscrits").innerHTML =
+                "<tr><td colspan='4'>Erreur de chargement.</td></tr>";
+        }
+    }
+
+    loadInscrits();
+</script>
+
+</body>
+</html>
