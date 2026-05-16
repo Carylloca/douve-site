@@ -52,6 +52,7 @@
             color: #7A0010;
         }
 
+        /* 📸 Photo agrandie de 30% */
         .photo {
             width: 208px;
             height: 208px;
@@ -116,73 +117,65 @@
 
         let compagnonData = null;
 
-        /* 🔧 Formatage robuste + correction du -1 jour sur YYYY-MM-DD */
+        /* 🎯 Formatage simple sans correction de jour */
         function formatDate(d) {
             if (!d) return "";
 
-            const raw = String(d);
-            const onlyDate = raw.split("T")[0].split(" ")[0];
+            const onlyDate = d.split("T")[0].split(" ")[0];
 
-            // Cas JJ.MM.AAAA (on renvoie tel quel, normalisé)
             if (onlyDate.includes(".")) {
-                const [day, month, year] = onlyDate.split(".");
-                const j = String(day).padStart(2, "0");
-                const m = String(month).padStart(2, "0");
-                return `${j}.${m}.${year}`;
+                return onlyDate;
             }
 
-            // Cas YYYY-MM-DD → on ajoute 1 jour pour compenser le décalage PocketBase/UTC
             if (onlyDate.includes("-")) {
                 const [y, m, day] = onlyDate.split("-");
                 return `${day}.${m}.${y}`;
             }
+
+            return onlyDate;
+        }
 
         async function chargerDetails() {
             try {
                 const c = await pb.collection("companions").getOne(id);
                 compagnonData = c;
 
-                let photoHTML = "";
-                if (c.photo) {
-                    const urlPhoto = pb.files.getUrl(c, c.photo);
-                    photoHTML = `<img src="${urlPhoto}" class="photo">`;
-                }
+                const photoHTML = c.photo
+                    ? `<img src="${pb.files.getUrl(c, c.photo)}" class="photo">`
+                    : "";
 
                 document.getElementById("details").innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:30px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:30px;">
 
-        <!-- COLONNE TEXTE -->
-        <div style="flex:1; max-width:70%;">
-            <div class="row"><span class="label">Nom :</span> ${c.nom}</div>
-            <div class="row"><span class="label">Prénom :</span> ${c.prenom}</div>
-            <div class="row"><span class="label">Initiales :</span> ${c.initiales || ""}</div>
-            <div class="row"><span class="label">Fonction :</span> ${c.fonction || ""}</div>
+                        <!-- COLONNE TEXTE -->
+                        <div style="flex:1; max-width:70%;">
+                            <div class="row"><span class="label">Nom :</span> ${c.nom}</div>
+                            <div class="row"><span class="label">Prénom :</span> ${c.prenom}</div>
+                            <div class="row"><span class="label">Initiales :</span> ${c.initiales || ""}</div>
+                            <div class="row"><span class="label">Fonction :</span> ${c.fonction || ""}</div>
 
-            <div class="row"><span class="label">Adresse :</span> ${c.adresse || ""}</div>
-            <div class="row"><span class="label">N° postal :</span> ${c.npa || ""}</div>
-            <div class="row"><span class="label">Lieu :</span> ${c.lieu || ""}</div>
+                            <div class="row"><span class="label">Adresse :</span> ${c.adresse || ""}</div>
+                            <div class="row"><span class="label">N° postal :</span> ${c.npa || ""}</div>
+                            <div class="row"><span class="label">Lieu :</span> ${c.lieu || ""}</div>
 
-            <div class="row"><span class="label">Email :</span> ${c.email_public || ""}</div>
-            <div class="row"><span class="label">Téléphone :</span> ${c.telephone || ""}</div>
+                            <div class="row"><span class="label">Email :</span> ${c.email_public || ""}</div>
+                            <div class="row"><span class="label">Téléphone :</span> ${c.telephone || ""}</div>
 
-            <div class="row"><span class="label">Date de naissance :</span> ${formatDate(c.date_naissance)}</div>
+                            <div class="row"><span class="label">Date de naissance :</span> ${formatDate(c.date_naissance)}</div>
 
-            <div class="row"><span class="label">Conjoint :</span> 
-                ${(c.conjoint_prenom || "") + " " + (c.conjoint_nom || "")}
-            </div>
+                            <div class="row"><span class="label">Conjoint :</span> 
+                                ${(c.conjoint_prenom || "") + " " + (c.conjoint_nom || "")}
+                            </div>
 
-            <div class="row"><span class="label">Téléphone professionnel :</span> ${c.telephone_prof || ""}</div>
-            <div class="row"><span class="label">Email professionnel :</span> ${c.email_prof || ""}</div>
-        </div>
+                            <div class="row"><span class="label">Téléphone professionnel :</span> ${c.telephone_prof || ""}</div>
+                            <div class="row"><span class="label">Email professionnel :</span> ${c.email_prof || ""}</div>
+                        </div>
 
-        <!-- COLONNE PHOTO -->
-        <div>
-            ${c.photo ? `<img src="${pb.files.getUrl(c, c.photo)}" class="photo">` : ""}
-        </div>
+                        <!-- COLONNE PHOTO -->
+                        <div>${photoHTML}</div>
 
-    </div>
-`;
-
+                    </div>
+                `;
 
                 const user = pb.authStore.model;
 
