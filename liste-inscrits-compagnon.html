@@ -198,7 +198,7 @@
                     <tr>
                         <td>${c?.nom || "-"}</td>
                         <td>${c?.prenom || "-"}</td>
-                        <td>${c?.email || "-"}</td>
+                        <td>${c?.email_public || "-"}</td>
                         <td>${c?.telephone || "-"}</td>
                         <td>${c?.initiales || "-"}</td>
                         <td>${nb}</td>
@@ -236,7 +236,7 @@
         const data = inscriptionsData.map(i => ({
             Nom: i.expand?.companion?.nom || "",
             Prénom: i.expand?.companion?.prenom || "",
-            Email: i.expand?.companion?.email || "",
+            Email: i.expand?.companion?.email_public || "",
             Téléphone: i.expand?.companion?.telephone || "",
             Initiales: i.expand?.companion?.initiales || "",
             "Nb personnes": i.nb_personnes || 1
@@ -261,7 +261,7 @@
         inscriptionsData.forEach(i => {
             const c = i.expand?.companion;
             doc.text(
-                `${c?.nom || ""} ${c?.prenom || ""} - ${c?.email || ""} - ${c?.telephone || ""} - ${i.nb_personnes} pers.`,
+                `${c?.nom || ""} ${c?.prenom || ""} - ${c?.email_public || ""} - ${c?.telephone || ""} - ${i.nb_personnes} pers.`,
                 10,
                 y
             );
