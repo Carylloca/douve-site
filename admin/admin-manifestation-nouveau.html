@@ -40,16 +40,25 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        label {
-            font-weight: bold;
-            display: block;
-            margin-top: 8px;
-            margin-bottom: 3px;
-            font-size: 14px;
+        /* TITRE À DROITE, CHAMP À GAUCHE */
+        .row {
+            display: flex;
+            align-items: center;
+            margin: 6px 0;
         }
 
-        input, textarea, select {
-            width: 100%;
+        .row label {
+            width: 40%;
+            text-align: right;
+            padding-right: 10px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .row input,
+        .row textarea,
+        .row select {
+            width: 60%;
             padding: 7px 8px;
             border-radius: 5px;
             border: 1px solid #ccc;
@@ -60,17 +69,17 @@
             height: 90px;
         }
 
-        /* Champ heure compact */
-        #heure_wrapper {
+        /* DATE + HEURE SUR UNE LIGNE */
+        .row-inline {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 10px;
         }
 
         .heure-select {
-            width: 70px;
+            width: 60px;
             padding: 7px;
-            font-size: 16px;
+            font-size: 15px;
             text-align: center;
         }
 
@@ -80,18 +89,29 @@
             color: #7b0f23;
         }
 
-        /* Responsables */
+        /* RESPONSABLES EN 2 COLONNES */
+        #responsables {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 10px;
+            margin-top: 5px;
+        }
+
         .responsable-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin: 3px 0;
+            gap: 6px;
             font-size: 14px;
         }
 
         .responsable-item input[type="checkbox"] {
             width: 18px;
             height: 18px;
+        }
+
+        .responsable-item span {
+            text-align: center;
+            width: 100%;
         }
 
         .btn-submit {
@@ -115,44 +135,55 @@
 
     <form id="manifestForm">
 
-        <label>Titre</label>
-        <input type="text" id="title" required>
-
-        <label>Description</label>
-        <textarea id="description"></textarea>
-
-        <label>Date</label>
-        <input type="date" id="date" required>
-
-        <label>Heure</label>
-        <div id="heure_wrapper">
-            <select id="heure_h" class="heure-select" required>
-                <script>
-                    for (let h = 0; h < 24; h++) {
-                        const hh = String(h).padStart(2, "0");
-                        document.write(`<option value="${hh}">${hh}</option>`);
-                    }
-                </script>
-            </select>
-
-            <span class="heure-sep">:</span>
-
-            <select id="heure_m" class="heure-select" required>
-                <option value="00">00</option>
-                <option value="15">15</option>
-                <option value="30">30</option>
-                <option value="45">45</option>
-            </select>
+        <div class="row">
+            <label>Titre</label>
+            <input type="text" id="title" required>
         </div>
 
-        <label>Date limite d'inscription</label>
-        <input type="date" id="date_limite">
+        <div class="row">
+            <label>Description</label>
+            <textarea id="description"></textarea>
+        </div>
 
-        <label>Places maximum</label>
-        <input type="number" id="places_max" min="1">
+        <div class="row">
+            <label>Date & Heure</label>
+            <div class="row-inline">
+                <input type="date" id="date" required>
 
-        <label>Responsables</label>
-        <div id="responsables"></div>
+                <select id="heure_h" class="heure-select" required>
+                    <script>
+                        for (let h = 0; h < 24; h++) {
+                            const hh = String(h).padStart(2, "0");
+                            document.write(`<option value="${hh}">${hh}</option>`);
+                        }
+                    </script>
+                </select>
+
+                <span class="heure-sep">:</span>
+
+                <select id="heure_m" class="heure-select" required>
+                    <option value="00">00</option>
+                    <option value="15">15</option>
+                    <option value="30">30</option>
+                    <option value="45">45</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <label>Date limite</label>
+            <input type="date" id="date_limite">
+        </div>
+
+        <div class="row">
+            <label>Places max</label>
+            <input type="number" id="places_max" min="1">
+        </div>
+
+        <div class="row">
+            <label>Responsables</label>
+            <div id="responsables"></div>
+        </div>
 
         <button type="submit" class="btn btn-submit">Créer la manifestation</button>
     </form>
@@ -217,21 +248,10 @@
         const hh = document.getElementById("heure_h").value;
         const mm = document.getElementById("heure_m").value;
 
-        if (!date || !hh || !mm) {
-            alert("Veuillez sélectionner une date et une heure.");
-            return;
-        }
-
-        /* 🔥 Format ISO complet */
         const dateFinale = `${date} ${hh}:${mm}:00`;
 
         let places = document.getElementById("places_max").value.trim();
         places = places === "" ? null : Number(places);
-
-        if (places !== null && isNaN(places)) {
-            alert("Le nombre de places est invalide.");
-            return;
-        }
 
         const data = {
             title: document.getElementById("title").value.trim(),
