@@ -135,7 +135,7 @@
             if (onlyDate.includes("-")) {
                 const [y, m, day] = onlyDate.split("-").map(Number);
                 const jsDate = new Date(y, m - 1, day);
-                jsDate.setDate(jsDate.getDate() + 1); // correction +1 jour
+                
 
                 const dd = String(jsDate.getDate()).padStart(2, "0");
                 const mm = String(jsDate.getMonth() + 1).padStart(2, "0");
