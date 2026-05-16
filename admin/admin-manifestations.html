@@ -24,7 +24,7 @@
             font-family: "DM Sans", sans-serif;
         }
 
-        /* 🔥 HEADER FIXE */
+        /* HEADER FIXE */
         .header {
             position: fixed;
             top: 0;
@@ -55,7 +55,7 @@
         }
 
         .overlay {
-            padding: 120px 20px 40px 20px; /* espace pour le header */
+            padding: 120px 20px 40px 20px;
             background: rgba(0, 0, 0, 0.55);
             min-height: 100vh;
         }
@@ -131,7 +131,7 @@
 
 <body>
 
-<!-- 🔥 HEADER FIXE -->
+<!-- HEADER -->
 <div class="header">
     <div class="header-left">
         <a href="../index.html" class="btn">🏠 Menu</a>
@@ -189,6 +189,7 @@
     let manifestationsCache = [];
     let sortDirection = 1;
 
+    /* ---------------- TRI ---------------- */
     function sortTable(field) {
         sortDirection *= -1;
 
@@ -203,7 +204,7 @@
             }
 
             if (field === "heure") {
-                return (new Date(a.date).getTime() - new Date(b.date).getTime()) * sortDirection;
+                return a._heure.localeCompare(b._heure) * sortDirection;
             }
 
             return a[field].localeCompare(b[field]) * sortDirection;
@@ -212,6 +213,7 @@
         displayTable();
     }
 
+    /* ---------------- AFFICHAGE TABLEAU ---------------- */
     function displayTable() {
         const table = document.getElementById("tableBody");
         table.innerHTML = "";
@@ -220,15 +222,14 @@
 
             const d = new Date(m.date);
             const dateAff = d.toLocaleDateString("fr-CH");
-            const heureAff = d.toLocaleTimeString("fr-CH", {
-                hour: "2-digit",
-                minute: "2-digit"
-            });
+
+            // 🔥 Heure brute sans décalage UTC
+            const heureAff = m.date.split(" ")[1].slice(0,5);
 
             let dateLimite = "";
             if (m.date_limite) {
                 const dl = new Date(m.date_limite);
-                dateLimite = dl.toLocaleDateString("fr-CH");
+                dateLimite = dl.toISOString().split("T")[0];
             }
 
             table.innerHTML += `
@@ -249,6 +250,7 @@
         }
     }
 
+    /* ---------------- CHARGEMENT ---------------- */
     async function loadManifestations() {
         const table = document.getElementById("tableBody");
         table.innerHTML = "<tr><td colspan='6'>Chargement...</td></tr>";
@@ -266,6 +268,9 @@
                 });
 
                 m._nbInscrits = inscrits.length;
+
+                // 🔥 Heure brute pour le tri
+                m._heure = m.date.split(" ")[1].slice(0,5);
             }
 
             displayTable();
@@ -278,6 +283,7 @@
 
     loadManifestations();
 
+    /* ---------------- SUPPRESSION ---------------- */
     async function supprimer(id) {
         if (!confirm("Supprimer cette manifestation ?")) return;
 
@@ -289,6 +295,7 @@
         }
     }
 
+    /* ---------------- EXPORT PDF ---------------- */
     function exportPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
@@ -297,25 +304,26 @@
 
         let y = 20;
         manifestationsCache.forEach(m => {
+            const heure = m.date.split(" ")[1].slice(0,5);
             const d = new Date(m.date);
             const dateAff = d.toLocaleDateString("fr-CH");
-            const heureAff = d.toLocaleTimeString("fr-CH", { hour: "2-digit", minute: "2-digit" });
 
-            doc.text(`${m.title} – ${dateAff} ${heureAff}`, 10, y);
+            doc.text(`${m.title} – ${dateAff} ${heure}`, 10, y);
             y += 8;
         });
 
         doc.save("manifestations.pdf");
     }
 
+    /* ---------------- EXPORT EXCEL ---------------- */
     function exportExcel() {
         const rows = manifestationsCache.map(m => {
             const d = new Date(m.date);
             return {
                 Titre: m.title,
                 Date: d.toLocaleDateString("fr-CH"),
-                Heure: d.toLocaleTimeString("fr-CH", { hour: "2-digit", minute: "2-digit" }),
-                Date_limite: m.date_limite ? new Date(m.date_limite).toLocaleDateString("fr-CH") : "",
+                Heure: m.date.split(" ")[1].slice(0,5),
+                Date_limite: m.date_limite ? new Date(m.date_limite).toISOString().split("T")[0] : "",
                 Inscrits: m._nbInscrits
             };
         });
