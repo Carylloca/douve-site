@@ -117,11 +117,11 @@
 
         let compagnonData = null;
 
-        /* 🔧 Formatage robuste de la date en 12.04.1975 */
+        // Formatage en 12.04.1975
         function formatDate(d) {
             if (!d) return "";
 
-            // Format simple YYYY-MM-DD
+            // Cas simple YYYY-MM-DD
             if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
                 const [y, m, day] = d.split("-");
                 return `${day}.${m}.${y}`;
@@ -163,7 +163,7 @@
                     <div class="row"><span class="label">Email :</span> ${c.email_public || ""}</div>
                     <div class="row"><span class="label">Téléphone :</span> ${c.telephone || ""}</div>
 
-                    <div class="row"><span class="label">Date de naissance :</span> ${formatDate(c["date_naissance#"])}</div>
+                    <div class="row"><span class="label">Date de naissance :</span> ${formatDate(c.date_naissance)}</div>
 
                     <div class="row"><span class="label">Conjoint :</span> 
                         ${(c.conjoint_prenom || "") + " " + (c.conjoint_nom || "")}
@@ -191,7 +191,6 @@
 
         chargerDetails();
 
-        /* 🗑️ SUPPRESSION */
         async function supprimerCompagnon() {
             if (!confirm("Voulez-vous vraiment supprimer ce compagnon ?")) return;
 
@@ -205,7 +204,6 @@
             }
         }
 
-        /* 📄 Export PDF */
         async function exportPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
@@ -236,7 +234,7 @@
                 `Lieu : ${compagnonData.lieu || ""}`,
                 `Email : ${compagnonData.email_public || ""}`,
                 `Téléphone : ${compagnonData.telephone || ""}`,
-                `Date de naissance : ${formatDate(compagnonData["date_naissance#"])}`,
+                `Date de naissance : ${formatDate(compagnonData.date_naissance)}`,
                 `Conjoint : ${(compagnonData.conjoint_prenom || "") + " " + (compagnonData.conjoint_nom || "")}`,
                 `Téléphone prof : ${compagnonData.telephone_prof || ""}`,
                 `Email prof : ${compagnonData.email_prof || ""}`
