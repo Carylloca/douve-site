@@ -58,12 +58,23 @@
             border-radius: 10px;
             padding: 20px;
             margin: 15px auto;
-            max-width: 600px;
+            max-width: 650px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
 
-        .comp-card strong {
-            font-size: 18px;
+        .comp-photo {
+            width: 90px;
+            height: 90px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 3px solid #7A0010;
+        }
+
+        .comp-info {
+            flex: 1;
         }
 
         .btn-delete {
@@ -87,6 +98,7 @@
 
         <div style="text-align:center;">
             <a href="admin-menu.html" class="btn">← Retour au menu</a>
+            <a href="admin-compagnon-nouveau.html" class="btn">+ Ajouter un compagnon</a>
             <button class="btn" onclick="exportPDF()">Export PDF</button>
             <button class="btn" onclick="exportExcel()">Export Excel</button>
             <button class="btn" onclick="logout()">⏻ Déconnexion</button>
@@ -122,16 +134,25 @@
                 container.innerHTML = "";
 
                 records.forEach(c => {
+                    const photoUrl = c.photo ? pb.files.getUrl(c, c.photo) : "../img/no-photo.png";
+
                     const div = document.createElement("div");
                     div.className = "comp-card";
 
                     div.innerHTML = `
-                        <strong>${c.nom} ${c.prenom}</strong><br>
-                        Email : ${c.email}<br>
-                        Rôle : ${c.role}<br>
-                        Groupe : ${c.group || "—"}<br><br>
+                        <img src="${photoUrl}" class="comp-photo">
 
-                        <button class="btn-delete" onclick="deleteCompanion('${c.id}')">Supprimer</button>
+                        <div class="comp-info">
+                            <strong style="font-size:20px;">${c.nom} ${c.prenom}</strong><br>
+                            <strong>Fonction :</strong> ${c.fonction || "—"}<br>
+                            <strong>Email :</strong> ${c.email_public || "—"}<br>
+                            <strong>Téléphone :</strong> ${c.telephone || "—"}<br>
+                        </div>
+
+                        <div>
+                            <a class="btn" href="admin-compagnon-modifier.html?id=${c.id}">Modifier</a><br><br>
+                            <button class="btn-delete" onclick="deleteCompanion('${c.id}')">Supprimer</button>
+                        </div>
                     `;
 
                     container.appendChild(div);
@@ -172,7 +193,7 @@
             y += 12;
 
             companionsList.forEach(c => {
-                doc.text(`${c.nom} ${c.prenom} – ${c.email} – ${c.role}`, 10, y);
+                doc.text(`${c.nom} ${c.prenom} – ${c.fonction || ""} – ${c.email_public || ""}`, 10, y);
                 y += 8;
             });
 
@@ -186,9 +207,9 @@
             const data = companionsList.map(c => ({
                 Nom: c.nom,
                 Prénom: c.prenom,
-                Email: c.email,
-                Rôle: c.role,
-                Groupe: c.group || "-"
+                Fonction: c.fonction || "",
+                Email: c.email_public || "",
+                Téléphone: c.telephone || ""
             }));
 
             const ws = XLSX.utils.json_to_sheet(data);
