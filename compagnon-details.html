@@ -159,29 +159,40 @@
                 }
 
                 document.getElementById("details").innerHTML = `
-                    ${photoHTML}
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:30px;">
 
-                    <div class="row"><span class="label">Nom :</span> ${c.nom}</div>
-                    <div class="row"><span class="label">Prénom :</span> ${c.prenom}</div>
-                    <div class="row"><span class="label">Initiales :</span> ${c.initiales || ""}</div>
-                    <div class="row"><span class="label">Fonction :</span> ${c.fonction || ""}</div>
+        <!-- COLONNE TEXTE -->
+        <div style="flex:1;">
+            <div class="row"><span class="label">Nom :</span> ${c.nom}</div>
+            <div class="row"><span class="label">Prénom :</span> ${c.prenom}</div>
+            <div class="row"><span class="label">Initiales :</span> ${c.initiales || ""}</div>
+            <div class="row"><span class="label">Fonction :</span> ${c.fonction || ""}</div>
 
-                    <div class="row"><span class="label">Adresse :</span> ${c.adresse || ""}</div>
-                    <div class="row"><span class="label">N° postal :</span> ${c.npa || ""}</div>
-                    <div class="row"><span class="label">Lieu :</span> ${c.lieu || ""}</div>
+            <div class="row"><span class="label">Adresse :</span> ${c.adresse || ""}</div>
+            <div class="row"><span class="label">N° postal :</span> ${c.npa || ""}</div>
+            <div class="row"><span class="label">Lieu :</span> ${c.lieu || ""}</div>
 
-                    <div class="row"><span class="label">Email :</span> ${c.email_public || ""}</div>
-                    <div class="row"><span class="label">Téléphone :</span> ${c.telephone || ""}</div>
+            <div class="row"><span class="label">Email :</span> ${c.email_public || ""}</div>
+            <div class="row"><span class="label">Téléphone :</span> ${c.telephone || ""}</div>
 
-                    <div class="row"><span class="label">Date de naissance :</span> ${formatDate(c.date_naissance)}</div>
+            <div class="row"><span class="label">Date de naissance :</span> ${formatDate(c.date_naissance)}</div>
 
-                    <div class="row"><span class="label">Conjoint :</span> 
-                        ${(c.conjoint_prenom || "") + " " + (c.conjoint_nom || "")}
-                    </div>
+            <div class="row"><span class="label">Conjoint :</span> 
+                ${(c.conjoint_prenom || "") + " " + (c.conjoint_nom || "")}
+            </div>
 
-                    <div class="row"><span class="label">Téléphone professionnel :</span> ${c.telephone_prof || ""}</div>
-                    <div class="row"><span class="label">Email professionnel :</span> ${c.email_prof || ""}</div>
-                `;
+            <div class="row"><span class="label">Téléphone professionnel :</span> ${c.telephone_prof || ""}</div>
+            <div class="row"><span class="label">Email professionnel :</span> ${c.email_prof || ""}</div>
+        </div>
+
+        <!-- COLONNE PHOTO -->
+        <div>
+            ${c.photo ? `<img src="${pb.files.getUrl(c, c.photo)}" class="photo">` : ""}
+        </div>
+
+    </div>
+`;
+
 
                 const user = pb.authStore.model;
 
