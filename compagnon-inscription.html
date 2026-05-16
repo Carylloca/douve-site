@@ -95,16 +95,28 @@
             background: #9c1a33;
         }
 
-        /* 🔥 Nouveau bloc d’avertissement */
+        /* 🔥 Nouveau bloc d’avertissement amélioré */
         .warning-block {
+            display: flex;
             background: #fff3cd;
             border-left: 6px solid #ffca2c;
-            padding: 12px 15px;
+            padding: 15px;
             margin: 20px 0;
             border-radius: 6px;
             color: #664d03;
-            font-weight: bold;
-            font-size: 14px;
+            font-size: 15px;
+            gap: 15px;
+        }
+
+        .warning-icon {
+            font-size: 48px;
+            line-height: 48px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .warning-text {
+            flex: 1;
         }
     </style>
 </head>
@@ -132,9 +144,15 @@
             <label>Nombre de personnes :</label>
             <input type="number" id="nb" min="1" value="1">
 
-            <!-- 🔥 Nouveau bloc séparé, percutant -->
+            <!-- 🔥 Nouveau bloc séparé, percutant + description -->
             <div class="warning-block">
-                ⚠️ En cas de modification d'inscription après la date limite, veuillez contacter l'organisateur.
+                <div class="warning-icon">⚠️</div>
+                <div class="warning-text">
+                    <strong>En cas de modification d'inscription après la date limite, veuillez contacter l'organisateur.</strong>
+                    <br><br>
+                    <strong>Description :</strong><br>
+                    <span id="desc"></span>
+                </div>
             </div>
 
             <button class="btn-action" onclick="save()">Enregistrer</button>
@@ -201,6 +219,9 @@
             html += `<span style="font-size:16px;color:#444;">📌 Organisateur : ${organisateur}</span>`;
 
             document.getElementById("title").innerHTML = html;
+
+            // 🔥 Ajout de la description dans le bloc
+            document.getElementById("desc").textContent = m.description || "Aucune description.";
 
             if (limiteDate && new Date() > limiteDate) {
                 document.getElementById("limite").innerHTML =
