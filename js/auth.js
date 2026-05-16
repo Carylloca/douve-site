@@ -28,16 +28,8 @@ async function login(email, password) {
 
         console.log("Connecté comme COMPANION :", authComp);
 
-        const role = authComp.record.role;
-
-        if (role === "comite") {
-            // Un compagnon avec rôle comité → accès admin
-            window.location.href = "admin/admin-manifestations.html";
-        } else {
-            // Compagnon normal
-            window.location.href = "index.html";
-        }
-
+        // 🔥 Redirection correcte pour les compagnons
+        window.location.href = "compagnons.html";
         return true;
 
     } catch (error) {
@@ -50,8 +42,8 @@ async function login(email, password) {
 //  LOGOUT (DÉCONNEXION RÉELLE)
 // ===============================
 function logout() {
-    pb.authStore.clear();      // Efface la session PocketBase
-    document.cookie = "";      // Efface le cookie de session
+    pb.authStore.clear();
+    document.cookie = "";
     window.location.href = "login.html";
 }
 
@@ -76,29 +68,34 @@ function requireLogin() {
 }
 
 // ===============================
-//  VÉRIFIER SI COMITÉ (users OU companions)
+//  VÉRIFIER SI COMITÉ (users uniquement)
 // ===============================
 function requireComite() {
+    if (!pb.authStore.isValid) {
+        window.location.href = "../login.html";
+        return;
+    }
+
+    // 🔥 Seuls les "users" sont admins
+    if (pb.authStore.model.collectionName !== "users") {
+        alert("Accès réservé au comité.");
+        window.location.href = "../index.html";
+    }
+}
+
+// ===============================
+//  VÉRIFIER SI COMPANION
+// ===============================
+function requireCompanion() {
     if (!pb.authStore.isValid) {
         window.location.href = "login.html";
         return;
     }
 
-    const user = pb.authStore.model;
-
-    // Cas 1 : user (collection users)
-    if (pb.authStore.model?.collectionName === "users") {
-        return; // OK → accès admin
+    // 🔥 Seuls les companions peuvent accéder aux pages compagnons
+    if (pb.authStore.model.collectionName !== "companions") {
+        window.location.href = "index.html";
     }
-
-    // Cas 2 : companion avec rôle comité
-    if (user.role === "comite") {
-        return; // OK → accès admin
-    }
-
-    // Sinon → accès refusé
-    alert("Accès réservé au comité.");
-    window.location.href = "index.html";
 }
 
 // ===============================
