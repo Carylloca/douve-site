@@ -117,15 +117,31 @@
 
         let compagnonData = null;
 
-        /* 🔧 Correction définitive du décalage d’un jour */
+        /* 🔧 Formatage robuste de la date (gère JJ.MM.AAAA et YYYY-MM-DD) */
         function formatDate(d) {
             if (!d) return "";
 
-            // On récupère uniquement la partie YYYY-MM-DD
+            // On récupère uniquement la partie date (avant l'espace ou le T)
             const onlyDate = d.split("T")[0].split(" ")[0];
 
-            const [y, m, day] = onlyDate.split("-");
-            return `${day}.${m}.${y}`;
+            // Cas PocketBase Europe/Zurich : JJ.MM.AAAA
+            if (onlyDate.includes(".")) {
+                const [day, month, year] = onlyDate.split(".");
+                const j = String(day).padStart(2, "0");
+                const m = String(month).padStart(2, "0");
+                return `${j}.${m}.${year}`;
+            }
+
+            // Cas ISO : YYYY-MM-DD
+            if (onlyDate.includes("-")) {
+                const [y, m, day] = onlyDate.split("-");
+                const j = String(day).padStart(2, "0");
+                const mm = String(m).padStart(2, "0");
+                return `${j}.${mm}.${y}`;
+            }
+
+            // Fallback : on renvoie tel quel
+            return onlyDate;
         }
 
         async function chargerDetails() {
