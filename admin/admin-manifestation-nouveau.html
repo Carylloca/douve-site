@@ -233,25 +233,24 @@
 
         const dateFinale = `${date} ${hh}:${mm}`;
 
-        /* --- PLACES MAX --- */
-        let places = document.getElementById("places_max").value;
-        places = places === "" ? null : Number(places);
+/* --- PLACES MAX --- */
+let places = document.getElementById("places_max").value.trim();
+places = places === "" ? null : Number(places);
 
-        if (places !== null && isNaN(places)) {
-            alert("Le nombre de places est invalide.");
-            return;
-        }
+if (places !== null && isNaN(places)) {
+    alert("Le nombre de places est invalide.");
+    return;
+}
 
-        /* --- DATA --- */
-        const data = {
-            title: document.getElementById("title").value.trim(),
-            description: document.getElementById("description").value.trim(),
-            date: dateFinale,
-            date_limite: document.getElementById("date_limite").value || null,
-            places_max: places,
-            created_by: user.id,
-            responsables: responsables
-        };
+const data = {
+    title: document.getElementById("title").value.trim(),
+    description: document.getElementById("description").value.trim(),
+    date: dateFinale,
+    date_limite: document.getElementById("date_limite").value || null,
+    places_max: places,
+    created_by: user.id,
+    responsables: responsables
+};
 
         try {
             await pb.collection("manifestations").create(data);
