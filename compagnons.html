@@ -147,7 +147,8 @@
             const now = new Date();
 
             const manifestations = await pb.collection("manifestations").getFullList({
-                sort: "date"
+                sort: "date",
+                expand: "responsables"
             });
 
             const inscriptions = await pb.collection("inscriptions").getFullList({
