@@ -69,11 +69,6 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
         }
 
-        label {
-            font-weight: bold;
-            color: #7b0f23;
-        }
-
         #nb {
             width: 120px;
             text-align: center;
@@ -154,23 +149,17 @@
 
     async function load() {
         try {
-            // On récupère la manifestation SANS expand compliqué
             const m = await pb.collection("manifestations").getOne(manifestId);
 
-            // Titre + date + heure
+            // Date + heure
             let dateAff = "";
             let heureAff = "";
             if (m.date) {
                 const d = new Date(m.date);
-                if (!isNaN(d.getTime())) {
-                    dateAff = d.toLocaleDateString("fr-CH");
-                }
-                // Si m.date est du type "YYYY-MM-DD HH:MM:SS"
+                if (!isNaN(d.getTime())) dateAff = d.toLocaleDateString("fr-CH");
+
                 if (typeof m.date === "string" && m.date.includes(" ")) {
-                    const parts = m.date.split(" ");
-                    if (parts[1]) {
-                        heureAff = parts[1].slice(0,5);
-                    }
+                    heureAff = m.date.split(" ")[1].slice(0,5);
                 }
             }
 
@@ -178,54 +167,37 @@
             let limiteAff = "";
             let limiteDate = null;
             if (m.date_limite) {
-                const limite = new Date(m.date_limite);
-                if (!isNaN(limite.getTime())) {
-                    limiteDate = limite;
-                    limiteAff = limite.toLocaleDateString("fr-CH");
+                const d = new Date(m.date_limite);
+                if (!isNaN(d.getTime())) {
+                    limiteDate = d;
+                    limiteAff = d.toLocaleDateString("fr-CH");
                 }
             }
 
-            // Organisateur : on essaie plusieurs champs possibles
-            let organisateur = m.organisateur || m.responsable || m.organisateur_nom || "";
-            if (!organisateur) {
-                organisateur = "Non défini";
-            }
+            // Organisateur
+            let organisateur = m.organisateur || m.responsable || m.organisateur_nom || "Non défini";
 
             const user = pb.authStore.model;
             const nomCompagnon = user.nom || user.prenom || user.email;
 
-            let htmlTitle = m.title || "Manifestation";
-            htmlTitle += "<br>";
-            if (dateAff) {
-                htmlTitle += `<span style="font-size:16px;color:#444;">📅 ${dateAff}`;
-                if (heureAff) {
-                    htmlTitle += ` à ${heureAff}`;
-                }
-                htmlTitle += "</span><br>";
-            }
-            htmlTitle += `<span style="font-size:16px;color:#7b0f23;">👤 ${nomCompagnon}</span><br>`;
-            if (limiteAff) {
-                htmlTitle += `<span style="font-size:16px;color:#444;">⏳ Date limite : ${limiteAff}</span><br>`;
-            }
-            htmlTitle += `<span style="font-size:16px;color:#444;">📌 Organisateur : ${organisateur}</span>`;
+            let html = `${m.title}<br>`;
+            if (dateAff) html += `<span style="font-size:16px;color:#444;">📅 ${dateAff} ${heureAff ? "à " + heureAff : ""}</span><br>`;
+            html += `<span style="font-size:16px;color:#7b0f23;">👤 ${nomCompagnon}</span><br>`;
+            if (limiteAff) html += `<span style="font-size:16px;color:#444;">⏳ Date limite : ${limiteAff}</span><br>`;
+            html += `<span style="font-size:16px;color:#444;">📌 Organisateur : ${organisateur}</span>`;
 
-            document.getElementById("title").innerHTML = htmlTitle;
+            document.getElementById("title").innerHTML = html;
 
-            // Message "date limite dépassée"
-            if (limiteDate) {
-                const now = new Date();
-                if (now > limiteDate) {
-                    document.getElementById("limite").innerHTML =
-                        `<span style="color:red;font-weight:bold;">⛔ Date limite dépassée</span>`;
-                }
+            // Date limite dépassée
+            if (limiteDate && new Date() > limiteDate) {
+                document.getElementById("limite").innerHTML =
+                    `<span style="color:red;font-weight:bold;">⛔ Date limite dépassée</span>`;
             }
 
-            // Si on édite une inscription existante
+            // Pré-remplir si édition
             if (inscriptionId) {
                 const ins = await pb.collection("inscriptions").getOne(inscriptionId);
-                if (ins.nb_personnes) {
-                    document.getElementById("nb").value = ins.nb_personnes;
-                }
+                if (ins.nb_personnes) document.getElementById("nb").value = ins.nb_personnes;
             }
 
         } catch (err) {
@@ -235,38 +207,45 @@
     }
 
     async function save() {
-    const nb = parseInt(document.getElementById("nb").value, 10);
+        const nb = parseInt(document.getElementById("nb").value, 10);
 
-    if (!nb || nb < 1) {
-        alert("Veuillez saisir un nombre de personnes valide.");
-        return;
-    }
-
-    try {
-        if (inscriptionId) {
-            await pb.collection("inscriptions").update(inscriptionId, {
-                nb_personnes: nb
-            });
-        } else {
-            await pb.collection("inscriptions").create({
-                companion: pb.authStore.model.id,
-                manifestation: manifestId,
-                nb_personnes: nb
-            });
+        if (!nb || nb < 1) {
+            alert("Veuillez saisir un nombre de personnes valide.");
+            return;
         }
 
-        alert("Votre inscription a été enregistrée.\nVous serez " + nb + " personne(s).");
-        window.location.href = "compagnons.html";
+        // ⭐ Récupération du compagnon connecté
+        const user = pb.authStore.model;
+        const nom = user.nom || "";
+        const prenom = user.prenom || "";
 
-    } catch (err) {
+        try {
+            if (inscriptionId) {
+                await pb.collection("inscriptions").update(inscriptionId, {
+                    nb_personnes: nb,
+                    nom: nom,
+                    prenom: prenom
+                });
+            } else {
+                await pb.collection("inscriptions").create({
+                    companion: pb.authStore.model.id,
+                    manifestation: manifestId,
+                    nb_personnes: nb,
+                    nom: nom,
+                    prenom: prenom
+                });
+            }
 
-        // ⭐⭐⭐ AJOUT IMPORTANT ICI ⭐⭐⭐
-        console.log("Erreur PocketBase :", err.data);
+            alert("Votre inscription a été enregistrée.\nVous serez " + nb + " personne(s).");
+            window.location.href = "compagnons.html";
 
-        console.error(err);
-        alert("Erreur lors de l'enregistrement.");
+        } catch (err) {
+            console.log("Erreur PocketBase :", err.data);
+            console.error(err);
+            alert("Erreur lors de l'enregistrement.");
+        }
     }
-}
+
     load();
 </script>
 
