@@ -14,7 +14,7 @@
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            font-family: "DM Sans", sans-serif; /* même police partout */
+            font-family: "DM Sans", sans-serif;
         }
 
         .overlay {
@@ -62,24 +62,34 @@
             height: 120px;
         }
 
-        .checkbox-list label {
+        /* Champ heure unique */
+        #heure_complete {
+            width: 160px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* Responsables */
+        .responsable-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin: 4px 0;
-            font-size: 15px;
+            gap: 12px;
+            margin: 6px 0;
+            font-size: 16px;
             font-family: "DM Sans", sans-serif;
+        }
+
+        .responsable-item input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
         }
 
         .btn-submit {
             margin-top: 20px;
             width: 100%;
             text-align: center;
-        }
-
-        .time-row {
-            display: flex;
-            gap: 10px;
         }
     </style>
 </head>
@@ -102,25 +112,18 @@
         <input type="date" id="date" required>
 
         <label>Heure</label>
-        <div class="time-row">
-            <select id="heure" required>
-                <option value="">HH</option>
-                <!-- heures 00 à 23 -->
-                <script>
-                    for (let i = 0; i < 24; i++) {
-                        document.write(`<option value="${String(i).padStart(2, '0')}">${String(i).padStart(2, '0')}</option>`);
+        <select id="heure_complete" required>
+            <option value="">Sélectionner...</option>
+            <script>
+                const minutes = ["00", "15", "30", "45"];
+                for (let h = 0; h < 24; h++) {
+                    for (let m of minutes) {
+                        const hh = String(h).padStart(2, "0");
+                        document.write(`<option value="${hh}:${m}">${hh}:${m}</option>`);
                     }
-                </script>
-            </select>
-
-            <select id="minutes" required>
-                <option value="">MM</option>
-                <option value="00">00</option>
-                <option value="15">15</option>
-                <option value="30">30</option>
-                <option value="45">45</option>
-            </select>
-        </div>
+                }
+            </script>
+        </select>
 
         <label>Date limite d'inscription</label>
         <input type="date" id="date_limite">
@@ -129,7 +132,7 @@
         <input type="number" id="places_max" min="1">
 
         <label>Responsables</label>
-        <div id="responsables" class="checkbox-list"></div>
+        <div id="responsables"></div>
 
         <button type="submit" class="btn btn-submit">Créer la manifestation</button>
     </form>
@@ -142,13 +145,11 @@
 <script src="../js/auth.js"></script>
 
 <script>
-    // Sécurisation admin
     requireComite();
 
-    // Charger la liste des compagnons
     async function loadResponsables() {
         const container = document.getElementById("responsables");
-        container.innerHTML = "<p style='color:white;'>Chargement...</p>";
+        container.innerHTML = "<p>Chargement...</p>";
 
         try {
             const companions = await pb.collection("companions").getFullList({
@@ -158,19 +159,20 @@
             container.innerHTML = "";
 
             companions.forEach(c => {
-                const wrapper = document.createElement("label");
+                const div = document.createElement("div");
+                div.className = "responsable-item";
 
                 const checkbox = document.createElement("input");
                 checkbox.type = "checkbox";
                 checkbox.value = c.id;
 
-                const text = document.createElement("span");
-                text.textContent = `${c.nom} – ${c.prenom} (${c.initiales})`;
+                const label = document.createElement("span");
+                label.textContent = `${c.nom} ${c.prenom} (${c.initiales})`;
 
-                wrapper.appendChild(checkbox);
-                wrapper.appendChild(text);
+                div.appendChild(checkbox);
+                div.appendChild(label);
 
-                container.appendChild(wrapper);
+                container.appendChild(div);
             });
 
         } catch (err) {
@@ -181,18 +183,11 @@
 
     loadResponsables();
 
-    // Création de la manifestation
     document.getElementById("manifestForm").addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const user = pb.authStore.model;
 
-        if (user.collectionName !== "users") {
-            alert("Seuls les membres du comité peuvent créer une manifestation.");
-            return;
-        }
-
-        // Récupérer les responsables cochés
         const responsables = Array.from(
             document.querySelectorAll("#responsables input[type='checkbox']:checked")
         ).map(cb => cb.value);
@@ -202,17 +197,15 @@
             return;
         }
 
-        // Récupérer date + heure
         const date = document.getElementById("date").value;
-        const heure = document.getElementById("heure").value;
-        const minutes = document.getElementById("minutes").value;
+        const heure = document.getElementById("heure_complete").value;
 
-        if (!date || !heure || !minutes) {
-            alert("Veuillez sélectionner une date et une heure complètes.");
+        if (!date || !heure) {
+            alert("Veuillez sélectionner une date et une heure.");
             return;
         }
 
-        const dateFinale = `${date} ${heure}:${minutes}`;
+        const dateFinale = `${date} ${heure}`;
 
         const data = {
             title: document.getElementById("title").value.trim(),
@@ -231,7 +224,7 @@
 
         } catch (err) {
             console.error(err);
-            alert("Erreur lors de la création : " + (err?.message || "Vérifiez les champs obligatoires."));
+            alert("Erreur lors de la création : " + (err?.message || "Vérifiez les champs."));
         }
     });
 </script>
