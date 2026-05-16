@@ -95,9 +95,15 @@
             background: #9c1a33;
         }
 
-        #info {
-            margin-top: 10px;
-            color: #7b0f23;
+        /* 🔥 Nouveau bloc d’avertissement */
+        .warning-block {
+            background: #fff3cd;
+            border-left: 6px solid #ffca2c;
+            padding: 12px 15px;
+            margin: 20px 0;
+            border-radius: 6px;
+            color: #664d03;
+            font-weight: bold;
             font-size: 14px;
         }
     </style>
@@ -126,9 +132,10 @@
             <label>Nombre de personnes :</label>
             <input type="number" id="nb" min="1" value="1">
 
-            <p id="info">
-                En cas de modification d'inscription après la date limite, veuillez contacter l'organisateur.
-            </p>
+            <!-- 🔥 Nouveau bloc séparé, percutant -->
+            <div class="warning-block">
+                ⚠️ En cas de modification d'inscription après la date limite, veuillez contacter l'organisateur.
+            </div>
 
             <button class="btn-action" onclick="save()">Enregistrer</button>
         </div>
@@ -183,7 +190,9 @@
             }
 
             const user = pb.authStore.model;
-            const nomCompagnon = user.nom || user.prenom || user.email;
+
+            // 🔥 Prénom avant nom
+            const nomCompagnon = `${user.prenom || ""} ${user.nom || ""}`.trim();
 
             let html = `${m.title}<br>`;
             if (dateAff) html += `<span style="font-size:16px;color:#444;">📅 ${dateAff} ${heureAff ? "à " + heureAff : ""}</span><br>`;
@@ -217,14 +226,12 @@
         const prenom = user.prenom || "";
 
         try {
-            // 🔍 Vérifier si une inscription existe déjà
             const existing = await pb.collection("inscriptions").getFullList({
                 filter: `companion = "${user.id}" && manifestation = "${manifestId}"`,
                 sort: "-updated"
             });
 
             if (existing.length > 0) {
-                // 🟦 Mise à jour de la dernière inscription
                 const last = existing[0];
 
                 await pb.collection("inscriptions").update(last.id, {
@@ -234,7 +241,6 @@
                 });
 
             } else {
-                // 🟩 Création d'une nouvelle inscription
                 await pb.collection("inscriptions").create({
                     companion: user.id,
                     manifestation: manifestId,
