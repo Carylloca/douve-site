@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <title>Admin – Modifier une manifestation</title>
 
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
 
-    <!-- jsPDF (PDF export) -->
+    <!-- jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <!-- SheetJS (Excel export) -->
+    <!-- SheetJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
@@ -21,254 +21,271 @@
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            font-family: Arial, sans-serif;
+            font-family: "DM Sans", sans-serif;
         }
 
-        .overlay {
-            background: rgba(0, 0, 0, 0.55);
-            min-height: 100vh;
-            padding: 40px 20px;
+        /* HEADER FIXE */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+            justify-content: space-between;
         }
 
-        h1 {
-            text-align: center;
+        .header-left,
+        .header-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .header-title {
             color: white;
-            margin-bottom: 30px;
+            font-size: 22px;
+            font-weight: bold;
             text-shadow: 0 0 10px black;
         }
 
-        .btn {
-            display: inline-block;
-            padding: 12px 20px;
-            background: #7A0010;
-            color: white;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: 0.2s;
-            margin: 5px;
-        }
-
-        .btn:hover {
-            background: #5A000C;
+        .overlay {
+            padding: 120px 20px 40px 20px;
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
         }
 
         form {
             background: rgba(255, 255, 255, 0.92);
-            padding: 25px;
-            border-radius: 10px;
-            max-width: 600px;
+            padding: 12px 18px;
+            border-radius: 8px;
+            max-width: 560px;
             margin: 0 auto;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        label {
-            font-weight: bold;
-            display: block;
-            margin-top: 15px;
+        .row {
+            display: flex;
+            align-items: center;
+            margin: 4px 0;
         }
 
-        input, textarea, select {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border-radius: 6px;
+        .row label {
+            width: 22%;
+            text-align: left;
+            padding-right: 8px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .row input,
+        .row textarea,
+        .row select {
+            width: 78%;
+            padding: 6px 7px;
+            border-radius: 5px;
             border: 1px solid #ccc;
-            font-size: 16px;
+            font-size: 15px;
         }
 
         textarea {
-            height: 120px;
+            height: 80px;
         }
 
-        select[multiple] {
-            height: 120px;
+        .row-inline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 78%;
+        }
+
+        #responsables {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px 4px;
+            margin-top: 2px;
+        }
+
+        .responsable-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            padding: 1px 0;
+            white-space: nowrap;
         }
 
         .btn-submit {
-            margin-top: 20px;
+            margin-top: 12px;
             width: 100%;
-            text-align: center;
+            padding: 10px;
+        }
+
+        .btn-modifier {
+            background: #fff7c2 !important;
+            color: #7b0f23 !important;
+            border: 1px solid #d8c98a;
+            font-weight: bold;
         }
     </style>
 </head>
 
 <body>
-    <div class="overlay">
-        <h1>Modifier la manifestation</h1>
 
-        <div style="text-align:center;">
-            <a href="admin-manifestations.html" class="btn">← Retour</a>
-            <button class="btn" onclick="exportPDF()">Export PDF</button>
-            <button class="btn" onclick="exportExcel()">Export Excel</button>
-            <button class="btn" onclick="logout()">⏻ Déconnexion</button>
-        </div>
-
-        <form id="manifestForm">
-            <label>Titre</label>
-            <input type="text" id="title" required>
-
-            <label>Description</label>
-            <textarea id="description"></textarea>
-
-            <label>Date</label>
-            <input type="date" id="date" required>
-
-            <label>Date limite d'inscription</label>
-            <input type="date" id="date_limite">
-
-            <label>Places maximum</label>
-            <input type="number" id="places_max" min="1">
-
-            <label>Responsables</label>
-            <select id="responsables" multiple></select>
-
-            <button type="submit" class="btn btn-submit">Enregistrer les modifications</button>
-        </form>
+<!-- HEADER -->
+<div class="header">
+    <div class="header-left">
+        <a href="../index.html" class="btn">🏠 Menu</a>
+        <a href="admin-menu.html" class="btn">📋 Accueil admin</a>
     </div>
 
-    <!-- PocketBase -->
-    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+    <div class="header-title">Modifier la manifestation</div>
 
-    <!-- Auth -->
-    <script src="../js/auth.js"></script>
+    <div class="header-right">
+        <button class="btn" onclick="logout()">⏻ Déconnexion</button>
+    </div>
+</div>
 
-    <script>
-        // 🔒 Sécurisation admin
-        requireComite();
+<div class="overlay">
 
-        // Récupérer l'ID dans l'URL
-        const url = new URL(window.location.href);
-        const manifestationId = url.searchParams.get("id");
+    <form id="manifestForm">
 
-        if (!manifestationId) {
-            document.body.innerHTML = "<p style='color:white;'>Aucune manifestation sélectionnée.</p>";
-        }
+        <div class="row">
+            <label>Titre</label>
+            <input type="text" id="title" required>
+        </div>
 
-        let manifestationData = null;
+        <div class="row">
+            <label>Description</label>
+            <textarea id="description"></textarea>
+        </div>
 
-        // Charger la liste des compagnons
-        async function loadResponsablesList(selectedIds = []) {
-            const select = document.getElementById("responsables");
-            select.innerHTML = "<option>Chargement...</option>";
+        <div class="row">
+            <label>Date & Heure</label>
+            <div class="row-inline">
+                <input type="date" id="date" required>
+                <input type="time" id="heure" required>
+            </div>
+        </div>
 
-            try {
-                const companions = await pb.collection("companions").getFullList({
-                    sort: "nom"
-                });
+        <div class="row">
+            <label>Date limite</label>
+            <input type="date" id="date_limite">
+        </div>
 
-                select.innerHTML = "";
+        <div class="row">
+            <label>Places max</label>
+            <input type="number" id="places_max" min="1">
+        </div>
 
-                companions.forEach(c => {
-                    const opt = document.createElement("option");
-                    opt.value = c.id;
-                    opt.textContent = `${c.nom} ${c.prenom} (${c.initiales})`;
+        <div class="row" style="align-items:flex-start;">
+            <label style="padding-top:4px;">Responsables</label>
+            <div id="responsables"></div>
+        </div>
 
-                    if (selectedIds.includes(c.id)) {
-                        opt.selected = true;
-                    }
+        <button type="submit" class="btn btn-submit btn-modifier">Enregistrer les modifications</button>
+    </form>
+</div>
 
-                    select.appendChild(opt);
-                });
+<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+<script src="../js/auth.js"></script>
 
-            } catch (err) {
-                console.error(err);
-                select.innerHTML = "<option>Erreur de chargement</option>";
-            }
-        }
+<script>
+    requireComite();
 
-        // Charger les données existantes
-        async function loadManifestation() {
-            try {
-                const m = await pb.collection("manifestations").getOne(manifestationId);
-                manifestationData = m;
+    const url = new URL(window.location.href);
+    const manifestationId = url.searchParams.get("id");
 
-                document.getElementById("title").value = m.title;
-                document.getElementById("description").value = m.description || "";
-                document.getElementById("date").value = m.date;
-                document.getElementById("date_limite").value = m.date_limite || "";
-                document.getElementById("places_max").value = m.places_max || "";
+    if (!manifestationId) {
+        document.body.innerHTML = "<p style='color:white;'>Aucune manifestation sélectionnée.</p>";
+    }
 
-                await loadResponsablesList(m.responsables || []);
+    async function loadResponsables(selected = []) {
+        const container = document.getElementById("responsables");
+        container.innerHTML = "<p>Chargement...</p>";
 
-            } catch (err) {
-                alert("Erreur lors du chargement.");
-                console.error(err);
-            }
-        }
+        const companions = await pb.collection("companions").getFullList({ sort: "nom" });
 
-        loadManifestation();
+        container.innerHTML = "";
 
-        // Enregistrer les modifications
-        document.getElementById("manifestForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
+        companions.forEach(c => {
+            const div = document.createElement("div");
+            div.className = "responsable-item";
 
-            const responsablesSelect = document.getElementById("responsables");
-            const responsables = Array.from(responsablesSelect.selectedOptions).map(o => o.value);
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.value = c.id;
+            if (selected.includes(c.id)) checkbox.checked = true;
 
-            const data = {
-                title: document.getElementById("title").value.trim(),
-                description: document.getElementById("description").value.trim(),
-                date: document.getElementById("date").value,
-                date_limite: document.getElementById("date_limite").value || null,
-                places_max: document.getElementById("places_max").value || null,
-                responsables: responsables
-            };
+            const label = document.createElement("span");
+            label.textContent = `${c.nom} ${c.prenom} (${c.initiales})`;
 
-            try {
-                await pb.collection("manifestations").update(manifestationId, data);
-                alert("Modifications enregistrées !");
-                window.location.href = "admin-manifestations.html";
-            } catch (err) {
-                alert("Erreur lors de l'enregistrement.");
-                console.error(err);
-            }
+            div.appendChild(checkbox);
+            div.appendChild(label);
+            container.appendChild(div);
         });
+    }
 
-        /* --- Format nom fichier --- */
-        function formatFileName(title, date) {
-            const cleanTitle = title.normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/[^a-zA-Z0-9]/g, "_");
+    async function loadManifestation() {
+        const m = await pb.collection("manifestations").getOne(manifestationId);
 
-            return `${cleanTitle}_${date}`;
+        document.getElementById("title").value = m.title;
+        document.getElementById("description").value = m.description || "";
+
+        // Séparation date + heure
+        const d = new Date(m.date);
+        document.getElementById("date").value = d.toISOString().split("T")[0];
+        document.getElementById("heure").value = d.toTimeString().slice(0,5);
+
+        // Date limite
+        if (m.date_limite) {
+            const dl = new Date(m.date_limite);
+            document.getElementById("date_limite").value = dl.toISOString().split("T")[0];
         }
 
-        /* --- Export PDF --- */
-        function exportPDF() {
-            if (!manifestationData) return;
+        document.getElementById("places_max").value = m.places_max || "";
 
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            let y = 10;
+        await loadResponsables(m.responsables || []);
+    }
 
-            doc.text(`Titre : ${manifestationData.title}`, 10, y); y += 8;
-            doc.text(`Date : ${manifestationData.date}`, 10, y); y += 8;
-            doc.text(`Places max : ${manifestationData.places_max || "-"}`, 10, y); y += 8;
-            doc.text(`Date limite : ${manifestationData.date_limite || "-"}`, 10, y); y += 12;
+    loadManifestation();
 
-            const fileName = formatFileName(manifestationData.title, manifestationData.date) + ".pdf";
-            doc.save(fileName);
-        }
+    document.getElementById("manifestForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-        /* --- Export Excel --- */
-        function exportExcel() {
-            if (!manifestationData) return;
+        const date = document.getElementById("date").value;
+        const heure = document.getElementById("heure").value;
+        const dateFinale = `${date} ${heure}:00`;
 
-            const data = [{
-                Titre: manifestationData.title,
-                Date: manifestationData.date,
-                Places_max: manifestationData.places_max || "-",
-                Date_limite: manifestationData.date_limite || "-"
-            }];
+        const responsables = Array.from(
+            document.querySelectorAll("#responsables input[type='checkbox']:checked")
+        ).map(cb => cb.value);
 
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Manifestation");
+        const data = {
+            title: document.getElementById("title").value.trim(),
+            description: document.getElementById("description").value.trim(),
+            date: dateFinale,
+            date_limite: document.getElementById("date_limite").value || null,
+            places_max: document.getElementById("places_max").value || null,
+            responsables: responsables
+        };
 
-            const fileName = formatFileName(manifestationData.title, manifestationData.date) + ".xlsx";
-            XLSX.writeFile(wb, fileName);
-        }
-    </script>
+        await pb.collection("manifestations").update(manifestationId, data);
+
+        alert("Modifications enregistrées !");
+        window.location.href = "admin-manifestations.html";
+    });
+
+    function logout() {
+        pb.authStore.clear();
+        window.location.href = "../index.html";
+    }
+</script>
+
 </body>
 </html>
