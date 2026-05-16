@@ -16,50 +16,89 @@
         body {
             margin: 0;
             padding: 0;
-            background-image: url("../img/page-admin-manifestations.jpg"); /* image existante */
+            background-image: url("../img/page-admin-manifestations.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             font-family: "DM Sans", sans-serif;
         }
 
+        /* HEADER FIXE */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+            justify-content: space-between;
+        }
+
+        .header-left,
+        .header-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .header-title {
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+            text-shadow: 0 0 10px black;
+        }
+
         .overlay {
             background: rgba(0, 0, 0, 0.55);
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 120px 20px 40px 20px;
         }
 
         h1 {
             text-align: center;
             color: white;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
             text-shadow: 0 0 10px black;
         }
 
+        #totalInscrits {
+            text-align: center;
+            color: #fff7c2;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        /* BOUTONS */
         .btn {
-            display: inline-block;
-            padding: 10px 16px;
+            padding: 8px 12px;
+            border-radius: 6px;
             background: #7b0f23;
             color: white;
-            border-radius: 6px;
             text-decoration: none;
+            font-size: 14px;
             font-weight: bold;
-            transition: 0.2s;
-            margin: 5px;
+            border: none;
+            cursor: pointer;
         }
 
         .btn:hover {
-            background: #5A000C;
+            background: #9c1a33;
         }
 
         .btn-delete {
-            background: #d50000;
+            background: #d50000 !important;
         }
 
         .btn-delete:hover {
-            background: #9b0000;
+            background: #9b0000 !important;
         }
 
+        /* TABLEAU */
         table {
             width: 100%;
             max-width: 900px;
@@ -79,162 +118,236 @@
         th {
             background: #7b0f23;
             color: white;
+            cursor: pointer;
         }
 
         tr:hover {
             background: #f2f2f2;
         }
 
-        .actions {
-            white-space: nowrap;
+        /* RECHERCHE */
+        #searchBox {
+            display: block;
+            margin: 0 auto;
+            margin-top: 10px;
+            padding: 8px;
+            width: 260px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 15px;
         }
     </style>
 </head>
 
 <body>
-    <div class="overlay">
-        <h1 id="manifestTitle">Liste des inscrits</h1>
 
-        <div style="text-align:center;">
-            <a href="admin-manifestations.html" class="btn">← Retour</a>
-            <button class="btn" onclick="exportPDF()">Export PDF</button>
-            <button class="btn" onclick="exportExcel()">Export Excel</button>
-            <button class="btn" onclick="logout()">⏻ Déconnexion</button>
-        </div>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Nom</th>
-                    <th>Prénom</th>
-                    <th>Email</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="inscritsBody"></tbody>
-        </table>
+<!-- HEADER FIXE -->
+<div class="header">
+    <div class="header-left">
+        <a href="../index.html" class="btn">🏠 Menu</a>
+        <a href="admin-manifestations.html" class="btn">📋 Liste des manifestations</a>
     </div>
 
-    <!-- PocketBase -->
-    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
-    <script src="../js/auth.js"></script>
+    <div class="header-title">Liste des inscrits</div>
 
-    <script>
-        requireComite();
+    <div class="header-right">
+        <button class="btn" onclick="logout()">⏻ Déconnexion</button>
+    </div>
+</div>
 
-        let manifestation = null;
-        let inscrits = [];
+<div class="overlay">
 
-        const url = new URL(window.location.href);
-        const manifestationId = url.searchParams.get("id");
+    <h1 id="manifestTitle">Liste des inscrits</h1>
+    <div id="totalInscrits"></div>
 
-        if (!manifestationId) {
-            document.body.innerHTML = "<p style='color:white;'>Aucune manifestation sélectionnée.</p>";
-        }
+    <input type="text" id="searchBox" placeholder="🔍 Rechercher un nom, prénom ou email...">
 
-        async function loadInscrits() {
-            const tbody = document.getElementById("inscritsBody");
-            tbody.innerHTML = "<tr><td colspan='4'>Chargement...</td></tr>";
+    <div style="text-align:center; margin-bottom:10px;">
+        <button class="btn" onclick="exportPDF()">Export PDF</button>
+        <button class="btn" onclick="exportExcel()">Export Excel</button>
+    </div>
 
-            try {
-                manifestation = await pb.collection("manifestations").getOne(manifestationId);
+    <table>
+        <thead>
+            <tr>
+                <th onclick="sortTable('nom')">Nom</th>
+                <th onclick="sortTable('prenom')">Prénom</th>
+                <th onclick="sortTable('email')">Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="inscritsBody"></tbody>
+    </table>
+</div>
 
-                document.getElementById("manifestTitle").textContent =
-                    "Inscrits – " + manifestation.title + " (" + manifestation.date + ")";
+<!-- PocketBase -->
+<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+<script src="../js/auth.js"></script>
 
-                /* 🔥 Correction : collection = inscriptions */
-                inscrits = await pb.collection("inscriptions").getFullList({
-                    filter: `manifestation = "${manifestationId}"`,
-                    expand: "companion_id" /* 🔥 Correction */
-                });
+<script>
+    requireComite();
 
-                tbody.innerHTML = "";
+    let manifestation = null;
+    let inscrits = [];
+    let filtered = [];
+    let sortDirection = 1;
 
-                inscrits.forEach(i => {
-                    const c = i.expand?.companion_id; /* 🔥 Correction */
+    const url = new URL(window.location.href);
+    const manifestationId = url.searchParams.get("id");
 
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-                        <td>${c?.nom || "-"}</td>
-                        <td>${c?.prenom || "-"}</td>
-                        <td>${c?.email || "-"}</td>
-                        <td class="actions">
-                            <button class="btn-delete" onclick="deleteInscrit('${i.id}')">Supprimer</button>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
+    if (!manifestationId) {
+        document.body.innerHTML = "<p style='color:white;'>Aucune manifestation sélectionnée.</p>";
+    }
 
-            } catch (err) {
-                console.error(err);
-                tbody.innerHTML = "<tr><td colspan='4'>Erreur de chargement</td></tr>";
-            }
-        }
+    async function loadInscrits() {
+        const tbody = document.getElementById("inscritsBody");
+        tbody.innerHTML = "<tr><td colspan='4'>Chargement...</td></tr>";
 
-        async function deleteInscrit(id) {
-            if (!confirm("Supprimer cet inscrit ?")) return;
+        try {
+            manifestation = await pb.collection("manifestations").getOne(manifestationId);
 
-            try {
-                await pb.collection("inscriptions").delete(id); /* 🔥 Correction */
-                loadInscrits();
-            } catch (err) {
-                alert("Erreur lors de la suppression.");
-                console.error(err);
-            }
-        }
+            const d = new Date(manifestation.date);
+            const dateAff = d.toLocaleDateString("fr-CH");
+            const heureAff = manifestation.date.split(" ")[1].slice(0,5);
 
-        function formatFileName() {
-            const cleanTitle = manifestation.title
-                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                .replace(/[^a-zA-Z0-9]/g, "_");
+            document.getElementById("manifestTitle").textContent =
+                `Inscrits – ${manifestation.title} le ${dateAff} à ${heureAff}`;
 
-            return `${cleanTitle}_${manifestation.date}`;
-        }
-
-        function exportPDF() {
-            if (inscrits.length === 0) return;
-
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            let y = 10;
-
-            doc.text(`Manifestation : ${manifestation.title}`, 10, y); y += 8;
-            doc.text(`Date : ${manifestation.date}`, 10, y); y += 12;
-
-            inscrits.forEach(i => {
-                const c = i.expand?.companion_id;
-                doc.text(`${c?.nom || "-"} ${c?.prenom || "-"} – ${c?.email || "-"}`, 10, y);
-                y += 8;
+            inscrits = await pb.collection("inscriptions").getFullList({
+                filter: `manifestation = "${manifestationId}"`,
+                expand: "companion_id"
             });
 
-            doc.save(formatFileName() + ".pdf");
+            filtered = inscrits;
+
+            updateTotal();
+            displayTable();
+
+        } catch (err) {
+            console.error(err);
+            tbody.innerHTML = "<tr><td colspan='4'>Erreur de chargement</td></tr>";
         }
+    }
 
-        function exportExcel() {
-            if (inscrits.length === 0) return;
+    function updateTotal() {
+        document.getElementById("totalInscrits").textContent =
+            "Total inscrits : " + filtered.length;
+    }
 
-            const data = inscrits.map(i => {
-                const c = i.expand?.companion_id;
-                return {
-                    Nom: c?.nom || "-",
-                    Prénom: c?.prenom || "-",
-                    Email: c?.email || "-"
-                };
-            });
+    function displayTable() {
+        const tbody = document.getElementById("inscritsBody");
+        tbody.innerHTML = "";
 
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Inscrits");
+        filtered.forEach(i => {
+            const c = i.expand?.companion_id;
 
-            XLSX.writeFile(wb, formatFileName() + ".xlsx");
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${c?.nom || "-"}</td>
+                <td>${c?.prenom || "-"}</td>
+                <td>${c?.email || "-"}</td>
+                <td>
+                    <button class="btn-delete" onclick="deleteInscrit('${i.id}')">Supprimer</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function sortTable(field) {
+        sortDirection *= -1;
+
+        filtered.sort((a, b) => {
+            const ca = a.expand?.companion_id;
+            const cb = b.expand?.companion_id;
+
+            return (ca?.[field] || "").localeCompare(cb?.[field] || "") * sortDirection;
+        });
+
+        displayTable();
+    }
+
+    document.getElementById("searchBox").addEventListener("input", (e) => {
+        const q = e.target.value.toLowerCase();
+
+        filtered = inscrits.filter(i => {
+            const c = i.expand?.companion_id;
+            return (
+                c?.nom?.toLowerCase().includes(q) ||
+                c?.prenom?.toLowerCase().includes(q) ||
+                c?.email?.toLowerCase().includes(q)
+            );
+        });
+
+        updateTotal();
+        displayTable();
+    });
+
+    async function deleteInscrit(id) {
+        if (!confirm("Supprimer cet inscrit ?")) return;
+
+        try {
+            await pb.collection("inscriptions").delete(id);
+            loadInscrits();
+        } catch (err) {
+            alert("Erreur lors de la suppression.");
+            console.error(err);
         }
+    }
 
-        function logout() {
-            pb.authStore.clear();
-            window.location.href = "../index.html";
-        }
+    function formatFileName() {
+        const cleanTitle = manifestation.title
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-zA-Z0-9]/g, "_");
 
-        loadInscrits();
-    </script>
+        return `${cleanTitle}_${manifestation.date}`;
+    }
+
+    function exportPDF() {
+        if (filtered.length === 0) return;
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let y = 10;
+
+        doc.text(`Manifestation : ${manifestation.title}`, 10, y); y += 8;
+        doc.text(`Date : ${manifestation.date}`, 10, y); y += 12;
+
+        filtered.forEach(i => {
+            const c = i.expand?.companion_id;
+            doc.text(`${c?.nom || "-"} ${c?.prenom || "-"} – ${c?.email || "-"}`, 10, y);
+            y += 8;
+        });
+
+        doc.save(formatFileName() + ".pdf");
+    }
+
+    function exportExcel() {
+        if (filtered.length === 0) return;
+
+        const data = filtered.map(i => {
+            const c = i.expand?.companion_id;
+            return {
+                Nom: c?.nom || "-",
+                Prénom: c?.prenom || "-",
+                Email: c?.email || "-"
+            };
+        });
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Inscrits");
+
+        XLSX.writeFile(wb, formatFileName() + ".xlsx");
+    }
+
+    function logout() {
+        pb.authStore.clear();
+        window.location.href = "../index.html";
+    }
+
+    loadInscrits();
+</script>
+
 </body>
 </html>
