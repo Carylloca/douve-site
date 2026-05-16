@@ -26,6 +26,7 @@
             color: white;
             margin-bottom: 40px;
             text-shadow: 0 0 10px black;
+            font-size: 32px;
         }
 
         .btn {
@@ -41,10 +42,19 @@
             text-align: center;
             font-size: 18px;
             transition: 0.2s;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
         }
 
         .btn:hover {
             background: #5A000C;
+        }
+
+        .btn-grey {
+            background: #555;
+        }
+
+        .btn-grey:hover {
+            background: #333;
         }
 
         .btn-logout {
@@ -60,6 +70,9 @@
 <body>
     <div class="overlay">
         <h1>Menu Administrateur</h1>
+
+        <!-- ⭐ Nouveau bouton Menu principal -->
+        <a href="../index.html" class="btn btn-grey">🏠 Menu principal</a>
 
         <a href="admin-manifestations.html" class="btn">📅 Gestion des manifestations</a>
         <a href="admin-inscrits.html" class="btn">🧾 Liste des inscrits</a>
