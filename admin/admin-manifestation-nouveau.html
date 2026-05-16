@@ -29,14 +29,14 @@
         h1 {
             text-align: center;
             color: white;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             text-shadow: 0 0 10px black;
             font-size: 26px;
         }
 
         form {
             background: rgba(255, 255, 255, 0.92);
-            padding: 15px 20px;
+            padding: 12px 18px;
             border-radius: 8px;
             max-width: 520px;
             margin: 0 auto;
@@ -47,46 +47,46 @@
         .row {
             display: flex;
             align-items: center;
-            margin: 6px 0;
+            margin: 4px 0;
         }
 
         .row label {
-            width: 40%;
+            width: 38%;
             text-align: left;
-            padding-right: 10px;
+            padding-right: 8px;
             font-size: 14px;
             font-weight: bold;
+            line-height: 1.1;
         }
 
         .row input,
         .row textarea,
         .row select {
-            width: 60%;
-            padding: 7px 8px;
+            width: 62%;
+            padding: 6px 7px;
             border-radius: 5px;
             border: 1px solid #ccc;
             font-size: 15px;
-            font-family: "DM Sans", sans-serif;
         }
 
         textarea {
-            height: 90px;
+            height: 80px;
         }
 
         /* DATE + HEURE SUR UNE LIGNE */
         .row-inline {
             display: flex;
             align-items: center;
-            gap: 10px;
-            width: 60%;
+            gap: 8px;
+            width: 62%;
         }
 
         /* RESPONSABLES EN 2 COLONNES */
         #responsables {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 4px 6px;
-            margin-top: 4px;
+            gap: 3px 6px;
+            margin-top: 2px;
         }
 
         .responsable-item {
@@ -94,13 +94,16 @@
             align-items: center;
             gap: 6px;
             font-size: 13px;
-            padding: 2px 0;
-            white-space: nowrap; /* 🔥 Force tout sur une seule ligne */
+            padding: 1px 0;
+            white-space: nowrap; /* 🔥 tout sur une ligne */
         }
 
         .responsable-item input[type="checkbox"] {
             width: 18px;
             height: 18px;
+            margin: 0;
+            display: flex;
+            align-items: center;
         }
 
         .responsable-item span {
@@ -109,13 +112,13 @@
         }
 
         .btn-submit {
-            margin-top: 15px;
+            margin-top: 12px;
             width: 100%;
             padding: 10px;
         }
 
         .btn {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: inline-block;
         }
     </style>
@@ -157,8 +160,8 @@
             <input type="number" id="places_max" min="1">
         </div>
 
-        <div class="row">
-            <label>Responsables</label>
+        <div class="row" style="align-items:flex-start;">
+            <label style="padding-top:4px;">Responsables</label>
             <div id="responsables"></div>
         </div>
 
@@ -222,7 +225,7 @@
         }
 
         const date = document.getElementById("date").value;
-        const heure = document.getElementById("heure").value; // format HH:MM
+        const heure = document.getElementById("heure").value;
 
         const dateFinale = `${date} ${heure}:00`;
 
