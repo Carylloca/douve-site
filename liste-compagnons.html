@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Liste des compagnons</title>
 
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png">
 
     <!-- jsPDF -->
@@ -213,3 +212,44 @@
         /* 📄 Export PDF */
         function exportPDF() {
             const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.text("Liste des compagnons", 10, 10);
+
+            let y = 20;
+
+            allCompagnons.forEach(c => {
+                doc.text(
+                    `${c.nom} ${c.prenom} | ${c.email_public} | ${c.telephone}`,
+                    10, y
+                );
+                y += 8;
+                if (y > 280) { doc.addPage(); y = 10; }
+            });
+
+            doc.save("liste_compagnons.pdf");
+        }
+
+        /* 📊 Export Excel */
+        function exportExcel() {
+            const data = allCompagnons.map(c => ({
+                Nom: c.nom,
+                Prénom: c.prenom,
+                Initiales: c.initiales,
+                Fonction: c.fonction,
+                Adresse: c.adresse,
+                "N° postal": c.npa,
+                Lieu: c.lieu,
+                Email: c.email_public,
+                Téléphone: c.telephone
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Compagnons");
+
+            XLSX.writeFile(wb, "liste_compagnons.xlsx");
+        }
+    </script>
+</body>
+</html>
