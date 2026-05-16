@@ -93,6 +93,14 @@
             color: #444;
         }
 
+        /* 🔵 Description sous le titre */
+        .desc {
+            margin: 8px 0 12px 0;
+            font-size: 15px;
+            color: #333;
+            font-style: italic;
+        }
+
         .status {
             font-weight: bold;
             margin-top: 10px;
@@ -156,9 +164,6 @@
                 expand: "manifestation"
             });
 
-            console.log("Manifestations :", manifestations);
-            console.log("Inscriptions utilisateur :", inscriptions);
-
             container.innerHTML = "";
 
             const futures = manifestations.filter(m => {
@@ -194,8 +199,6 @@
                     (i.expand && i.expand.manifestation && i.expand.manifestation.id === m.id)
                 );
 
-                console.log("Manifestation", m.id, "→ inscription trouvée :", inscription);
-
                 const estInscrit = Boolean(inscription);
 
                 let badge = estInscrit ? `<div class="badge">INSCRIT</div>` : "";
@@ -228,9 +231,12 @@
                         ${badge}
                         <h2>${m.title}</h2>
 
+                        <!-- 🔵 Description ajoutée ici -->
+                        <div class="desc">${m.description || "Aucune description."}</div>
+
                         <div class="info" style="display:flex; justify-content:space-between; align-items:center;">
-                        <span>📅 ${dateAff}${heureAff ? " à " + heureAff : ""}</span>
-                        <span>⏳ Date limite : ${limiteAff}</span>
+                            <span>📅 ${dateAff}${heureAff ? " à " + heureAff : ""}</span>
+                            <span>⏳ Date limite : ${limiteAff}</span>
                         </div>
                         
                         <div class="info">📌 Organisateur : ${responsable}</div>
