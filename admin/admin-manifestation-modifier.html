@@ -97,9 +97,12 @@
     <div class="overlay">
         <h1>Modifier la manifestation</h1>
 
-        <a href="admin-manifestations.html" class="btn">← Retour</a>
-        <button class="btn" onclick="exportPDF()">Export PDF</button>
-        <button class="btn" onclick="exportExcel()">Export Excel</button>
+        <div style="text-align:center;">
+            <a href="admin-manifestations.html" class="btn">← Retour</a>
+            <button class="btn" onclick="exportPDF()">Export PDF</button>
+            <button class="btn" onclick="exportExcel()">Export Excel</button>
+            <button class="btn" onclick="logout()">⏻ Déconnexion</button>
+        </div>
 
         <form id="manifestForm">
             <label>Titre</label>
