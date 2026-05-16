@@ -96,7 +96,10 @@
     <div class="overlay">
         <h1>Créer une nouvelle manifestation</h1>
 
-        <a href="admin-menu.html" class="btn">← Retour au menu</a>
+        <div style="text-align:center;">
+            <a href="admin-menu.html" class="btn">← Retour au menu</a>
+            <button class="btn" onclick="logout()">⏻ Déconnexion</button>
+        </div>
 
         <form id="manifestForm">
             <label>Titre</label>
@@ -107,6 +110,9 @@
 
             <label>Date</label>
             <input type="date" id="date" required>
+
+            <label>Heure</label>
+            <input type="time" id="heure" required>
 
             <label>Date limite d'inscription</label>
             <input type="date" id="date_limite">
@@ -173,7 +179,7 @@
 
             const user = pb.authStore.model;
 
-            // Vérifier que l'utilisateur est bien un USER (comité)
+            // Vérifier comité
             if (user.collectionName !== "users") {
                 alert("Seuls les membres du comité peuvent créer une manifestation.");
                 return;
@@ -189,10 +195,17 @@
                 return;
             }
 
+            // Récupérer date + heure
+            const date = document.getElementById("date").value;
+            const heure = document.getElementById("heure").value;
+
+            // Fusionner date + heure → format ISO PocketBase
+            const dateTime = `${date} ${heure}`;
+
             const data = {
                 title: document.getElementById("title").value.trim(),
                 description: document.getElementById("description").value.trim(),
-                date: document.getElementById("date").value,
+                date: dateTime, // <-- NOUVEAU : date + heure
                 date_limite: document.getElementById("date_limite").value || null,
                 places_max: document.getElementById("places_max").value || null,
                 created_by: user.id,
