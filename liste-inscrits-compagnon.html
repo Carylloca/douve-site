@@ -8,6 +8,12 @@
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
     <script src="js/auth.js"></script>
 
+    <!-- Export PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Export Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
         body {
             margin: 0;
@@ -63,7 +69,7 @@
 
         .container {
             padding: 110px 20px 40px 20px;
-            max-width: 900px;
+            max-width: 1000px;
             margin: auto;
         }
 
@@ -90,6 +96,11 @@
         th {
             background: #7b0f23;
             color: white;
+            cursor: pointer;
+        }
+
+        th:hover {
+            background: #9c1a33;
         }
     </style>
 </head>
@@ -103,6 +114,8 @@
         <div class="header-title">Liste des inscrits</div>
 
         <div style="display:flex; gap:10px;">
+            <button class="btn" onclick="exportPDF()">PDF</button>
+            <button class="btn" onclick="exportExcel()">Excel</button>
             <a href="index.html" class="btn">Menu</a>
             <button class="btn" onclick="logout()">Déconnexion</button>
         </div>
@@ -113,19 +126,21 @@
             <h2 id="manifestTitle">Chargement…</h2>
             <p><strong>Total inscrits :</strong> <span id="totalInscrits">0</span></p>
             <p><strong>Total personnes :</strong> <span id="totalPersonnes">0</span></p>
+            <p><strong>Responsables :</strong> <span id="responsables">Chargement…</span></p>
 
             <table>
                 <thead>
                     <tr>
-                        <th>Nom</th>
-                        <th>Prénom</th>
+                        <th onclick="sortTable(0)">Nom</th>
+                        <th onclick="sortTable(1)">Prénom</th>
                         <th>Email</th>
                         <th>Téléphone</th>
-                        <th>Nb pers.</th>
+                        <th>Initiales</th>
+                        <th onclick="sortTable(5)">Nb pers.</th>
                     </tr>
                 </thead>
                 <tbody id="tableInscrits">
-                    <tr><td colspan="5">Chargement…</td></tr>
+                    <tr><td colspan="6">Chargement…</td></tr>
                 </tbody>
             </table>
 
@@ -140,17 +155,34 @@
     const url = new URL(window.location.href);
     const manifestId = url.searchParams.get("id");
 
+    let inscriptionsData = [];
+
     async function loadInscrits() {
         try {
-            // Manifestation
-            const m = await pb.collection("manifestations").getOne(manifestId);
+            // Manifestation + responsables
+            const m = await pb.collection("manifestations").getOne(manifestId, {
+                expand: "responsables"
+            });
+
             document.getElementById("manifestTitle").textContent = m.title;
+
+            // Affichage responsables
+            if (m.expand?.responsables?.length > 0) {
+                document.getElementById("responsables").textContent =
+                    m.expand.responsables
+                        .map(r => `${r.nom} ${r.prenom} (${r.initiales || ""})`)
+                        .join(", ");
+            } else {
+                document.getElementById("responsables").textContent = "Non défini";
+            }
 
             // Inscriptions
             const inscrits = await pb.collection("inscriptions").getFullList({
                 filter: `manifestation = "${manifestId}"`,
                 expand: "companion"
             });
+
+            inscriptionsData = inscrits;
 
             const tbody = document.getElementById("tableInscrits");
             tbody.innerHTML = "";
@@ -168,6 +200,7 @@
                         <td>${c?.prenom || "-"}</td>
                         <td>${c?.email || "-"}</td>
                         <td>${c?.telephone || "-"}</td>
+                        <td>${c?.initiales || "-"}</td>
                         <td>${nb}</td>
                     </tr>
                 `;
@@ -179,8 +212,63 @@
         } catch (err) {
             console.error(err);
             document.getElementById("tableInscrits").innerHTML =
-                "<tr><td colspan='5'>Erreur de chargement.</td></tr>";
+                "<tr><td colspan='6'>Erreur de chargement.</td></tr>";
         }
+    }
+
+    // TRI DU TABLEAU
+    function sortTable(col) {
+        const tbody = document.getElementById("tableInscrits");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+
+        rows.sort((a, b) => {
+            const A = a.children[col].innerText.toLowerCase();
+            const B = b.children[col].innerText.toLowerCase();
+            return A.localeCompare(B, "fr");
+        });
+
+        tbody.innerHTML = "";
+        rows.forEach(r => tbody.appendChild(r));
+    }
+
+    // EXPORT EXCEL
+    function exportExcel() {
+        const data = inscriptionsData.map(i => ({
+            Nom: i.expand?.companion?.nom || "",
+            Prénom: i.expand?.companion?.prenom || "",
+            Email: i.expand?.companion?.email || "",
+            Téléphone: i.expand?.companion?.telephone || "",
+            Initiales: i.expand?.companion?.initiales || "",
+            "Nb personnes": i.nb_personnes || 1
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Inscrits");
+
+        XLSX.writeFile(wb, "inscrits.xlsx");
+    }
+
+    // EXPORT PDF
+    function exportPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.text("Liste des inscrits", 10, 10);
+
+        let y = 20;
+
+        inscriptionsData.forEach(i => {
+            const c = i.expand?.companion;
+            doc.text(
+                `${c?.nom || ""} ${c?.prenom || ""} - ${c?.email || ""} - ${c?.telephone || ""} - ${i.nb_personnes} pers.`,
+                10,
+                y
+            );
+            y += 8;
+        });
+
+        doc.save("inscrits.pdf");
     }
 
     loadInscrits();
