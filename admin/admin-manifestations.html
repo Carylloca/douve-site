@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="icon" type="image/png" href="../favicon.png">
 
+    <!-- jsPDF pour PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- SheetJS pour Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
         body {
             margin: 0;
@@ -69,6 +75,12 @@
             gap: 6px;
             justify-content: center;
         }
+
+        .export-buttons {
+            margin: 10px 0 20px 0;
+            display: flex;
+            gap: 10px;
+        }
     </style>
 </head>
 
@@ -80,7 +92,10 @@
     <a href="admin-menu.html" class="btn">← Retour au menu</a>
     <a href="admin-manifestation-nouveau.html" class="btn">+ Nouvelle manifestation</a>
 
-    <br><br>
+    <div class="export-buttons">
+        <button class="btn" onclick="exportPDF()">Export PDF</button>
+        <button class="btn" onclick="exportExcel()">Export Excel</button>
+    </div>
 
     <table>
         <thead>
@@ -102,13 +117,15 @@
 <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 <script src="../js/auth.js"></script>
 
-<!-- 🔥 Correction : définition de pb -->
+<!-- 🔥 Correction indispensable -->
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 </script>
 
 <script>
     requireComite();
+
+    let manifestationsCache = [];
 
     async function loadManifestations() {
         const table = document.getElementById("tableBody");
@@ -119,35 +136,30 @@
                 sort: "-date"
             });
 
+            manifestationsCache = list;
             table.innerHTML = "";
 
             for (const m of list) {
 
-                // 🔥 Format date sans heure
                 const d = new Date(m.date);
                 const dateAff = d.toLocaleDateString("fr-CH");
-
-                // 🔥 Heure séparée
                 const heureAff = d.toLocaleTimeString("fr-CH", {
                     hour: "2-digit",
                     minute: "2-digit"
                 });
 
-                // 🔥 Date limite sans heure
                 let dateLimite = "";
                 if (m.date_limite) {
                     const dl = new Date(m.date_limite);
                     dateLimite = dl.toLocaleDateString("fr-CH");
                 }
 
-                // 🔥 Nombre d'inscrits
                 const inscrits = await pb.collection("inscrits").getFullList({
                     filter: `manifestation = "${m.id}"`
                 });
 
                 const nbInscrits = inscrits.length;
 
-                // 🔥 Ligne du tableau
                 table.innerHTML += `
                     <tr>
                         <td>${m.title}</td>
@@ -157,7 +169,7 @@
                         <td>${dateLimite}</td>
 
                         <td class="actions">
-                            <a class="btn-small" href="liste-inscrits.html?id=${m.id}">Liste des inscrits</a>
+                            <a class="btn-small" href="liste-inscrits.html?id=${m.id}">Liste</a>
                             <a class="btn-small" href="admin-manifestation-modifier.html?id=${m.id}">Modifier</a>
                             <button class="btn-small" onclick="supprimer('${m.id}')">Supprimer</button>
                         </td>
@@ -182,6 +194,45 @@
         } catch (err) {
             alert("Erreur lors de la suppression.");
         }
+    }
+
+    /* 📄 Export PDF */
+    function exportPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.text("Liste des manifestations", 10, 10);
+
+        let y = 20;
+        manifestationsCache.forEach(m => {
+            const d = new Date(m.date);
+            const dateAff = d.toLocaleDateString("fr-CH");
+            const heureAff = d.toLocaleTimeString("fr-CH", { hour: "2-digit", minute: "2-digit" });
+
+            doc.text(`${m.title} – ${dateAff} ${heureAff}`, 10, y);
+            y += 8;
+        });
+
+        doc.save("manifestations.pdf");
+    }
+
+    /* 📊 Export Excel */
+    function exportExcel() {
+        const rows = manifestationsCache.map(m => {
+            const d = new Date(m.date);
+            return {
+                Titre: m.title,
+                Date: d.toLocaleDateString("fr-CH"),
+                Heure: d.toLocaleTimeString("fr-CH", { hour: "2-digit", minute: "2-digit" }),
+                Date_limite: m.date_limite ? new Date(m.date_limite).toLocaleDateString("fr-CH") : ""
+            };
+        });
+
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Manifestations");
+
+        XLSX.writeFile(wb, "manifestations.xlsx");
     }
 </script>
 
