@@ -4,8 +4,14 @@
     <meta charset="UTF-8">
     <title>Liste des compagnons</title>
 
-    <!-- Favicon (racine du site) -->
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png">
+
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- SheetJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
         body {
@@ -27,25 +33,40 @@
         h1 {
             text-align: center;
             color: white;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             text-shadow: 0 0 10px black;
         }
 
         .btn {
-            display: block;
-            width: fit-content;
-            margin: 0 auto 30px auto;
-            padding: 12px 20px;
+            display: inline-block;
+            padding: 10px 18px;
             background: #7A0010;
             color: white;
             border-radius: 6px;
             text-decoration: none;
             font-weight: bold;
             transition: 0.2s;
+            margin-right: 10px;
         }
 
         .btn:hover {
             background: #5A000C;
+        }
+
+        .top-bar {
+            width: 95%;
+            margin: 0 auto 20px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #searchInput {
+            padding: 10px;
+            width: 260px;
+            border-radius: 6px;
+            border: none;
+            font-size: 15px;
         }
 
         table {
@@ -67,6 +88,7 @@
             background: #7A0010;
             color: white;
             font-weight: bold;
+            cursor: pointer;
         }
 
         tr:hover {
@@ -79,23 +101,32 @@
     <div class="overlay">
         <h1>Liste des compagnons</h1>
 
-        <a href="index.html" class="btn">← Retour au menu</a>
+        <div class="top-bar">
+            <a href="index.html" class="btn">← Retour</a>
+
+            <div>
+                <button class="btn" onclick="exportPDF()">Export PDF</button>
+                <button class="btn" onclick="exportExcel()">Export Excel</button>
+            </div>
+
+            <input type="text" id="searchInput" placeholder="Recherche...">
+        </div>
 
         <table id="tableCompagnons">
             <thead>
                 <tr>
-                    <th>Nom</th>
-                    <th>Prénom</th>
-                    <th>Initiales</th>
-                    <th>Adresse</th>
-                    <th>N° postal</th>
-                    <th>Lieu</th>
-                    <th>Email</th>
-                    <th>Téléphone</th>
-                    <th>Date de naissance</th>
-                    <th>Conjoint</th>
-                    <th>Téléphone prof</th>
-                    <th>Email prof</th>
+                    <th onclick="sortTable(0)">Nom</th>
+                    <th onclick="sortTable(1)">Prénom</th>
+                    <th onclick="sortTable(2)">Initiales</th>
+                    <th onclick="sortTable(3)">Adresse</th>
+                    <th onclick="sortTable(4)">N° postal</th>
+                    <th onclick="sortTable(5)">Lieu</th>
+                    <th onclick="sortTable(6)">Email</th>
+                    <th onclick="sortTable(7)">Téléphone</th>
+                    <th onclick="sortTable(8)">Date de naissance</th>
+                    <th onclick="sortTable(9)">Conjoint</th>
+                    <th onclick="sortTable(10)">Téléphone prof</th>
+                    <th onclick="sortTable(11)">Email prof</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -106,52 +137,123 @@
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <script>
-        // Vérification connexion
         const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
         if (!pb.authStore.isValid) {
             window.location.href = "login.html";
         }
 
+        let allCompagnons = [];
+
         async function chargerCompagnons() {
             const tbody = document.querySelector("#tableCompagnons tbody");
             tbody.innerHTML = "<tr><td colspan='12'>Chargement...</td></tr>";
 
             try {
-                const records = await pb.collection("companions").getFullList({
-                    sort: "nom"
-                });
-
-                tbody.innerHTML = "";
-
-                records.forEach(c => {
-                    const tr = document.createElement("tr");
-
-                    tr.innerHTML = `
-                        <td>${c.nom || ""}</td>
-                        <td>${c.prenom || ""}</td>
-                        <td>${c.initiales || ""}</td>
-                        <td>${c.adresse || ""}</td>
-                        <td>${c.npa || ""}</td>
-                        <td>${c.lieu || ""}</td>
-                        <td>${c.email_public || ""}</td>
-                        <td>${c.telephone || ""}</td>
-                        <td>${c.date_naissance || ""}</td>
-                        <td>${(c.conjoint_prenom || "") + " " + (c.conjoint_nom || "")}</td>
-                        <td>${c.telephone_prof || ""}</td>
-                        <td>${c.email_prof || ""}</td>
-                    `;
-
-                    tbody.appendChild(tr);
-                });
-
+                allCompagnons = await pb.collection("companions").getFullList({ sort: "nom" });
+                afficherTable(allCompagnons);
             } catch (err) {
                 tbody.innerHTML = "<tr><td colspan='12'>Erreur lors du chargement.</td></tr>";
                 console.error(err);
             }
         }
 
+        function afficherTable(data) {
+            const tbody = document.querySelector("#tableCompagnons tbody");
+            tbody.innerHTML = "";
+
+            data.forEach(c => {
+                const tr = document.createElement("tr");
+
+                tr.innerHTML = `
+                    <td>${c.nom || ""}</td>
+                    <td>${c.prenom || ""}</td>
+                    <td>${c.initiales || ""}</td>
+                    <td>${c.adresse || ""}</td>
+                    <td>${c.npa || ""}</td>
+                    <td>${c.lieu || ""}</td>
+                    <td>${c.email_public || ""}</td>
+                    <td>${c.telephone || ""}</td>
+                    <td>${c.date_naissance || ""}</td>
+                    <td>${(c.conjoint_prenom || "") + " " + (c.conjoint_nom || "")}</td>
+                    <td>${c.telephone_prof || ""}</td>
+                    <td>${c.email_prof || ""}</td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+        }
+
         chargerCompagnons();
+
+        /* 🔍 Recherche instantanée */
+        document.getElementById("searchInput").addEventListener("keyup", function () {
+            const q = this.value.toLowerCase();
+            const filtered = allCompagnons.filter(c =>
+                JSON.stringify(c).toLowerCase().includes(q)
+            );
+            afficherTable(filtered);
+        });
+
+        /* 🔼 Tri dynamique */
+        function sortTable(col) {
+            const tbody = document.querySelector("#tableCompagnons tbody");
+            const rows = Array.from(tbody.querySelectorAll("tr"));
+
+            const sorted = rows.sort((a, b) => {
+                const A = a.children[col].innerText.toLowerCase();
+                const B = b.children[col].innerText.toLowerCase();
+                return A.localeCompare(B, "fr");
+            });
+
+            tbody.innerHTML = "";
+            sorted.forEach(r => tbody.appendChild(r));
+        }
+
+        /* 📄 Export PDF */
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.text("Liste des compagnons", 10, 10);
+
+            let y = 20;
+
+            allCompagnons.forEach(c => {
+                doc.text(
+                    `${c.nom} ${c.prenom} | ${c.email_public} | ${c.telephone}`,
+                    10, y
+                );
+                y += 8;
+                if (y > 280) { doc.addPage(); y = 10; }
+            });
+
+            doc.save("liste_compagnons.pdf");
+        }
+
+        /* 📊 Export Excel */
+        function exportExcel() {
+            const data = allCompagnons.map(c => ({
+                Nom: c.nom,
+                Prénom: c.prenom,
+                Initiales: c.initiales,
+                Adresse: c.adresse,
+                "N° postal": c.npa,
+                Lieu: c.lieu,
+                Email: c.email_public,
+                Téléphone: c.telephone,
+                "Date de naissance": c.date_naissance,
+                Conjoint: (c.conjoint_prenom || "") + " " + (c.conjoint_nom || ""),
+                "Téléphone prof": c.telephone_prof,
+                "Email prof": c.email_prof
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Compagnons");
+
+            XLSX.writeFile(wb, "liste_compagnons.xlsx");
+        }
     </script>
 </body>
 </html>
