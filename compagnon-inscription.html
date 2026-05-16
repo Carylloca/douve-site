@@ -109,7 +109,9 @@
     <div class="header">
         <a href="compagnons.html" class="btn">← Liste des manifestations</a>
         <div>Inscription</div>
+
         <div style="display:flex; gap:10px;">
+            <a id="btnInscrits" class="btn">Liste des inscrits</a>
             <a href="index.html" class="btn">Menu</a>
             <button class="btn" onclick="logout()">Déconnexion</button>
         </div>
@@ -122,6 +124,10 @@
 
             <label>Nombre de personnes :</label>
             <input type="number" id="nb" min="1" value="1">
+
+            <p id="info" style="margin-top:10px;color:#7b0f23;font-size:14px;display:none;">
+                En cas de modification d'inscription après la date limite, veuillez contacter l'organisateur.
+            </p>
 
             <button class="btn-action" onclick="save()">Enregistrer</button>
         </div>
@@ -136,16 +142,30 @@
     const manifestId = url.searchParams.get("m");
     const inscriptionId = url.searchParams.get("i");
 
+    // ⭐ Active le bouton Liste des inscrits
+    document.getElementById("btnInscrits").href =
+        "liste-inscrits-compagnon.html?id=" + manifestId;
+
     async function load() {
         try {
-            const m = await pb.collection("manifestations").getOne(manifestId);
+            const m = await pb.collection("manifestations").getOne(manifestId, {
+                expand: "responsables"
+            });
 
             const d = new Date(m.date);
             const dateAff = d.toLocaleDateString("fr-CH");
             const heureAff = m.date.split(" ")[1].slice(0,5);
 
             const limite = new Date(m.date_limite);
+            const limiteAff = limite.toLocaleDateString("fr-CH");
             const now = new Date();
+
+            let organisateurs = "Non défini";
+            if (m.expand && m.expand.responsables) {
+                organisateurs = m.expand.responsables
+                    .map(r => r.nom || r.prenom || r.email)
+                    .join(", ");
+            }
 
             const user = pb.authStore.model;
             const nomCompagnon = user.nom || user.prenom || user.email;
@@ -153,11 +173,14 @@
             document.getElementById("title").innerHTML =
                 `${m.title}<br>
                  <span style="font-size:16px;color:#444;">📅 ${dateAff} à ${heureAff}</span><br>
-                 <span style="font-size:16px;color:#7b0f23;">👤 ${nomCompagnon}</span>`;
+                 <span style="font-size:16px;color:#7b0f23;">👤 ${nomCompagnon}</span><br>
+                 <span style="font-size:16px;color:#444;">⏳ Date limite : ${limiteAff}</span><br>
+                 <span style="font-size:16px;color:#444;">📌 Organisateur : ${organisateurs}</span>`;
 
             if (now > limite) {
                 document.getElementById("limite").innerHTML =
                     `<span style="color:red;font-weight:bold;">⛔ Date limite dépassée</span>`;
+                document.getElementById("info").style.display = "block";
             }
 
             if (inscriptionId) {
