@@ -53,12 +53,11 @@
         }
 
         .photo {
-            width: 160px;
-            height: 160px;
+            width: 208px;
+            height: 208px;
             border-radius: 10px;
             object-fit: cover;
             border: 3px solid #7A0010;
-            margin-bottom: 20px;
         }
 
         .btn {
@@ -162,7 +161,7 @@
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:30px;">
 
         <!-- COLONNE TEXTE -->
-        <div style="flex:1;">
+        <div style="flex:1; max-width:70%;">
             <div class="row"><span class="label">Nom :</span> ${c.nom}</div>
             <div class="row"><span class="label">Prénom :</span> ${c.prenom}</div>
             <div class="row"><span class="label">Initiales :</span> ${c.initiales || ""}</div>
