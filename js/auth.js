@@ -39,12 +39,15 @@ async function login(email, password) {
 }
 
 // ===============================
-//  LOGOUT (DÉCONNEXION RÉELLE)
+//  LOGOUT (DÉCONNEXION UNIVERSELLE)
 // ===============================
 function logout() {
     pb.authStore.clear();
     document.cookie = "";
-    window.location.href = "login.html";
+
+    // ⭐ Redirection universelle vers l'accueil
+    // Fonctionne depuis /admin/, /compagnon/, /, etc.
+    window.location.href = "/douve-site/index.html";
 }
 
 // ===============================
@@ -63,7 +66,7 @@ function isLoggedIn() {
 
 function requireLogin() {
     if (!pb.authStore.isValid) {
-        window.location.href = "login.html";
+        window.location.href = "/douve-site/login.html";
     }
 }
 
@@ -72,13 +75,13 @@ function requireLogin() {
 // ===============================
 function requireComite() {
     if (!pb.authStore.isValid) {
-        window.location.href = "../login.html";
+        window.location.href = "/douve-site/login.html";
         return;
     }
 
     if (pb.authStore.model.collectionName !== "users") {
         alert("Accès réservé au comité.");
-        window.location.href = "../index.html";
+        window.location.href = "/douve-site/index.html";
     }
 }
 
@@ -87,7 +90,7 @@ function requireComite() {
 // ===============================
 function requireCompanion() {
     if (!pb.authStore.isValid) {
-        window.location.href = "login.html";
+        window.location.href = "/douve-site/login.html";
         return;
     }
 
@@ -100,7 +103,7 @@ function requireCompanion() {
     if (user.collectionName === "users") return;
 
     // Autre cas improbable
-    window.location.href = "login.html";
+    window.location.href = "/douve-site/login.html";
 }
 
 // ===============================
