@@ -181,7 +181,13 @@
                     : "Non définie";
                 const isClosed = !isNaN(limite.getTime()) && now > limite;
 
-                const responsable = m.responsable || "Non défini";
+                let responsable = "Non défini";
+                
+                if (m.expand?.responsables?.length > 0) {
+                    responsable = m.expand.responsables
+                        .map(r => `${r.nom} ${r.prenom} (${r.initiales || ""})`)
+                        .join(", ");
+                }
 
                 const inscription = inscriptions.find(i =>
                     i.manifestation === m.id ||
@@ -224,7 +230,7 @@
 
                         <div class="info">📅 ${dateAff}${heureAff ? " à " + heureAff : ""}</div>
                         <div class="info">⏳ Date limite : ${limiteAff}</div>
-                        <div class="info">📌 Responsable : ${responsable}</div>
+                        <div class="info">📌 Organisateur : ${responsable}</div>
 
                         ${status}
                         ${actionBtn}
