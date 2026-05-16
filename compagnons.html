@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mes manifestations</title>
+
+    <link rel="icon" type="image/png" href="favicon.png">
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+    <script src="js/auth.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            background: #f4f4f4;
+            font-family: "DM Sans", sans-serif;
+        }
+
+        /* HEADER FIXE */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: #7b0f23;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .header-title {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border-radius: 6px;
+            background: white;
+            color: #7b0f23;
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #ffe6ea;
+        }
+
+        .container {
+            padding: 100px 20px 40px 20px;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .card h2 {
+            margin: 0;
+            color: #7b0f23;
+        }
+
+        .info {
+            margin: 8px 0;
+            color: #444;
+        }
+
+        .status {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .btn-action {
+            margin-top: 10px;
+            padding: 10px 14px;
+            border-radius: 6px;
+            background: #7b0f23;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-action:hover {
+            background: #9c1a33;
+        }
+
+        .btn-disabled {
+            background: #aaa !important;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <div class="header-title">Mes manifestations</div>
+    <button class="btn" onclick="logout()">Déconnexion</button>
+</div>
+
+<div class="container" id="manifestList">
+    Chargement des manifestations...
+</div>
+
+<script>
+    requireCompanion(); // 🔥 IMPORTANT : empêche un admin d'accéder à cette page
+
+    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+    async function loadManifestations() {
+        const container = document.getElementById("manifestList");
+        container.innerHTML = "Chargement...";
+
+        try {
+            const manifestations = await pb.collection("manifestations").getFullList({
+                sort: "date"
+            });
+
+            const inscriptions = await pb.collection("inscriptions").getFullList({
+                filter: `companion = "${pb.authStore.model.id}"`,
+                expand: "manifestation"
+            });
+
+            container.innerHTML = "";
+
+            manifestations.forEach(m => {
+                const d = new Date(m.date);
+                const dateAff = d.toLocaleDateString("fr-CH");
+                const heureAff = m.date.split(" ")[1].slice(0,5);
+
+                const inscription = inscriptions.find(i => i.manifestation === m.id);
+
+                const limite = new Date(m.date_limite);
+                const now = new Date();
+                const isClosed = now > limite;
+
+                let status = "";
+                let actionBtn = "";
+
+                if (inscription) {
+                    status = `<div class="status" style="color:green;">✔ Inscrit (${inscription.nb_personnes} pers.)</div>`;
+
+                    if (isClosed) {
+                        actionBtn = `<button class="btn-action btn-disabled">Modification impossible (date limite dépassée)</button>`;
+                    } else {
+                        actionBtn = `<button class="btn-action" onclick="goTo('${m.id}', '${inscription.id}')">Modifier mon inscription</button>`;
+                    }
+
+                } else {
+                    status = `<div class="status" style="color:#7b0f23;">✖ Non inscrit</div>`;
+
+                    if (isClosed) {
+                        actionBtn = `<button class="btn-action btn-disabled">Inscriptions fermées</button>`;
+                    } else {
+                        actionBtn = `<button class="btn-action" onclick="goTo('${m.id}', '')">S’inscrire</button>`;
+                    }
+                }
+
+                container.innerHTML += `
+                    <div class="card">
+                        <h2>${m.title}</h2>
+                        <div class="info">📅 ${dateAff} à ${heureAff}</div>
+                        <div class="info">⏳ Date limite : ${limite.toLocaleDateString("fr-CH")}</div>
+                        ${status}
+                        ${actionBtn}
+                    </div>
+                `;
+            });
+
+        } catch (err) {
+            container.innerHTML = "Erreur de chargement.";
+            console.error(err);
+        }
+    }
+
+    function goTo(manifestId, inscriptionId) {
+        window.location.href = `compagnon-inscription.html?m=${manifestId}&i=${inscriptionId}`;
+    }
+
+    loadManifestations();
+</script>
+
+</body>
+</html>
