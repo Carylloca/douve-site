@@ -79,10 +79,20 @@
     </header>
 
     <div class="buttons">
-        <a href="manifestations.html" class="btn">Manifestations</a>
-        <a href="calendrier.html" class="btn">Calendrier</a>
+
+        <!-- ❌ Bouton Manifestations supprimé -->
+
+        <!-- ⭐ Calendrier ouvre TOUJOURS compagnons.html -->
+        <a href="compagnons.html" class="btn">Calendrier</a>
+
         <a href="chalet.html" class="btn">Occupation du chalet</a>
         <a href="compagnons.html" class="btn">Liste des compagnons</a>
+
+        <!-- ⭐ Bouton Administration (visible uniquement si user) -->
+        <a href="admin/admin-manifestations.html" class="btn" id="adminBtn" style="display:none;">
+            Administration
+        </a>
+
         <a href="login.html" class="btn" id="loginBtn">Connexion</a>
     </div>
 
@@ -96,9 +106,15 @@
     <!-- Auth -->
     <script src="js/auth.js"></script>
 
-    <!-- Option A : aucune redirection -->
+    <!-- ⭐ Affichage dynamique du bouton Administration -->
     <script>
-        // On ne redirige plus automatiquement
+        if (pb.authStore.isValid) {
+            const user = pb.authStore.model;
+
+            if (user.collectionName === "users") {
+                document.getElementById("adminBtn").style.display = "block";
+            }
+        }
     </script>
 
 </body>
