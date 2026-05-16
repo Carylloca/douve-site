@@ -11,8 +11,17 @@
     <style>
         body {
             margin: 0;
-            background: #f4f4f4;
+            background-image: url("img/page-compagnons.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             font-family: "DM Sans", sans-serif;
+        }
+
+        .overlay {
+            background: rgba(0,0,0,0.55);
+            min-height: 100vh;
+            padding-bottom: 40px;
         }
 
         .header {
@@ -21,7 +30,8 @@
             left: 0;
             right: 0;
             height: 70px;
-            background: #7b0f23;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(4px);
             color: white;
             display: flex;
             align-items: center;
@@ -36,14 +46,29 @@
             font-weight: bold;
         }
 
+        .btn {
+            padding: 8px 12px;
+            border-radius: 6px;
+            background: white;
+            color: #7b0f23;
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #ffe6ea;
+        }
+
         .container {
-            padding: 100px 20px;
+            padding: 110px 20px 40px 20px;
             max-width: 900px;
             margin: auto;
         }
 
         .card {
-            background: white;
+            background: rgba(255,255,255,0.95);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
@@ -66,53 +91,46 @@
             background: #7b0f23;
             color: white;
         }
-
-        .btn {
-            padding: 10px 14px;
-            background: #7b0f23;
-            color: white;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: bold;
-            display: inline-block;
-            margin-top: 20px;
-        }
-
-        .btn:hover {
-            background: #9c1a33;
-        }
     </style>
 </head>
 
 <body>
 
-<div class="header">
-    <div class="header-title">Liste des inscrits</div>
-    <button class="btn" onclick="logout()">Déconnexion</button>
-</div>
+<div class="overlay">
 
-<div class="container">
-    <div class="card">
-        <h2 id="manifestTitle">Chargement…</h2>
-        <p><strong>Total inscrits :</strong> <span id="totalInscrits">0</span></p>
-        <p><strong>Total personnes :</strong> <span id="totalPersonnes">0</span></p>
+    <div class="header">
+        <a href="compagnons.html" class="btn">← Calendrier</a>
+        <div class="header-title">Liste des inscrits</div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Nom</th>
-                    <th>Prénom</th>
-                    <th>Email</th>
-                    <th>Nb pers.</th>
-                </tr>
-            </thead>
-            <tbody id="tableInscrits">
-                <tr><td colspan="4">Chargement…</td></tr>
-            </tbody>
-        </table>
-
-        <a href="compagnons.html" class="btn">← Retour</a>
+        <div style="display:flex; gap:10px;">
+            <a href="index.html" class="btn">Menu</a>
+            <button class="btn" onclick="logout()">Déconnexion</button>
+        </div>
     </div>
+
+    <div class="container">
+        <div class="card">
+            <h2 id="manifestTitle">Chargement…</h2>
+            <p><strong>Total inscrits :</strong> <span id="totalInscrits">0</span></p>
+            <p><strong>Total personnes :</strong> <span id="totalPersonnes">0</span></p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Email</th>
+                        <th>Nb pers.</th>
+                    </tr>
+                </thead>
+                <tbody id="tableInscrits">
+                    <tr><td colspan="4">Chargement…</td></tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -123,11 +141,11 @@
 
     async function loadInscrits() {
         try {
-            // Récupération de la manifestation
+            // Manifestation
             const m = await pb.collection("manifestations").getOne(manifestId);
             document.getElementById("manifestTitle").textContent = m.title;
 
-            // Récupération des inscriptions
+            // Inscriptions
             const inscrits = await pb.collection("inscriptions").getFullList({
                 filter: `manifestation = "${manifestId}"`,
                 expand: "companion"
