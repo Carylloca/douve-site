@@ -1,121 +1,113 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Accueil — Compagnons de la Douve</title>
-    <link rel="icon" type="image/png" href="favicon.png">
+// ===============================
+//  CONFIGURATION POCKETBASE
+// ===============================
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background-image: url('index.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            color: white;
-        }
+// ===============================
+//  LOGIN UNIFIÉ (users → companions)
+// ===============================
+async function login(email, password) {
 
-        header {
-            text-align: center;
-            padding: 25px 0;
-            text-shadow: 2px 2px 6px rgba(0,0,0,0.6);
-        }
+    // 1) ESSAYER DE CONNECTER COMME USER (COMITÉ)
+    try {
+        const authUser = await pb.collection("users").authWithPassword(email, password);
 
-        header h1 {
-            margin: 0;
-            font-size: 38px;
-            font-weight: 600;
-        }
+        console.log("Connecté comme USER :", authUser);
 
-        .buttons {
-            position: absolute;
-            top: 50%;
-            left: 40px;
-            transform: translateY(-50%);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+        // Redirection admin
+        window.location.href = "admin/admin-manifestations.html";
+        return true;
 
-        .btn {
-            display: inline-block;
-            padding: 12px 24px;
-            background: rgba(139, 0, 0, 0.5);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 18px;
-            transition: background 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            text-align: center;
-            min-width: 220px;
-        }
+    } catch (e) {
+        console.log("Pas un user, on tente companion…");
+    }
 
-        .btn:hover {
-            background: rgba(179, 0, 0, 0.8);
-        }
+    // 2) ESSAYER DE CONNECTER COMME COMPANION
+    try {
+        const authComp = await pb.collection("companions").authWithPassword(email, password);
 
-        footer {
-            position: absolute;
-            bottom: 10px;
-            width: 100%;
-            text-align: center;
-            font-size: 14px;
-            color: rgba(255,255,255,0.8);
-            text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
-        }
-    </style>
-</head>
+        console.log("Connecté comme COMPANION :", authComp);
 
-<body>
+        // Redirection compagnon
+        window.location.href = "compagnons.html";
+        return true;
 
-    <header>
-        <h1>Bienvenue aux Compagnons de la Douve</h1>
-    </header>
+    } catch (error) {
+        console.error("Erreur de connexion :", error);
+        return false;
+    }
+}
 
-    <div class="buttons">
+// ===============================
+//  LOGOUT (DÉCONNEXION RÉELLE)
+// ===============================
+function logout() {
+    pb.authStore.clear();
+    document.cookie = "";
+    window.location.href = "login.html";
+}
 
-        <!-- ❌ Bouton Manifestations supprimé -->
+// ===============================
+//  OBTENIR L'UTILISATEUR CONNECTÉ
+// ===============================
+function getUser() {
+    return pb.authStore.model;
+}
 
-        <!-- ⭐ Calendrier ouvre TOUJOURS compagnons.html -->
-        <a href="compagnons.html" class="btn">Calendrier</a>
+// ===============================
+//  VÉRIFIER SI CONNECTÉ
+// ===============================
+function isLoggedIn() {
+    return pb.authStore.isValid;
+}
 
-        <a href="chalet.html" class="btn">Occupation du chalet</a>
-        <a href="compagnons.html" class="btn">Liste des compagnons</a>
+function requireLogin() {
+    if (!pb.authStore.isValid) {
+        window.location.href = "login.html";
+    }
+}
 
-        <!-- ⭐ Bouton Administration (visible uniquement si user) -->
-        <a href="admin/admin-manifestations.html" class="btn" id="adminBtn" style="display:none;">
-            Administration
-        </a>
+// ===============================
+//  VÉRIFIER SI COMITÉ (users uniquement)
+// ===============================
+function requireComite() {
+    if (!pb.authStore.isValid) {
+        window.location.href = "../login.html";
+        return;
+    }
 
-        <a href="login.html" class="btn" id="loginBtn">Connexion</a>
-    </div>
+    if (pb.authStore.model.collectionName !== "users") {
+        alert("Accès réservé au comité.");
+        window.location.href = "../index.html";
+    }
+}
 
-    <footer>
-        © Confrérie des Compagnons de la Douve
-    </footer>
+// ===============================
+//  VÉRIFIER SI COMPANION (autorise aussi les users)
+// ===============================
+function requireCompanion() {
+    if (!pb.authStore.isValid) {
+        window.location.href = "login.html";
+        return;
+    }
 
-    <!-- PocketBase -->
-    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+    const user = pb.authStore.model;
 
-    <!-- Auth -->
-    <script src="js/auth.js"></script>
+    // Companion → OK
+    if (user.collectionName === "companions") return;
 
-    <!-- ⭐ Affichage dynamique du bouton Administration -->
-    <script>
-        if (pb.authStore.isValid) {
-            const user = pb.authStore.model;
+    // User (comité) → OK
+    if (user.collectionName === "users") return;
 
-            if (user.collectionName === "users") {
-                document.getElementById("adminBtn").style.display = "block";
-            }
-        }
-    </script>
+    // Autre cas improbable
+    window.location.href = "login.html";
+}
 
-</body>
-</html>
+// ===============================
+//  AUTO-CONNEXION VIA COOKIE
+// ===============================
+pb.authStore.loadFromCookie(document.cookie);
+
+pb.authStore.onChange(() => {
+    document.cookie = pb.authStore.exportToCookie({ httpOnly: false });
+});
