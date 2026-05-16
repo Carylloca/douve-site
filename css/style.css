@@ -1,21 +1,36 @@
 /* ============================================
-   STYLE GLOBAL — Thème Vin Neuchâtelois
+   VARIABLES — Thème Vin Neuchâtelois
    ============================================ */
+:root {
+    --vin-rouge: #7b0f23;
+    --vin-rouge-light: #a01332;
+    --vin-beige: #faf6f2;
+    --vin-beige-light: #f7f1eb;
+    --vin-bois: #e4d7c7;
+    --vin-brun: #2e2b29;
+    --danger: #b30000;
+    --danger-hover: #d40000;
+    --radius: 10px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.08);
+    --transition: 0.2s ease;
+}
 
+/* ============================================
+   STYLE GLOBAL
+   ============================================ */
 body {
     font-family: "DM Sans", sans-serif;
-    background: #faf6f2; /* beige cave */
-    color: #2e2b29; /* brun foncé */
+    background: var(--vin-beige);
+    color: var(--vin-brun);
     margin: 0;
     padding: 0;
 }
 
 /* ============================================
-   HEADER / TITRES
+   TITRES
    ============================================ */
-
 h1, h2, h3 {
-    color: #7b0f23; /* rouge pinot noir */
+    color: var(--vin-rouge);
     font-weight: 700;
     margin-bottom: 15px;
 }
@@ -23,23 +38,21 @@ h1, h2, h3 {
 /* ============================================
    CONTENEURS
    ============================================ */
-
 .container, form, .block {
     background: #ffffff;
-    border: 1px solid #e4d7c7; /* ton bois clair */
-    border-radius: 10px;
+    border: 1px solid var(--vin-bois);
+    border-radius: var(--radius);
     padding: 20px;
     margin: 20px auto;
     max-width: 900px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: var(--shadow);
 }
 
 /* ============================================
    BOUTONS
    ============================================ */
-
 button, .btn {
-    background: #7b0f23; /* rouge pinot noir */
+    background: var(--vin-rouge);
     color: white;
     padding: 12px 20px;
     border: none;
@@ -48,25 +61,32 @@ button, .btn {
     font-size: 16px;
     text-decoration: none;
     display: inline-block;
-    transition: 0.2s;
+    transition: var(--transition);
 }
 
 button:hover, .btn:hover {
-    background: #a01332; /* rouge plus clair */
+    background: var(--vin-rouge-light);
 }
 
 /* Bouton danger */
 .btn-danger {
-    background: #b30000;
+    background: var(--danger);
 }
 .btn-danger:hover {
-    background: #d40000;
+    background: var(--danger-hover);
+}
+
+/* Bouton secondaire */
+.btn-secondary {
+    background: #444;
+}
+.btn-secondary:hover {
+    background: #222;
 }
 
 /* ============================================
    INPUTS & SELECTS
    ============================================ */
-
 input, textarea, select {
     width: 100%;
     padding: 10px;
@@ -80,7 +100,6 @@ input, textarea, select {
 /* ============================================
    TABLES
    ============================================ */
-
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -88,10 +107,10 @@ input, textarea, select {
 }
 
 .table th {
-    background: #7b0f23; /* rouge pinot noir */
+    background: var(--vin-rouge);
     color: white;
     padding: 10px;
-    border-bottom: 3px solid #d4b48a; /* or doux */
+    border-bottom: 3px solid #d4b48a;
 }
 
 .table td {
@@ -102,10 +121,9 @@ input, textarea, select {
 /* ============================================
    BLOCS / LISTES
    ============================================ */
-
 .item, .manifestation-item, .reservation-item {
-    background: #f7f1eb; /* beige cave très clair */
-    border-left: 5px solid #7b0f23; /* bande rouge vin */
+    background: var(--vin-beige-light);
+    border-left: 5px solid var(--vin-rouge);
     padding: 12px;
     border-radius: 6px;
     margin-bottom: 10px;
@@ -114,21 +132,20 @@ input, textarea, select {
 /* ============================================
    LIENS
    ============================================ */
-
 a {
-    color: #7b0f23;
+    color: var(--vin-rouge);
     text-decoration: none;
     font-weight: bold;
+    transition: var(--transition);
 }
 
 a:hover {
-    color: #a01332;
+    color: var(--vin-rouge-light);
 }
 
 /* ============================================
-   NAVIGATION SIMPLE
+   NAVIGATION
    ============================================ */
-
 nav ul {
     list-style: none;
     padding: 0;
@@ -140,10 +157,25 @@ nav ul {
 nav ul li a {
     padding: 8px 14px;
     border-radius: 6px;
-    background: #7b0f23;
+    background: var(--vin-rouge);
     color: white;
 }
 
 nav ul li a:hover {
-    background: #a01332;
+    background: var(--vin-rouge-light);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 600px) {
+    .container, form, .block {
+        padding: 15px;
+        margin: 10px;
+    }
+
+    button, .btn {
+        width: 100%;
+        text-align: center;
+    }
 }
