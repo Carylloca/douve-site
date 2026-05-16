@@ -32,6 +32,14 @@
             font-weight: 600;
         }
 
+        #welcome {
+            text-align: center;
+            margin-top: -10px;
+            font-size: 20px;
+            color: #ffe6e6;
+            text-shadow: 1px 1px 4px black;
+        }
+
         .buttons {
             position: absolute;
             top: 50%;
@@ -76,11 +84,10 @@
 
     <header>
         <h1>Bienvenue aux Compagnons de la Douve</h1>
+        <div id="welcome"></div>
     </header>
 
     <div class="buttons">
-
-        <!-- ❌ Bouton Manifestations supprimé -->
 
         <!-- ⭐ Calendrier ouvre TOUJOURS compagnons.html -->
         <a href="compagnons.html" class="btn">Calendrier</a>
@@ -93,7 +100,13 @@
             Administration
         </a>
 
+        <!-- ⭐ Bouton Connexion (masqué si connecté) -->
         <a href="login.html" class="btn" id="loginBtn">Connexion</a>
+
+        <!-- ⭐ Bouton Déconnexion (visible si connecté) -->
+        <button onclick="logout()" class="btn" id="logoutBtn" style="display:none;">
+            Déconnexion
+        </button>
     </div>
 
     <footer>
@@ -106,11 +119,22 @@
     <!-- Auth -->
     <script src="js/auth.js"></script>
 
-    <!-- ⭐ Affichage dynamique du bouton Administration -->
+    <!-- ⭐ Script dynamique -->
     <script>
         if (pb.authStore.isValid) {
             const user = pb.authStore.model;
 
+            // Masquer Connexion
+            document.getElementById("loginBtn").style.display = "none";
+
+            // Afficher Déconnexion
+            document.getElementById("logoutBtn").style.display = "block";
+
+            // Afficher Bonjour {nom}
+            const nom = user.nom || user.name || user.email || "compagnon";
+            document.getElementById("welcome").textContent = "Bonjour " + nom;
+
+            // Afficher Administration si user
             if (user.collectionName === "users") {
                 document.getElementById("adminBtn").style.display = "block";
             }
