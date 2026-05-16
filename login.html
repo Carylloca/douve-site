@@ -122,18 +122,8 @@
 </div>
 
 <script>
-// 🔒 Si l’utilisateur est déjà connecté → redirection automatique
-if (isLoggedIn()) {
-    const user = getUser();
-
-    if (user.collectionName === "users") {
-        // Comité authentifié via USERS
-        window.location.href = "admin/admin-manifestations.html";
-    } else {
-        // Compagnon
-        window.location.href = "index.html";
-    }
-}
+// ❌ On supprime la redirection automatique
+// Cela évite d'être bloqué si on est déjà connecté
 
 // 🔑 Gestion du formulaire de connexion
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
