@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des inscrits</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="../favicon.png">
+
+    <!-- jsPDF pour PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- SheetJS pour Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("page-manifestations.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px black;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px auto;
+            max-width: 700px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #7b0f23;
+            color: white;
+            cursor: pointer;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background: #0078ff;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 15px;
+        }
+
+        .btn:hover {
+            background: #005fcc;
+        }
+
+        .btn-export {
+            background: #7b0f23;
+            margin-right: 10px;
+        }
+
+        #search {
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            border-radius: 6px;
+            border: 1px solid #aaa;
+        }
+    </style>
+</head>
+
+<body>
+<div class="overlay">
+
+    <h1>Liste des inscrits</h1>
+
+    <div class="card">
+        <p><strong>Manifestation :</strong> <span id="manifestTitle">Chargement...</span></p>
+        <p><strong>Total inscrits :</strong> <span id="totalInscrits">0</span></p>
+
+        <input type="text" id="search" placeholder="Rechercher un nom ou prénom...">
+
+        <button class="btn btn-export" onclick="exportPDF()">Export PDF</button>
+        <button class="btn btn-export" onclick="exportExcel()">Export Excel</button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)">Nom ▲▼</th>
+                    <th onclick="sortTable(1)">Prénom ▲▼</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody id="tableInscrits">
+                <tr><td colspan="3">Chargement...</td></tr>
+            </tbody>
+        </table>
+
+        <a href="admin-manifestations.html" class="btn">← Retour</a>
+    </div>
+
+</div>
+
+<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+<script>
+    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const manifestationId = urlParams.get("id");
+
+    let inscritsData = [];
+
+    async function loadInscrits() {
+        try {
+            const manifest = await pb.collection("manifestations").getOne(manifestationId);
+            document.getElementById("manifestTitle").textContent = manifest.title;
+
+            const inscrits = await pb.collection("inscrits").getFullList({
+                filter: `manifestation = "${manifestationId}"`,
+                expand: "companion"
+            });
+
+            inscritsData = inscrits;
+            displayTable(inscrits);
+
+            document.getElementById("totalInscrits").textContent = inscrits.length;
+
+        } catch (err) {
+            console.error(err);
+            document.getElementById("tableInscrits").innerHTML =
+                "<tr><td colspan='3'>Erreur lors du chargement.</td></tr>";
+        }
+    }
+
+    function displayTable(list) {
+        const tbody = document.getElementById("tableInscrits");
+        tbody.innerHTML = "";
+
+        if (list.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='3'>Aucun inscrit.</td></tr>";
+            return;
+        }
+
+        list.forEach(i => {
+            const c = i.expand?.companion;
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${c?.nom || "-"}</td>
+                    <td>${c?.prenom || "-"}</td>
+                    <td>${c?.email || "-"}</td>
+                </tr>
+            `;
+        });
+    }
+
+    /* 🔍 Recherche en direct */
+    document.getElementById("search").addEventListener("input", function () {
+        const q = this.value.toLowerCase();
+
+        const filtered = inscritsData.filter(i => {
+            const c = i.expand?.companion;
+            return (
+                c?.nom?.toLowerCase().includes(q) ||
+                c?.prenom?.toLowerCase().includes(q)
+            );
+        });
+
+        displayTable(filtered);
+    });
+
+    /* 🔽 Tri par colonne */
+    function sortTable(col) {
+        inscritsData.sort((a, b) => {
+            const ca = a.expand?.companion;
+            const cb = b.expand?.companion;
+
+            const va = col === 0 ? ca?.nom : ca?.prenom;
+            const vb = col === 1 ? cb?.nom : cb?.prenom;
+
+            return va.localeCompare(vb);
+        });
+
+        displayTable(inscritsData);
+    }
+
+    /* 📄 Export PDF */
+    function exportPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.text("Liste des inscrits", 10, 10);
+
+        let y = 20;
+        inscritsData.forEach(i => {
+            const c = i.expand?.companion;
+            doc.text(`${c?.nom} ${c?.prenom} - ${c?.email}`, 10, y);
+            y += 8;
+        });
+
+        doc.save("liste-inscrits.pdf");
+    }
+
+    /* 📊 Export Excel */
+    function exportExcel() {
+        const rows = inscritsData.map(i => {
+            const c = i.expand?.companion;
+            return {
+                Nom: c?.nom,
+                Prénom: c?.prenom,
+                Email: c?.email
+            };
+        });
+
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Inscrits");
+
+        XLSX.writeFile(wb, "liste-inscrits.xlsx");
+    }
+
+    loadInscrits();
+</script>
+
+</body>
+</html>
