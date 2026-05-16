@@ -112,6 +112,7 @@
         function formatDate(d) {
             if (!d) return "";
             const date = new Date(d);
+            if (isNaN(date)) return ""; // sécurité si PocketBase renvoie un format étrange
             const jour = String(date.getUTCDate()).padStart(2, "0");
             const mois = String(date.getUTCMonth() + 1).padStart(2, "0");
             const annee = date.getUTCFullYear();
@@ -130,7 +131,6 @@
                     photoHTML = `<img src="${urlPhoto}" class="photo">`;
                 }
 
-                // Affichage
                 document.getElementById("details").innerHTML = `
                     ${photoHTML}
 
@@ -194,7 +194,6 @@
                 reader.readAsDataURL(img);
             }
 
-            // Texte
             const lignes = [
                 `Nom : ${compagnonData.nom}`,
                 `Prénom : ${compagnonData.prenom}`,
@@ -218,7 +217,6 @@
                 y += 8;
             });
 
-            // Si pas de photo → sauvegarde immédiate
             if (!compagnonData.photo) {
                 doc.save("fiche_compagnon.pdf");
             }
