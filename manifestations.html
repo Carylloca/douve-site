@@ -10,14 +10,14 @@
         body {
             margin: 0;
             padding: 0;
-            background-image: url("page-manifestations.jpg"); /* ← CHANGE ICI */
+            background-image: url("page-manifestations.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             font-family: Arial, sans-serif;
         }
 
-        /* ======== OVERLAY POUR LIRE LE TEXTE ======== */
+        /* ======== OVERLAY ======== */
         .overlay {
             background: rgba(0, 0, 0, 0.55);
             min-height: 100vh;
@@ -71,11 +71,62 @@
         </div>
     </div>
 
+    <!-- PocketBase -->
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <!-- Auth -->
     <script src="js/auth.js"></script>
+
+    <!-- API perso -->
     <script src="js/api.js"></script>
 
     <script>
+        const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+        /* --- Format date + heure --- */
+        function formatDateTime(dt) {
+            if (!dt) return "-";
+            const [date, time] = dt.split(" ");
+            const [y, m, d] = date.split("-");
+            return `${d}.${m}.${y} – ${time}`;
+        }
+
+        async function loadManifestations() {
+            const container = document.getElementById("manifestations");
+            container.innerHTML = "<p style='color:white;'>Chargement...</p>";
+
+            try {
+                const list = await pb.collection("manifestations").getFullList({
+                    sort: "date"
+                });
+
+                if (list.length === 0) {
+                    container.innerHTML = "<p style='color:white;'>Aucune manifestation disponible.</p>";
+                    return;
+                }
+
+                container.innerHTML = "";
+
+                list.forEach(m => {
+                    const div = document.createElement("div");
+                    div.className = "manifest-card";
+
+                    div.innerHTML = `
+                        <h3>${m.title}</h3>
+                        <p><strong>Date :</strong> ${formatDateTime(m.date)}</p>
+                        <p><strong>Description :</strong><br>${m.description || "-"}</p>
+                        <a href="manifestation-details.html?id=${m.id}" class="btn">Voir détails</a>
+                    `;
+
+                    container.appendChild(div);
+                });
+
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = "<p style='color:white;'>Erreur lors du chargement.</p>";
+            }
+        }
+
         loadManifestations();
     </script>
 </body>
