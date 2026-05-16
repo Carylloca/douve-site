@@ -99,6 +99,12 @@
         .btn-action:hover {
             background: #9c1a33;
         }
+
+        #info {
+            margin-top: 10px;
+            color: #7b0f23;
+            font-size: 14px;
+        }
     </style>
 </head>
 
@@ -120,12 +126,12 @@
     <div class="container">
         <div class="card">
             <h2 id="title">Chargement...</h2>
-            <div id="limite" style="margin-bottom:15px;"></div>
+            <div id="limite" style="margin-bottom:10px;"></div>
 
             <label>Nombre de personnes :</label>
             <input type="number" id="nb" min="1" value="1">
 
-            <p id="info" style="margin-top:10px;color:#7b0f23;font-size:14px;display:none;">
+            <p id="info">
                 En cas de modification d'inscription après la date limite, veuillez contacter l'organisateur.
             </p>
 
@@ -142,50 +148,84 @@
     const manifestId = url.searchParams.get("m");
     const inscriptionId = url.searchParams.get("i");
 
-    // ⭐ Active le bouton Liste des inscrits
+    // Bouton Liste des inscrits
     document.getElementById("btnInscrits").href =
         "liste-inscrits-compagnon.html?id=" + manifestId;
 
     async function load() {
         try {
-            const m = await pb.collection("manifestations").getOne(manifestId, {
-                expand: "responsables"
-            });
+            // On récupère la manifestation SANS expand compliqué
+            const m = await pb.collection("manifestations").getOne(manifestId);
 
-            const d = new Date(m.date);
-            const dateAff = d.toLocaleDateString("fr-CH");
-            const heureAff = m.date.split(" ")[1].slice(0,5);
+            // Titre + date + heure
+            let dateAff = "";
+            let heureAff = "";
+            if (m.date) {
+                const d = new Date(m.date);
+                if (!isNaN(d.getTime())) {
+                    dateAff = d.toLocaleDateString("fr-CH");
+                }
+                // Si m.date est du type "YYYY-MM-DD HH:MM:SS"
+                if (typeof m.date === "string" && m.date.includes(" ")) {
+                    const parts = m.date.split(" ");
+                    if (parts[1]) {
+                        heureAff = parts[1].slice(0,5);
+                    }
+                }
+            }
 
-            const limite = new Date(m.date_limite);
-            const limiteAff = limite.toLocaleDateString("fr-CH");
-            const now = new Date();
+            // Date limite
+            let limiteAff = "";
+            let limiteDate = null;
+            if (m.date_limite) {
+                const limite = new Date(m.date_limite);
+                if (!isNaN(limite.getTime())) {
+                    limiteDate = limite;
+                    limiteAff = limite.toLocaleDateString("fr-CH");
+                }
+            }
 
-            let organisateurs = "Non défini";
-            if (m.expand && m.expand.responsables) {
-                organisateurs = m.expand.responsables
-                    .map(r => r.nom || r.prenom || r.email)
-                    .join(", ");
+            // Organisateur : on essaie plusieurs champs possibles
+            let organisateur = m.organisateur || m.responsable || m.organisateur_nom || "";
+            if (!organisateur) {
+                organisateur = "Non défini";
             }
 
             const user = pb.authStore.model;
             const nomCompagnon = user.nom || user.prenom || user.email;
 
-            document.getElementById("title").innerHTML =
-                `${m.title}<br>
-                 <span style="font-size:16px;color:#444;">📅 ${dateAff} à ${heureAff}</span><br>
-                 <span style="font-size:16px;color:#7b0f23;">👤 ${nomCompagnon}</span><br>
-                 <span style="font-size:16px;color:#444;">⏳ Date limite : ${limiteAff}</span><br>
-                 <span style="font-size:16px;color:#444;">📌 Organisateur : ${organisateurs}</span>`;
+            let htmlTitle = m.title || "Manifestation";
+            htmlTitle += "<br>";
+            if (dateAff) {
+                htmlTitle += `<span style="font-size:16px;color:#444;">📅 ${dateAff}`;
+                if (heureAff) {
+                    htmlTitle += ` à ${heureAff}`;
+                }
+                htmlTitle += "</span><br>";
+            }
+            htmlTitle += `<span style="font-size:16px;color:#7b0f23;">👤 ${nomCompagnon}</span><br>`;
+            if (limiteAff) {
+                htmlTitle += `<span style="font-size:16px;color:#444;">⏳ Date limite : ${limiteAff}</span><br>`;
+            }
+            htmlTitle += `<span style="font-size:16px;color:#444;">📌 Organisateur : ${organisateur}</span>`;
 
-            if (now > limite) {
-                document.getElementById("limite").innerHTML =
-                    `<span style="color:red;font-weight:bold;">⛔ Date limite dépassée</span>`;
-                document.getElementById("info").style.display = "block";
+            document.getElementById("title").innerHTML = htmlTitle;
+
+            // Message "date limite dépassée"
+            if (limiteDate) {
+                const now = new Date();
+                if (now > limiteDate) {
+                    document.getElementById("limite").innerHTML =
+                        `<span style="color:red;font-weight:bold;">⛔ Date limite dépassée</span>`;
+                }
             }
 
+            // Si on édite une inscription existante
             if (inscriptionId) {
                 const ins = await pb.collection("inscriptions").getOne(inscriptionId);
-                document.getElementById("nb").value = ins.nb_personnes;
+                if (ins.nb_personnes) {
+                    document.getElementById("nb").value = ins.nb_personnes;
+                }
             }
 
         } catch (err) {
@@ -195,7 +235,12 @@
     }
 
     async function save() {
-        const nb = parseInt(document.getElementById("nb").value);
+        const nb = parseInt(document.getElementById("nb").value, 10);
+
+        if (!nb || nb < 1) {
+            alert("Veuillez saisir un nombre de personnes valide.");
+            return;
+        }
 
         try {
             if (inscriptionId) {
@@ -211,7 +256,6 @@
             }
 
             alert("Votre inscription a été enregistrée.\nVous serez " + nb + " personne(s).");
-
             window.location.href = "compagnons.html";
 
         } catch (err) {
