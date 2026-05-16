@@ -5,6 +5,9 @@
     <title>Détails du compagnon</title>
     <link rel="icon" type="image/png" href="favicon.png">
 
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
         body {
             margin: 0;
@@ -66,6 +69,7 @@
             border-radius: 6px;
             text-decoration: none;
             margin-top: 20px;
+            margin-right: 10px;
         }
 
         .btn:hover {
@@ -82,7 +86,11 @@
             Chargement...
         </div>
 
-        <a href="liste-compagnons.html" class="btn">← Retour à la liste</a>
+        <div style="margin-top:20px;">
+            <a href="liste-compagnons.html" class="btn">← Retour à la liste</a>
+            <button class="btn" onclick="exportPDF()">Télécharger PDF</button>
+            <a id="editBtn" href="#" class="btn" style="display:none;">Modifier</a>
+        </div>
     </div>
 
     <!-- PocketBase -->
@@ -98,17 +106,21 @@
         const params = new URLSearchParams(window.location.search);
         const id = params.get("id");
 
+        let compagnonData = null;
+
         async function chargerDetails() {
             try {
                 const c = await pb.collection("companions").getOne(id);
+                compagnonData = c;
 
-                // Construction URL photo
+                // Photo
                 let photoHTML = "";
                 if (c.photo) {
                     const urlPhoto = pb.files.getUrl(c, c.photo);
                     photoHTML = `<img src="${urlPhoto}" class="photo">`;
                 }
 
+                // Affichage
                 document.getElementById("details").innerHTML = `
                     ${photoHTML}
 
@@ -134,6 +146,13 @@
                     <div class="row"><span class="label">Email professionnel :</span> ${c.email_prof || ""}</div>
                 `;
 
+                // Bouton Modifier (admin uniquement)
+                const user = pb.authStore.model;
+                if (user && user.collectionName === "users") {
+                    document.getElementById("editBtn").style.display = "inline-block";
+                    document.getElementById("editBtn").href = "admin/admin-compagnon-modifier.html?id=" + id;
+                }
+
             } catch (err) {
                 document.getElementById("details").innerHTML =
                     "<p>Erreur lors du chargement des informations.</p>";
@@ -142,6 +161,58 @@
         }
 
         chargerDetails();
+
+        /* 📄 Export PDF */
+        async function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(18);
+            doc.text("Fiche du compagnon", 10, 10);
+
+            let y = 20;
+
+            // Photo
+            if (compagnonData.photo) {
+                const url = pb.files.getUrl(compagnonData, compagnonData.photo);
+                const img = await fetch(url).then(r => r.blob());
+                const reader = new FileReader();
+                reader.onload = function () {
+                    doc.addImage(reader.result, "JPEG", 140, 10, 50, 50);
+                    doc.save("fiche_compagnon.pdf");
+                };
+                reader.readAsDataURL(img);
+            }
+
+            // Texte
+            const lignes = [
+                `Nom : ${compagnonData.nom}`,
+                `Prénom : ${compagnonData.prenom}`,
+                `Initiales : ${compagnonData.initiales || ""}`,
+                `Fonction : ${compagnonData.fonction || ""}`,
+                `Adresse : ${compagnonData.adresse || ""}`,
+                `N° postal : ${compagnonData.npa || ""}`,
+                `Lieu : ${compagnonData.lieu || ""}`,
+                `Email : ${compagnonData.email_public || ""}`,
+                `Téléphone : ${compagnonData.telephone || ""}`,
+                `Date de naissance : ${compagnonData.date_naissance || ""}`,
+                `Conjoint : ${(compagnonData.conjoint_prenom || "") + " " + (compagnonData.conjoint_nom || "")}`,
+                `Téléphone prof : ${compagnonData.telephone_prof || ""}`,
+                `Email prof : ${compagnonData.email_prof || ""}`
+            ];
+
+            doc.setFontSize(12);
+
+            lignes.forEach(l => {
+                doc.text(l, 10, y);
+                y += 8;
+            });
+
+            // Si pas de photo → sauvegarde immédiate
+            if (!compagnonData.photo) {
+                doc.save("fiche_compagnon.pdf");
+            }
+        }
     </script>
 
 </body>
