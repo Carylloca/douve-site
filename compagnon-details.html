@@ -121,13 +121,12 @@
         function formatDate(d) {
             if (!d) return "";
 
-            // Si PocketBase renvoie juste YYYY-MM-DD
+            // Format simple YYYY-MM-DD
             if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
                 const [y, m, day] = d.split("-");
                 return `${day}.${m}.${y}`;
             }
 
-            // Sinon on tente un parsing complet
             const date = new Date(d);
             if (isNaN(date)) return "";
 
@@ -164,7 +163,7 @@
                     <div class="row"><span class="label">Email :</span> ${c.email_public || ""}</div>
                     <div class="row"><span class="label">Téléphone :</span> ${c.telephone || ""}</div>
 
-                    <div class="row"><span class="label">Date de naissance :</span> ${formatDate(c.date_naissance)}</div>
+                    <div class="row"><span class="label">Date de naissance :</span> ${formatDate(c["date_naissance#"])}</div>
 
                     <div class="row"><span class="label">Conjoint :</span> 
                         ${(c.conjoint_prenom || "") + " " + (c.conjoint_nom || "")}
@@ -237,7 +236,7 @@
                 `Lieu : ${compagnonData.lieu || ""}`,
                 `Email : ${compagnonData.email_public || ""}`,
                 `Téléphone : ${compagnonData.telephone || ""}`,
-                `Date de naissance : ${formatDate(compagnonData.date_naissance)}`,
+                `Date de naissance : ${formatDate(compagnonData["date_naissance#"])}`,
                 `Conjoint : ${(compagnonData.conjoint_prenom || "") + " " + (compagnonData.conjoint_nom || "")}`,
                 `Téléphone prof : ${compagnonData.telephone_prof || ""}`,
                 `Email prof : ${compagnonData.email_prof || ""}`
