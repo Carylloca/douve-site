@@ -116,7 +116,7 @@
 </div>
 
 <script>
-    requireCompanion(); // 🔥 IMPORTANT : empêche un admin d'accéder à cette page
+    requireCompanion(); // 🔥 Empêche un admin d'accéder à cette page
 
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
@@ -176,6 +176,12 @@
                         <div class="info">⏳ Date limite : ${limite.toLocaleDateString("fr-CH")}</div>
                         ${status}
                         ${actionBtn}
+
+                        <!-- ⭐ NOUVEAU : bouton voir la liste des inscrits -->
+                        <button class="btn-action" style="background:#444;"
+                            onclick="window.location.href='liste-inscrits-compagnon.html?id=${m.id}'">
+                            Voir la liste des inscrits
+                        </button>
                     </div>
                 `;
             });
