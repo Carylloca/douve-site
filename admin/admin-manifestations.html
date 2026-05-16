@@ -10,7 +10,251 @@
     <!-- jsPDF pour PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+    <!-- SheetJS pour Excel --><!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin – Manifestations</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="icon" type="image/png" href="../favicon.png">
+
+    <!-- jsPDF pour PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <!-- SheetJS pour Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("../img/page-admin-manifestations.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: "DM Sans", sans-serif;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px black;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background: #7b0f23;
+            color: white;
+        }
+
+        /* 🔥 Colonne inscrits : jaune vin blanc */
+        .col-inscrits {
+            background: #fff7c2 !important;
+            width: 90px;
+            font-weight: bold;
+        }
+
+        .btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: #7b0f23;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 13px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .export-buttons {
+            margin: 10px 0 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="overlay">
+
+    <h1>Gestion des manifestations</h1>
+
+    <a href="admin-menu.html" class="btn">← Retour au menu</a>
+    <a href="admin-manifestation-nouveau.html" class="btn">+ Nouvelle manifestation</a>
+
+    <div class="export-buttons">
+        <button class="btn" onclick="exportPDF()">Export PDF</button>
+        <button class="btn" onclick="exportExcel()">Export Excel</button>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Titre</th>
+            <th>Date</th>
+            <th>Heure</th>
+            <th>Date limite</th>
+            <th class="col-inscrits">Inscrits</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+
+        <tbody id="tableBody"></tbody>
+    </table>
+
+</div>
+
+<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+<script src="../js/auth.js"></script>
+
+<script>
+    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+</script>
+
+<script>
+    requireComite();
+
+    let manifestationsCache = [];
+
+    async function loadManifestations() {
+        const table = document.getElementById("tableBody");
+        table.innerHTML = "<tr><td colspan='6'>Chargement...</td></tr>";
+
+        try {
+            const list = await pb.collection("manifestations").getFullList({
+                sort: "-date"
+            });
+
+            manifestationsCache = list;
+            table.innerHTML = "";
+
+            for (const m of list) {
+
+                const d = new Date(m.date);
+                const dateAff = d.toLocaleDateString("fr-CH");
+                const heureAff = d.toLocaleTimeString("fr-CH", {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
+
+                let dateLimite = "";
+                if (m.date_limite) {
+                    const dl = new Date(m.date_limite);
+                    dateLimite = dl.toLocaleDateString("fr-CH");
+                }
+
+                const inscrits = await pb.collection("inscriptions").getFullList({
+                    filter: `manifestation = "${m.id}"`
+                });
+
+                const nbInscrits = inscrits.length;
+
+                table.innerHTML += `
+                    <tr>
+                        <td>${m.title}</td>
+                        <td>${dateAff}</td>
+                        <td>${heureAff}</td>
+                        <td>${dateLimite}</td>
+                        <td class="col-inscrits">${nbInscrits}</td>
+
+                        <td class="actions">
+                            <a class="btn-small" href="liste-inscrits.html?id=${m.id}">Liste</a>
+                            <a class="btn-small" href="admin-manifestation-modifier.html?id=${m.id}">Modifier</a>
+                            <button class="btn-small" onclick="supprimer('${m.id}')">Supprimer</button>
+                        </td>
+                    </tr>
+                `;
+            }
+
+        } catch (err) {
+            console.error(err);
+            table.innerHTML = "<tr><td colspan='6'>Erreur de chargement</td></tr>";
+        }
+    }
+
+    loadManifestations();
+
+    async function supprimer(id) {
+        if (!confirm("Supprimer cette manifestation ?")) return;
+
+        try {
+            await pb.collection("manifestations").delete(id);
+            loadManifestations();
+        } catch (err) {
+            alert("Erreur lors de la suppression.");
+        }
+    }
+
+    function exportPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.text("Liste des manifestations", 10, 10);
+
+        let y = 20;
+        manifestationsCache.forEach(m => {
+            const d = new Date(m.date);
+            const dateAff = d.toLocaleDateString("fr-CH");
+            const heureAff = d.toLocaleTimeString("fr-CH", { hour: "2-digit", minute: "2-digit" });
+
+            doc.text(`${m.title} – ${dateAff} ${heureAff}`, 10, y);
+            y += 8;
+        });
+
+        doc.save("manifestations.pdf");
+    }
+
+    function exportExcel() {
+        const rows = manifestationsCache.map(m => {
+            const d = new Date(m.date);
+            return {
+                Titre: m.title,
+                Date: d.toLocaleDateString("fr-CH"),
+                Heure: d.toLocaleTimeString("fr-CH", { hour: "2-digit", minute: "2-digit" }),
+                Date_limite: m.date_limite ? new Date(m.date_limite).toLocaleDateString("fr-CH") : ""
+            };
+        });
+
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Manifestations");
+
+        XLSX.writeFile(wb, "manifestations.xlsx");
+    }
+</script>
+
+</body>
+</html>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
