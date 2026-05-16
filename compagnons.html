@@ -155,37 +155,41 @@
                 expand: "manifestation"
             });
 
+            console.log("Manifestations :", manifestations);
+            console.log("Inscriptions utilisateur :", inscriptions);
+
             container.innerHTML = "";
 
-            // ⭐ Filtrer les manifestations échues
-            const futures = manifestations.filter(m => new Date(m.date) >= now);
+            const futures = manifestations.filter(m => {
+                const d = new Date(m.date);
+                return !isNaN(d.getTime()) && d >= now;
+            });
 
             futures.forEach(m => {
                 const d = new Date(m.date);
                 const dateAff = d.toLocaleDateString("fr-CH");
-                const heureAff = m.date.split(" ")[1].slice(0,5);
+                let heureAff = "";
+                if (typeof m.date === "string" && m.date.includes(" ")) {
+                    const parts = m.date.split(" ");
+                    if (parts[1]) heureAff = parts[1].slice(0,5);
+                }
 
                 const limite = new Date(m.date_limite);
-                const limiteAff = limite.toLocaleDateString("fr-CH");
-                const isClosed = now > limite;
+                const limiteAff = !isNaN(limite.getTime())
+                    ? limite.toLocaleDateString("fr-CH")
+                    : "Non définie";
+                const isClosed = !isNaN(limite.getTime()) && now > limite;
 
-                const organisateur = m.organisateur || m.responsable || m.organisateur_nom || "Non défini";
+                const responsable = m.responsable || "Non défini";
 
-                // ⭐ Trouver inscription (ID ou expand)
                 const inscription = inscriptions.find(i =>
                     i.manifestation === m.id ||
-                    (i.expand?.manifestation?.id === m.id)
+                    (i.expand && i.expand.manifestation && i.expand.manifestation.id === m.id)
                 );
 
+                console.log("Manifestation", m.id, "→ inscription trouvée :", inscription);
+
                 const estInscrit = Boolean(inscription);
-
-                // ⭐ Compteur inscrits
-                const inscritsCount = inscriptions.filter(i =>
-                    i.manifestation === m.id ||
-                    (i.expand?.manifestation?.id === m.id)
-                ).length;
-
-                const placesMax = m.places_max || "?";
 
                 let badge = estInscrit ? `<div class="badge">INSCRIT</div>` : "";
 
@@ -217,10 +221,9 @@
                         ${badge}
                         <h2>${m.title}</h2>
 
-                        <div class="info">📅 ${dateAff} à ${heureAff}</div>
+                        <div class="info">📅 ${dateAff}${heureAff ? " à " + heureAff : ""}</div>
                         <div class="info">⏳ Date limite : ${limiteAff}</div>
-                        <div class="info">📌 Organisateur : ${organisateur}</div>
-                        <div class="info">👥 ${inscritsCount} inscrits / ${placesMax} places</div>
+                        <div class="info">📌 Responsable : ${responsable}</div>
 
                         ${status}
                         ${actionBtn}
@@ -232,6 +235,10 @@
                     </div>
                 `;
             });
+
+            if (futures.length === 0) {
+                container.innerHTML = "Aucune manifestation à venir.";
+            }
 
         } catch (err) {
             container.innerHTML = "Erreur de chargement.";
