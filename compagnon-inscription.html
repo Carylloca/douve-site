@@ -143,7 +143,6 @@
     const manifestId = url.searchParams.get("m");
     const inscriptionId = url.searchParams.get("i");
 
-    // Bouton Liste des inscrits
     document.getElementById("btnInscrits").href =
         "liste-inscrits-compagnon.html?id=" + manifestId;
 
@@ -151,6 +150,7 @@
         try {
             const m = await pb.collection("manifestations").getOne(manifestId, {
                 expand: "responsables"
+            });
 
             // Date + heure
             let dateAff = "";
@@ -194,13 +194,11 @@
 
             document.getElementById("title").innerHTML = html;
 
-            // Date limite dépassée
             if (limiteDate && new Date() > limiteDate) {
                 document.getElementById("limite").innerHTML =
                     `<span style="color:red;font-weight:bold;">⛔ Date limite dépassée</span>`;
             }
 
-            // Pré-remplir si édition
             if (inscriptionId) {
                 const ins = await pb.collection("inscriptions").getOne(inscriptionId);
                 if (ins.nb_personnes) document.getElementById("nb").value = ins.nb_personnes;
@@ -220,7 +218,6 @@
             return;
         }
 
-        // ⭐ Récupération du compagnon connecté
         const user = pb.authStore.model;
         const nom = user.nom || "";
         const prenom = user.prenom || "";
