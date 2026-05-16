@@ -4,14 +4,8 @@
     <meta charset="UTF-8">
     <title>Admin – Manifestations</title>
 
-    <!-- Favicon -->
+    <link rel="stylesheet" href="../css/style.css">
     <link rel="icon" type="image/png" href="../favicon.png">
-
-    <!-- jsPDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-    <!-- SheetJS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
         body {
@@ -21,255 +15,170 @@
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            font-family: Arial, sans-serif;
+            font-family: "DM Sans", sans-serif;
         }
 
         .overlay {
             background: rgba(0, 0, 0, 0.55);
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 30px 20px;
         }
 
         h1 {
             text-align: center;
             color: white;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             text-shadow: 0 0 10px black;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 10px 16px;
-            background: #7A0010;
-            color: white;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: 0.2s;
-            margin: 5px;
-        }
-
-        .btn:hover {
-            background: #5A000C;
-        }
-
-        .btn-delete {
-            background: #d50000;
-        }
-
-        .btn-delete:hover {
-            background: #9b0000;
-        }
-
-        /* Bouton Modifier couleur vin blanc */
-        .btn-modifier {
-            background: #f4e19c;
-            color: #4a3f00;
-        }
-
-        .btn-modifier:hover {
-            background: #e3d48a;
         }
 
         table {
             width: 100%;
-            max-width: 900px;
-            margin: 20px auto;
             border-collapse: collapse;
-            background: rgba(255,255,255,0.95);
-            border-radius: 10px;
+            background: white;
+            border-radius: 8px;
             overflow: hidden;
         }
 
         th, td {
-            padding: 12px;
+            padding: 10px;
             border-bottom: 1px solid #ddd;
-            text-align: left;
+            text-align: center;
         }
 
         th {
-            background: #7A0010;
+            background: #7b0f23;
             color: white;
-            cursor: pointer;
         }
 
-        tr:hover {
-            background: #f2f2f2;
+        .btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: #7b0f23;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 13px;
         }
 
         .actions {
-            white-space: nowrap;
+            display: flex;
+            gap: 6px;
+            justify-content: center;
         }
     </style>
 </head>
 
 <body>
-    <div class="overlay">
-        <h1>Gestion des manifestations</h1>
+<div class="overlay">
 
-        <div style="text-align:center;">
-            <a href="admin-menu.html" class="btn">← Retour au menu</a>
-            <a href="admin-manifestation-nouveau.html" class="btn">+ Nouvelle manifestation</a>
+    <h1>Gestion des manifestations</h1>
 
-            <button class="btn" onclick="exportPDF()">Export PDF</button>
-            <button class="btn" onclick="exportExcel()">Export Excel</button>
-        </div>
+    <a href="admin-menu.html" class="btn">← Retour au menu</a>
+    <a href="admin-manifestation-nouveau.html" class="btn">+ Nouvelle manifestation</a>
 
-        <!-- Vue Tableau uniquement -->
-        <table id="manifestTable">
-            <thead>
-                <tr>
-                    <th onclick="sortTable(0)">Titre</th>
-                    <th onclick="sortTable(1)">Date</th>
-                    <th onclick="sortTable(2)">Places max</th>
-                    <th onclick="sortTable(3)">Date limite</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-    </div>
+    <br><br>
 
-    <!-- PocketBase -->
-    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
-    <script src="../js/auth.js"></script>
+    <table>
+        <thead>
+        <tr>
+            <th>Titre</th>
+            <th>Date</th>
+            <th>Heure</th>
+            <th>Nombre d'inscrits</th>
+            <th>Date limite</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
 
-    <script>
-        requireComite();
+        <tbody id="tableBody"></tbody>
+    </table>
 
-        let manifestations = [];
+</div>
 
-        function formatDateTime(dt) {
-            if (!dt) return "—";
-            const [date, time] = dt.split(" ");
-            const [y, m, d] = date.split("-");
-            return `${d}.${m}.${y} – ${time}`;
-        }
+<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+<script src="../js/auth.js"></script>
 
-        async function loadAdminManifestations() {
-            const tableBody = document.getElementById("tableBody");
-            tableBody.innerHTML = "<tr><td colspan='5' style='color:white;'>Chargement...</td></tr>";
+<script>
+    requireComite();
 
-            try {
-                manifestations = await pb.collection("manifestations").getFullList({
-                    sort: "-date"
-                });
+    async function loadManifestations() {
+        const table = document.getElementById("tableBody");
+        table.innerHTML = "<tr><td colspan='6'>Chargement...</td></tr>";
 
-                tableBody.innerHTML = "";
-
-                manifestations.forEach(m => {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-                        <td>${m.title}</td>
-                        <td>${formatDateTime(m.date)}</td>
-                        <td>${m.places_max || "—"}</td>
-                        <td>${m.date_limite || "—"}</td>
-                        <td class="actions">
-                            <a href="admin-manifestation-modifier.html?id=${m.id}" class="btn-modifier">Modifier</a>
-                            <button onclick="deleteManifestation('${m.id}')" class="btn-delete">Supprimer</button>
-                        </td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-
-            } catch (err) {
-                tableBody.innerHTML = "<tr><td colspan='5' style='color:white;'>Erreur lors du chargement.</td></tr>";
-                console.error(err);
-            }
-        }
-
-        async function deleteManifestation(id) {
-            if (!confirm("Supprimer cette manifestation ?")) return;
-
-            try {
-                await pb.collection("manifestations").delete(id);
-                loadAdminManifestations();
-            } catch (err) {
-                alert("Erreur lors de la suppression.");
-                console.error(err);
-            }
-        }
-
-        function sortTable(col) {
-            const table = document.getElementById("manifestTable");
-            let switching = true;
-            let dir = "asc";
-
-            while (switching) {
-                switching = false;
-                const rows = table.rows;
-
-                for (let i = 1; i < rows.length - 1; i++) {
-                    let shouldSwitch = false;
-                    let x = rows[i].getElementsByTagName("td")[col];
-                    let y = rows[i + 1].getElementsByTagName("td")[col];
-
-                    if (dir === "asc" && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                        shouldSwitch = true;
-                    }
-                    if (dir === "desc" && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                        shouldSwitch = true;
-                    }
-
-                    if (shouldSwitch) {
-                        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                        switching = true;
-                        break;
-                    }
-                }
-
-                if (!switching && dir === "asc") {
-                    dir = "desc";
-                    switching = true;
-                }
-            }
-        }
-
-        function formatFileName(title, date) {
-            const cleanTitle = title.normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/[^a-zA-Z0-9]/g, "_");
-
-            return `${cleanTitle}_${date.replace(" ", "_")}`;
-        }
-
-        function exportPDF() {
-            if (manifestations.length === 0) return;
-
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            let y = 10;
-
-            manifestations.forEach(m => {
-                doc.text(`Titre : ${m.title}`, 10, y); y += 8;
-                doc.text(`Date : ${formatDateTime(m.date)}`, 10, y); y += 8;
-                doc.text(`Places max : ${m.places_max || "-"}`, 10, y); y += 8;
-                doc.text(`Date limite : ${m.date_limite || "-"}`, 10, y); y += 12;
+        try {
+            const list = await pb.collection("manifestations").getFullList({
+                sort: "-date"
             });
 
-            const fileName = formatFileName(manifestations[0].title, manifestations[0].date) + ".pdf";
-            doc.save(fileName);
+            table.innerHTML = "";
+
+            for (const m of list) {
+
+                // 🔥 Format date sans heure
+                const d = new Date(m.date);
+                const dateAff = d.toLocaleDateString("fr-CH");
+
+                // 🔥 Heure séparée
+                const heureAff = d.toLocaleTimeString("fr-CH", {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
+
+                // 🔥 Date limite sans heure
+                let dateLimite = "";
+                if (m.date_limite) {
+                    const dl = new Date(m.date_limite);
+                    dateLimite = dl.toLocaleDateString("fr-CH");
+                }
+
+                // 🔥 Nombre d'inscrits
+                const inscrits = await pb.collection("inscrits").getFullList({
+                    filter: `manifestation = "${m.id}"`
+                });
+
+                const nbInscrits = inscrits.length;
+
+                // 🔥 Ligne du tableau
+                table.innerHTML += `
+                    <tr>
+                        <td>${m.title}</td>
+                        <td>${dateAff}</td>
+                        <td>${heureAff}</td>
+                        <td>${nbInscrits}</td>
+                        <td>${dateLimite}</td>
+
+                        <td class="actions">
+                            <a class="btn-small" href="admin-inscrits.html?id=${m.id}">Liste des inscrits</a>
+                            <a class="btn-small" href="admin-manifestation-modifier.html?id=${m.id}">Modifier</a>
+                            <button class="btn-small" onclick="supprimer('${m.id}')">Supprimer</button>
+                        </td>
+                    </tr>
+                `;
+            }
+
+        } catch (err) {
+            console.error(err);
+            table.innerHTML = "<tr><td colspan='6'>Erreur de chargement</td></tr>";
         }
+    }
 
-        function exportExcel() {
-            if (manifestations.length === 0) return;
+    loadManifestations();
 
-            const data = manifestations.map(m => ({
-                Titre: m.title,
-                Date: formatDateTime(m.date),
-                Places_max: m.places_max || "-",
-                Date_limite: m.date_limite || "-"
-            }));
+    async function supprimer(id) {
+        if (!confirm("Supprimer cette manifestation ?")) return;
 
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Manifestations");
-
-            const fileName = formatFileName(manifestations[0].title, manifestations[0].date) + ".xlsx";
-            XLSX.writeFile(wb, fileName);
+        try {
+            await pb.collection("manifestations").delete(id);
+            loadManifestations();
+        } catch (err) {
+            alert("Erreur lors de la suppression.");
         }
+    }
+</script>
 
-        loadAdminManifestations();
-    </script>
 </body>
 </html>
