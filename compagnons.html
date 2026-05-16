@@ -11,8 +11,20 @@
     <style>
         body {
             margin: 0;
-            background: #f4f4f4;
             font-family: "DM Sans", sans-serif;
+
+            /* ⭐ Image de fond */
+            background-image: url("img/page-compagnons.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        /* Overlay sombre */
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding-bottom: 40px;
         }
 
         /* HEADER FIXE */
@@ -22,7 +34,8 @@
             left: 0;
             right: 0;
             height: 70px;
-            background: #7b0f23;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
             color: white;
             display: flex;
             align-items: center;
@@ -32,9 +45,16 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
 
+        .header-left {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
         .header-title {
             font-size: 22px;
             font-weight: bold;
+            text-shadow: 0 0 10px black;
         }
 
         .btn {
@@ -53,13 +73,13 @@
         }
 
         .container {
-            padding: 100px 20px 40px 20px;
+            padding: 110px 20px 40px 20px;
             max-width: 900px;
             margin: auto;
         }
 
         .card {
-            background: white;
+            background: rgba(255,255,255,0.95);
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 15px;
@@ -105,14 +125,23 @@
 
 <body>
 
-<!-- HEADER -->
-<div class="header">
-    <div class="header-title">Mes manifestations</div>
-    <button class="btn" onclick="logout()">Déconnexion</button>
-</div>
+<div class="overlay">
 
-<div class="container" id="manifestList">
-    Chargement des manifestations...
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-left">
+            <a href="index.html" class="btn">← Retour au menu</a>
+        </div>
+
+        <div class="header-title">Mes manifestations</div>
+
+        <button class="btn" onclick="logout()">Déconnexion</button>
+    </div>
+
+    <div class="container" id="manifestList">
+        Chargement des manifestations...
+    </div>
+
 </div>
 
 <script>
