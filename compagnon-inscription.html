@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -74,13 +75,14 @@
             color: #7b0f23;
         }
 
-        input, select {
-            width: 100%;
+        #nb {
+            width: 120px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
             padding: 10px;
-            margin-top: 5px;
             border-radius: 6px;
             border: 1px solid #ccc;
-            font-size: 16px;
         }
 
         .btn-action {
@@ -106,14 +108,18 @@
 <div class="overlay">
 
     <div class="header">
-        <a href="compagnons.html" class="btn">← Retour</a>
+        <a href="compagnons.html" class="btn">← Liste des manifestations</a>
         <div>Inscription</div>
-        <button class="btn" onclick="logout()">Déconnexion</button>
+        <div style="display:flex; gap:10px;">
+            <a href="index.html" class="btn">Menu</a>
+            <button class="btn" onclick="logout()">Déconnexion</button>
+        </div>
     </div>
 
     <div class="container">
         <div class="card">
             <h2 id="title">Chargement...</h2>
+            <div id="limite" style="margin-bottom:15px;"></div>
 
             <label>Nombre de personnes :</label>
             <input type="number" id="nb" min="1" value="1">
@@ -134,7 +140,26 @@
     async function load() {
         try {
             const m = await pb.collection("manifestations").getOne(manifestId);
-            document.getElementById("title").innerText = m.title;
+
+            const d = new Date(m.date);
+            const dateAff = d.toLocaleDateString("fr-CH");
+            const heureAff = m.date.split(" ")[1].slice(0,5);
+
+            const limite = new Date(m.date_limite);
+            const now = new Date();
+
+            const user = pb.authStore.model;
+            const nomCompagnon = user.nom || user.prenom || user.email;
+
+            document.getElementById("title").innerHTML =
+                `${m.title}<br>
+                 <span style="font-size:16px;color:#444;">📅 ${dateAff} à ${heureAff}</span><br>
+                 <span style="font-size:16px;color:#7b0f23;">👤 ${nomCompagnon}</span>`;
+
+            if (now > limite) {
+                document.getElementById("limite").innerHTML =
+                    `<span style="color:red;font-weight:bold;">⛔ Date limite dépassée</span>`;
+            }
 
             if (inscriptionId) {
                 const ins = await pb.collection("inscriptions").getOne(inscriptionId);
@@ -162,6 +187,8 @@
                     nb_personnes: nb
                 });
             }
+
+            alert("Votre inscription a été enregistrée.\nVous serez " + nb + " personne(s).");
 
             window.location.href = "compagnons.html";
 
