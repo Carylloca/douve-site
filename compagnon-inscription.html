@@ -149,7 +149,8 @@
 
     async function load() {
         try {
-            const m = await pb.collection("manifestations").getOne(manifestId);
+            const m = await pb.collection("manifestations").getOne(manifestId, {
+                expand: "responsables"
 
             // Date + heure
             let dateAff = "";
