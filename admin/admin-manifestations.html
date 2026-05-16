@@ -117,7 +117,7 @@
 <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 <script src="../js/auth.js"></script>
 
-<!-- 🔥 Correction indispensable -->
+<!-- 🔥 pb défini UNE SEULE FOIS -->
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 </script>
@@ -154,7 +154,8 @@
                     dateLimite = dl.toLocaleDateString("fr-CH");
                 }
 
-                const inscrits = await pb.collection("inscrits").getFullList({
+                // 🔥 Collection correcte : inscriptions
+                const inscrits = await pb.collection("inscriptions").getFullList({
                     filter: `manifestation = "${m.id}"`
                 });
 
