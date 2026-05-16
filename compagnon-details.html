@@ -133,18 +133,9 @@
 
             // Cas YYYY-MM-DD → on ajoute 1 jour pour compenser le décalage PocketBase/UTC
             if (onlyDate.includes("-")) {
-                const [y, m, day] = onlyDate.split("-").map(Number);
-                const jsDate = new Date(y, m - 1, day);
-                
-
-                const dd = String(jsDate.getDate()).padStart(2, "0");
-                const mm = String(jsDate.getMonth() + 1).padStart(2, "0");
-                const yyyy = jsDate.getFullYear();
-                return `${dd}.${mm}.${yyyy}`;
+                const [y, m, day] = onlyDate.split("-");
+                return `${day}.${m}.${y}`;
             }
-
-            return onlyDate;
-        }
 
         async function chargerDetails() {
             try {
