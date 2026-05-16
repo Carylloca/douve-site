@@ -176,7 +176,12 @@
             }
 
             // Organisateur
-            let organisateur = m.organisateur || m.responsable || m.organisateur_nom || "Non défini";
+            let organisateur = "Non défini";
+            if (m.expand?.responsables?.length > 0) {
+                organisateur = m.expand.responsables
+                    .map(r => `${r.nom} ${r.prenom} (${r.initiales || ""})`)
+                    .join(", ");
+}
 
             const user = pb.authStore.model;
             const nomCompagnon = user.nom || user.prenom || user.email;
