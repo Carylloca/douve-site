@@ -56,6 +56,13 @@
             color: white;
         }
 
+        /* 🔥 Colonne inscrits : jaune vin blanc */
+        .col-inscrits {
+            background: #fff7c2 !important;
+            width: 90px;
+            font-weight: bold;
+        }
+
         .btn {
             padding: 6px 10px;
             border-radius: 6px;
@@ -103,8 +110,8 @@
             <th>Titre</th>
             <th>Date</th>
             <th>Heure</th>
-            <th>Nombre d'inscrits</th>
             <th>Date limite</th>
+            <th class="col-inscrits">Inscrits</th>
             <th>Actions</th>
         </tr>
         </thead>
@@ -117,7 +124,6 @@
 <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 <script src="../js/auth.js"></script>
 
-<!-- 🔥 pb défini UNE SEULE FOIS -->
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 </script>
@@ -154,7 +160,6 @@
                     dateLimite = dl.toLocaleDateString("fr-CH");
                 }
 
-                // 🔥 Collection correcte : inscriptions
                 const inscrits = await pb.collection("inscriptions").getFullList({
                     filter: `manifestation = "${m.id}"`
                 });
@@ -166,8 +171,8 @@
                         <td>${m.title}</td>
                         <td>${dateAff}</td>
                         <td>${heureAff}</td>
-                        <td>${nbInscrits}</td>
                         <td>${dateLimite}</td>
+                        <td class="col-inscrits">${nbInscrits}</td>
 
                         <td class="actions">
                             <a class="btn-small" href="liste-inscrits.html?id=${m.id}">Liste</a>
@@ -197,7 +202,6 @@
         }
     }
 
-    /* 📄 Export PDF */
     function exportPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
@@ -217,7 +221,6 @@
         doc.save("manifestations.pdf");
     }
 
-    /* 📊 Export Excel */
     function exportExcel() {
         const rows = manifestationsCache.map(m => {
             const d = new Date(m.date);
