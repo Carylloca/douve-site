@@ -117,14 +117,14 @@
 
         let compagnonData = null;
 
-        /* 🔧 Formatage robuste de la date (gère JJ.MM.AAAA et YYYY-MM-DD) */
+        /* 🔧 Formatage robuste + correction du -1 jour sur YYYY-MM-DD */
         function formatDate(d) {
             if (!d) return "";
 
-            // On récupère uniquement la partie date (avant l'espace ou le T)
-            const onlyDate = d.split("T")[0].split(" ")[0];
+            const raw = String(d);
+            const onlyDate = raw.split("T")[0].split(" ")[0];
 
-            // Cas PocketBase Europe/Zurich : JJ.MM.AAAA
+            // Cas JJ.MM.AAAA (on renvoie tel quel, normalisé)
             if (onlyDate.includes(".")) {
                 const [day, month, year] = onlyDate.split(".");
                 const j = String(day).padStart(2, "0");
@@ -132,15 +132,18 @@
                 return `${j}.${m}.${year}`;
             }
 
-            // Cas ISO : YYYY-MM-DD
+            // Cas YYYY-MM-DD → on ajoute 1 jour pour compenser le décalage PocketBase/UTC
             if (onlyDate.includes("-")) {
-                const [y, m, day] = onlyDate.split("-");
-                const j = String(day).padStart(2, "0");
-                const mm = String(m).padStart(2, "0");
-                return `${j}.${mm}.${y}`;
+                const [y, m, day] = onlyDate.split("-").map(Number);
+                const jsDate = new Date(y, m - 1, day);
+                jsDate.setDate(jsDate.getDate() + 1); // correction +1 jour
+
+                const dd = String(jsDate.getDate()).padStart(2, "0");
+                const mm = String(jsDate.getMonth() + 1).padStart(2, "0");
+                const yyyy = jsDate.getFullYear();
+                return `${dd}.${mm}.${yyyy}`;
             }
 
-            // Fallback : on renvoie tel quel
             return onlyDate;
         }
 
