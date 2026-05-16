@@ -62,12 +62,28 @@
             height: 120px;
         }
 
-        /* Champ heure unique */
-        #heure_complete {
-            width: 160px;
+        /* Champ heure compact */
+        #heure_wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 5px;
+        }
+
+        .heure-select {
+            width: 90px;
+            padding: 10px;
             font-size: 18px;
-            font-weight: bold;
+            font-family: "DM Sans", sans-serif;
             text-align: center;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .heure-sep {
+            font-size: 22px;
+            font-weight: bold;
+            color: #7b0f23;
         }
 
         /* Responsables */
@@ -112,18 +128,25 @@
         <input type="date" id="date" required>
 
         <label>Heure</label>
-        <select id="heure_complete" required>
-            <option value="">Sélectionner...</option>
-            <script>
-                const minutes = ["00", "15", "30", "45"];
-                for (let h = 0; h < 24; h++) {
-                    for (let m of minutes) {
+        <div id="heure_wrapper">
+            <select id="heure_h" class="heure-select" required>
+                <script>
+                    for (let h = 0; h < 24; h++) {
                         const hh = String(h).padStart(2, "0");
-                        document.write(`<option value="${hh}:${m}">${hh}:${m}</option>`);
+                        document.write(`<option value="${hh}">${hh}</option>`);
                     }
-                }
-            </script>
-        </select>
+                </script>
+            </select>
+
+            <span class="heure-sep">:</span>
+
+            <select id="heure_m" class="heure-select" required>
+                <option value="00">00</option>
+                <option value="15">15</option>
+                <option value="30">30</option>
+                <option value="45">45</option>
+            </select>
+        </div>
 
         <label>Date limite d'inscription</label>
         <input type="date" id="date_limite">
@@ -198,14 +221,15 @@
         }
 
         const date = document.getElementById("date").value;
-        const heure = document.getElementById("heure_complete").value;
+        const hh = document.getElementById("heure_h").value;
+        const mm = document.getElementById("heure_m").value;
 
-        if (!date || !heure) {
+        if (!date || !hh || !mm) {
             alert("Veuillez sélectionner une date et une heure.");
             return;
         }
 
-        const dateFinale = `${date} ${heure}`;
+        const dateFinale = `${date} ${hh}:${mm}`;
 
         const data = {
             title: document.getElementById("title").value.trim(),
