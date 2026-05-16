@@ -7,10 +7,10 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="../favicon.png">
 
-    <!-- jsPDF (PDF export) -->
+    <!-- jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <!-- SheetJS (Excel export) -->
+    <!-- SheetJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
@@ -61,27 +61,14 @@
             background: #9b0000;
         }
 
+        /* Bouton Modifier couleur vin blanc */
         .btn-modifier {
-            background: #7A0010;
+            background: #f4e19c;
+            color: #4a3f00;
         }
 
         .btn-modifier:hover {
-            background: #5A000C;
-        }
-
-        /* --- Cartes --- */
-        .manifest-card {
-            background: rgba(255, 255, 255, 0.92);
-            border-radius: 10px;
-            padding: 20px;
-            margin: 15px auto;
-            max-width: 600px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-
-        /* --- Tableau --- */
-        #tableView {
-            display: none;
+            background: #e3d48a;
         }
 
         table {
@@ -124,31 +111,23 @@
             <a href="admin-menu.html" class="btn">← Retour au menu</a>
             <a href="admin-manifestation-nouveau.html" class="btn">+ Nouvelle manifestation</a>
 
-            <button class="btn" onclick="showCards()">Vue cartes</button>
-            <button class="btn" onclick="showTable()">Vue tableau</button>
-
             <button class="btn" onclick="exportPDF()">Export PDF</button>
             <button class="btn" onclick="exportExcel()">Export Excel</button>
         </div>
 
-        <!-- Vue Cartes -->
-        <div id="cardsView"></div>
-
-        <!-- Vue Tableau -->
-        <div id="tableView">
-            <table id="manifestTable">
-                <thead>
-                    <tr>
-                        <th onclick="sortTable(0)">Titre</th>
-                        <th onclick="sortTable(1)">Date</th>
-                        <th onclick="sortTable(2)">Places max</th>
-                        <th onclick="sortTable(3)">Date limite</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-        </div>
+        <!-- Vue Tableau uniquement -->
+        <table id="manifestTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)">Titre</th>
+                    <th onclick="sortTable(1)">Date</th>
+                    <th onclick="sortTable(2)">Places max</th>
+                    <th onclick="sortTable(3)">Date limite</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
     </div>
 
     <!-- PocketBase -->
@@ -156,55 +135,33 @@
     <script src="../js/auth.js"></script>
 
     <script>
-        // 🔒 Sécurisation de la page admin
         requireComite();
 
         let manifestations = [];
 
-        function showCards() {
-            document.getElementById("cardsView").style.display = "block";
-            document.getElementById("tableView").style.display = "none";
-        }
-
-        function showTable() {
-            document.getElementById("cardsView").style.display = "none";
-            document.getElementById("tableView").style.display = "block";
+        function formatDateTime(dt) {
+            if (!dt) return "—";
+            const [date, time] = dt.split(" ");
+            const [y, m, d] = date.split("-");
+            return `${d}.${m}.${y} – ${time}`;
         }
 
         async function loadAdminManifestations() {
-            const cards = document.getElementById("cardsView");
             const tableBody = document.getElementById("tableBody");
-
-            cards.innerHTML = "<p style='color:white;text-align:center;'>Chargement...</p>";
+            tableBody.innerHTML = "<tr><td colspan='5' style='color:white;'>Chargement...</td></tr>";
 
             try {
                 manifestations = await pb.collection("manifestations").getFullList({
                     sort: "-date"
                 });
 
-                cards.innerHTML = "";
                 tableBody.innerHTML = "";
 
                 manifestations.forEach(m => {
-                    /* --- Vue cartes --- */
-                    const div = document.createElement("div");
-                    div.className = "manifest-card";
-                    div.innerHTML = `
-                        <strong>${m.title}</strong><br>
-                        Date : ${m.date}<br>
-                        Places max : ${m.places_max || "—"}<br>
-                        Date limite : ${m.date_limite || "—"}<br><br>
-
-                        <a href="admin-manifestation-modifier.html?id=${m.id}" class="btn-modifier">Modifier</a>
-                        <button onclick="deleteManifestation('${m.id}')" class="btn-delete">Supprimer</button>
-                    `;
-                    cards.appendChild(div);
-
-                    /* --- Vue tableau --- */
                     const row = document.createElement("tr");
                     row.innerHTML = `
                         <td>${m.title}</td>
-                        <td>${m.date}</td>
+                        <td>${formatDateTime(m.date)}</td>
                         <td>${m.places_max || "—"}</td>
                         <td>${m.date_limite || "—"}</td>
                         <td class="actions">
@@ -216,7 +173,7 @@
                 });
 
             } catch (err) {
-                cards.innerHTML = "<p style='color:white;'>Erreur lors du chargement.</p>";
+                tableBody.innerHTML = "<tr><td colspan='5' style='color:white;'>Erreur lors du chargement.</td></tr>";
                 console.error(err);
             }
         }
@@ -233,7 +190,6 @@
             }
         }
 
-        /* --- Tri du tableau --- */
         function sortTable(col) {
             const table = document.getElementById("manifestTable");
             let switching = true;
@@ -269,16 +225,14 @@
             }
         }
 
-        /* --- Format nom fichier --- */
         function formatFileName(title, date) {
             const cleanTitle = title.normalize("NFD")
                 .replace(/[\u0300-\u036f]/g, "")
                 .replace(/[^a-zA-Z0-9]/g, "_");
 
-            return `${cleanTitle}_${date}`;
+            return `${cleanTitle}_${date.replace(" ", "_")}`;
         }
 
-        /* --- Export PDF --- */
         function exportPDF() {
             if (manifestations.length === 0) return;
 
@@ -288,7 +242,7 @@
 
             manifestations.forEach(m => {
                 doc.text(`Titre : ${m.title}`, 10, y); y += 8;
-                doc.text(`Date : ${m.date}`, 10, y); y += 8;
+                doc.text(`Date : ${formatDateTime(m.date)}`, 10, y); y += 8;
                 doc.text(`Places max : ${m.places_max || "-"}`, 10, y); y += 8;
                 doc.text(`Date limite : ${m.date_limite || "-"}`, 10, y); y += 12;
             });
@@ -297,13 +251,12 @@
             doc.save(fileName);
         }
 
-        /* --- Export Excel --- */
         function exportExcel() {
             if (manifestations.length === 0) return;
 
             const data = manifestations.map(m => ({
                 Titre: m.title,
-                Date: m.date,
+                Date: formatDateTime(m.date),
                 Places_max: m.places_max || "-",
                 Date_limite: m.date_limite || "-"
             }));
@@ -316,7 +269,6 @@
             XLSX.writeFile(wb, fileName);
         }
 
-        // Charger les manifestations au démarrage
         loadAdminManifestations();
     </script>
 </body>
