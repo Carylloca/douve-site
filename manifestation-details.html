@@ -4,17 +4,11 @@
     <meta charset="UTF-8">
     <title>Détails de la manifestation</title>
 
-    <!-- jsPDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-    <!-- SheetJS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-image: url("page-manifestations.jpg");
+            background-image: url("img/page-manifestation-details.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -25,34 +19,37 @@
             background: rgba(0, 0, 0, 0.55);
             min-height: 100vh;
             padding: 40px 20px;
-            color: white;
         }
 
         h1 {
             text-align: center;
-            margin-bottom: 20px;
+            color: white;
+            margin-bottom: 25px;
             text-shadow: 0 0 10px black;
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.92);
-            color: black;
-            border-radius: 10px;
-            padding: 20px;
+            background: rgba(255,255,255,0.95);
             max-width: 700px;
             margin: 0 auto;
+            padding: 25px;
+            border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .info {
+            margin: 8px 0;
         }
 
         .btn {
             display: inline-block;
-            padding: 12px 20px;
+            padding: 10px 16px;
             background: #7A0010;
             color: white;
             border-radius: 6px;
             text-decoration: none;
             font-weight: bold;
-            margin-top: 20px;
+            margin: 5px 0;
         }
 
         .btn:hover {
@@ -67,27 +64,9 @@
             background: #222;
         }
 
-        .export-buttons {
-            margin-top: 20px;
-        }
-
         .export-buttons button {
-            padding: 10px 16px;
             margin-right: 10px;
-            background: #7A0010;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .export-buttons button:hover {
-            background: #5A000C;
-        }
-
-        .info {
-            margin: 8px 0;
+            padding: 8px 14px;
         }
     </style>
 </head>
@@ -152,6 +131,14 @@
     let manifestation = null;
     let inscrits = [];
 
+    /* --- Format date + heure --- */
+    function formatDateTime(dt) {
+        if (!dt) return "-";
+        const [date, time] = dt.split(" ");
+        const [y, m, d] = date.split("-");
+        return `${d}.${m}.${y} – ${time}`;
+    }
+
     async function loadDetails() {
         try {
             manifestation = await pb.collection("manifestations").getOne(id, {
@@ -159,7 +146,7 @@
             });
 
             document.getElementById("title").textContent = manifestation.title;
-            document.getElementById("date").textContent = manifestation.date;
+            document.getElementById("date").textContent = formatDateTime(manifestation.date);
             document.getElementById("description").textContent = manifestation.description || "-";
             document.getElementById("limite").textContent = manifestation.date_limite || "-";
 
@@ -220,7 +207,11 @@
         const emails = resp.map(r => r.email).join(",");
 
         const subject = encodeURIComponent("À propos de la manifestation : " + manifestation.title);
-        const body = encodeURIComponent("Bonjour,\n\nJe vous contacte concernant la manifestation \"" + manifestation.title + "\".\n\n");
+        const body = encodeURIComponent(
+            "Bonjour,\n\nJe vous contacte concernant la manifestation \"" +
+            manifestation.title +
+            "\".\n\n"
+        );
 
         window.location.href = `mailto:${emails}?subject=${subject}&body=${body}`;
     }
@@ -296,7 +287,7 @@
             .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
             .replace(/[^a-zA-Z0-9]/g, "_");
 
-        return `${cleanTitle}_${manifestation.date}`;
+        return `${cleanTitle}_${manifestation.date.replace(" ", "_")}`;
     }
 
     /* --- Export PDF --- */
@@ -306,7 +297,7 @@
         let y = 10;
 
         doc.text(`Manifestation : ${manifestation.title}`, 10, y); y += 8;
-        doc.text(`Date : ${manifestation.date}`, 10, y); y += 8;
+        doc.text(`Date : ${formatDateTime(manifestation.date)}`, 10, y); y += 8;
         doc.text(`Places : ${inscrits.length} / ${manifestation.places_max || "-"}`, 10, y); y += 8;
         doc.text(`Date limite : ${manifestation.date_limite || "-"}`, 10, y); y += 12;
 
