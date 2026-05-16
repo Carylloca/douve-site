@@ -20,90 +20,89 @@
         .overlay {
             background: rgba(0, 0, 0, 0.55);
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 20px 10px;
         }
 
         h1 {
             text-align: center;
             color: white;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
             text-shadow: 0 0 10px black;
-            font-family: "DM Sans", sans-serif;
+            font-size: 26px;
         }
 
         form {
             background: rgba(255, 255, 255, 0.92);
-            padding: 25px;
-            border-radius: 10px;
-            max-width: 600px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            max-width: 520px;
             margin: 0 auto;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            font-family: "DM Sans", sans-serif;
         }
 
         label {
             font-weight: bold;
             display: block;
-            margin-top: 15px;
-            font-family: "DM Sans", sans-serif;
+            margin-top: 8px;
+            margin-bottom: 3px;
+            font-size: 14px;
         }
 
         input, textarea, select {
             width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border-radius: 6px;
+            padding: 7px 8px;
+            border-radius: 5px;
             border: 1px solid #ccc;
-            font-size: 16px;
-            font-family: "DM Sans", sans-serif;
+            font-size: 15px;
         }
 
         textarea {
-            height: 120px;
+            height: 90px;
         }
 
+        /* Champ heure compact */
         #heure_wrapper {
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-top: 5px;
+            gap: 4px;
         }
 
         .heure-select {
-            width: 90px;
-            padding: 10px;
-            font-size: 18px;
-            font-family: "DM Sans", sans-serif;
+            width: 70px;
+            padding: 7px;
+            font-size: 16px;
             text-align: center;
-            border-radius: 6px;
-            border: 1px solid #ccc;
         }
 
         .heure-sep {
-            font-size: 22px;
+            font-size: 18px;
             font-weight: bold;
             color: #7b0f23;
         }
 
+        /* Responsables */
         .responsable-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin: 6px 0;
-            font-size: 16px;
-            font-family: "DM Sans", sans-serif;
+            gap: 8px;
+            margin: 3px 0;
+            font-size: 14px;
         }
 
         .responsable-item input[type="checkbox"] {
-            width: 22px;
-            height: 22px;
-            cursor: pointer;
+            width: 18px;
+            height: 18px;
         }
 
         .btn-submit {
-            margin-top: 20px;
+            margin-top: 15px;
             width: 100%;
-            text-align: center;
+            padding: 10px;
+        }
+
+        .btn {
+            margin-bottom: 10px;
+            display: inline-block;
         }
     </style>
 </head>
@@ -223,7 +222,7 @@
             return;
         }
 
-        /* 🔥 Correction critique : ajout des secondes */
+        /* 🔥 Format ISO complet */
         const dateFinale = `${date} ${hh}:${mm}:00`;
 
         let places = document.getElementById("places_max").value.trim();
