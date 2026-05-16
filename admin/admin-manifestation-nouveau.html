@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <title>Admin – Nouvelle manifestation</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../favicon.png">
+
     <link rel="stylesheet" href="../css/style.css">
 
     <style>
@@ -48,16 +51,16 @@
         }
 
         .row label {
-    width: 40%;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    text-align: right;
-    padding-right: 10px;
-    font-size: 14px;
-    font-weight: bold;
-}
-
+            width: 40%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            text-align: right;
+            padding-right: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 1.2;
+        }
 
         .row input,
         .row textarea,
@@ -67,6 +70,7 @@
             border-radius: 5px;
             border: 1px solid #ccc;
             font-size: 15px;
+            font-family: "DM Sans", sans-serif;
         }
 
         textarea {
@@ -78,34 +82,23 @@
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-
-        .heure-select {
-            width: 60px;
-            padding: 7px;
-            font-size: 15px;
-            text-align: center;
-        }
-
-        .heure-sep {
-            font-size: 18px;
-            font-weight: bold;
-            color: #7b0f23;
+            width: 60%;
         }
 
         /* RESPONSABLES EN 2 COLONNES */
         #responsables {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 4px 10px;
-            margin-top: 5px;
+            gap: 4px 6px;
+            margin-top: 4px;
         }
 
         .responsable-item {
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 14px;
+            font-size: 13px;
+            padding: 2px 0;
         }
 
         .responsable-item input[type="checkbox"] {
@@ -114,8 +107,8 @@
         }
 
         .responsable-item span {
+            flex: 1;
             text-align: center;
-            width: 100%;
         }
 
         .btn-submit {
@@ -153,24 +146,7 @@
             <label>Date & Heure</label>
             <div class="row-inline">
                 <input type="date" id="date" required>
-
-                <select id="heure_h" class="heure-select" required>
-                    <script>
-                        for (let h = 0; h < 24; h++) {
-                            const hh = String(h).padStart(2, "0");
-                            document.write(`<option value="${hh}">${hh}</option>`);
-                        }
-                    </script>
-                </select>
-
-                <span class="heure-sep">:</span>
-
-                <select id="heure_m" class="heure-select" required>
-                    <option value="00">00</option>
-                    <option value="15">15</option>
-                    <option value="30">30</option>
-                    <option value="45">45</option>
-                </select>
+                <input type="time" id="heure" required>
             </div>
         </div>
 
@@ -249,10 +225,9 @@
         }
 
         const date = document.getElementById("date").value;
-        const hh = document.getElementById("heure_h").value;
-        const mm = document.getElementById("heure_m").value;
+        const heure = document.getElementById("heure").value; // format HH:MM
 
-        const dateFinale = `${date} ${hh}:${mm}:00`;
+        const dateFinale = `${date} ${heure}:00`;
 
         let places = document.getElementById("places_max").value.trim();
         places = places === "" ? null : Number(places);
