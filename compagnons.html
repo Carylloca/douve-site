@@ -228,8 +228,11 @@
                         ${badge}
                         <h2>${m.title}</h2>
 
-                        <div class="info">📅 ${dateAff}${heureAff ? " à " + heureAff : ""}</div>
-                        <div class="info">⏳ Date limite : ${limiteAff}</div>
+                        <div class="info" style="display:flex; justify-content:space-between; align-items:center;">
+                        <span>📅 ${dateAff}${heureAff ? " à " + heureAff : ""}</span>
+                        <span>⏳ Date limite : ${limiteAff}</span>
+                        </div>
+                        
                         <div class="info">📌 Organisateur : ${responsable}</div>
 
                         ${status}
