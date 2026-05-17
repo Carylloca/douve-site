@@ -49,8 +49,9 @@
             background: #5A000C;
         }
 
+        /* Bloc réduit pour rapprocher les colonnes */
         .card {
-            width: 50%;
+            width: 45%;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.92);
             color: black;
@@ -60,6 +61,7 @@
             position: relative;
         }
 
+        /* Photo fixe */
         .photo-block {
             position: absolute;
             top: 20px;
@@ -84,9 +86,9 @@
             display: block;
         }
 
-        /* Largeur harmonisée */
+        /* Champs plus longs */
         input {
-            width: 42%;
+            width: 55%;
             padding: 7px;
             margin-top: 4px;
             border-radius: 6px;
@@ -94,7 +96,7 @@
             font-size: 15px;
         }
 
-        /* Lignes compactes + colonnes rapprochées */
+        /* Colonnes rapprochées */
         .line {
             display: flex;
             gap: 3px;
@@ -102,14 +104,14 @@
             margin-bottom: 8px;
         }
 
-        /* Correction clé : les colonnes ne prennent plus 50% chacune */
+        /* Correction clé : colonnes auto, plus 50% */
         .line > div {
             flex: 0 0 auto;
         }
 
         /* Adresse alignée */
         .full {
-            width: 65%;
+            width: 75%;
         }
     </style>
 </head>
@@ -190,7 +192,7 @@
             </div>
 
             <label>Date de naissance :</label>
-            <input type="date" id="date_naissance" style="width:42%;">
+            <input type="date" id="date_naissance" style="width:55%;">
 
             <div class="line">
                 <div>
