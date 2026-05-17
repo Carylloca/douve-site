@@ -81,13 +81,18 @@
             margin-bottom: 12px;
         }
 
-        /* Bouton fichier propre */
+        /* Bouton fichier propre + suppression du texte parasite */
         #photo {
             width: 280px;
             overflow: hidden;
+            color: transparent; /* masque "Aucun fichier choisi" */
         }
 
         #photo::-webkit-file-upload-button {
+            visibility: hidden;
+        }
+
+        #photo::file-selector-button {
             visibility: hidden;
         }
 
