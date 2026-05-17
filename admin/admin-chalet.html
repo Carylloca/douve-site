@@ -2,58 +2,118 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Admin – Chalet</title>
+    <title>Admin – Gestion du Chalet Le Bon Laron</title>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
-    <!-- PocketBase -->
-    <script src="../js/pocketbase.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f4f4f4;
+        }
 
-    <!-- Auth + API -->
-    <script src="../js/auth.js"></script>
-    <script src="../js/api.js"></script>
+        header {
+            background: #7A0010;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 22px;
+        }
+
+        #calendar {
+            max-width: 1100px;
+            margin: 30px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .panel {
+            max-width: 1100px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: #7A0010;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background: #5a000c;
+        }
+    </style>
 </head>
 
 <body>
 
-<h1>Gestion des réservations du chalet</h1>
+<header>Gestion du Chalet – Admin</header>
 
-<button onclick="logout()">Déconnexion</button>
+<div id="calendar"></div>
 
-<h2>Nouvelle réservation</h2>
+<div class="panel">
+    <h3>Nouvelle / Modifier une réservation</h3>
 
-<form id="createReservationForm">
-    <label>Titre :</label>
-    <input type="text" id="title" required>
+    <label>Type</label>
+    <select id="type">
+        <option value="Interne">Interne</option>
+        <option value="Nettoyage">Nettoyage</option>
+        <option value="Frairie">Frairie</option>
+        <option value="Externe">Externe</option>
+        <option value="Travaux">Travaux</option>
+    </select>
 
-    <label>Description :</label>
+    <label>Compagnon (si interne)</label>
+    <select id="compagnon"></select>
+
+    <label>Date début</label>
+    <input type="date" id="startDate">
+
+    <label>Date fin</label>
+    <input type="date" id="endDate">
+
+    <label>Description</label>
     <textarea id="description"></textarea>
 
-    <label>Date début :</label>
-    <input type="date" id="start_date" required>
-
-    <label>Date fin :</label>
-    <input type="date" id="end_date" required>
-
-    <button type="submit">Créer</button>
-</form>
-
-<hr>
-
-<h2>Réservations existantes</h2>
-<div id="reservations"></div>
+    <button onclick="saveReservation()">Enregistrer</button>
+</div>
 
 <script>
-// Empêche l’accès si l’utilisateur n’est pas comité
-requireComite();
+    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-// Charge les réservations existantes
-loadChaletReservations();
+    let currentEventId = null;
 
-// Création d’une nouvelle réservation
-document.getElementById("createReservationForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    await createChaletReservation();
-});
-</script>
+    async function loadCompagnons() {
+        const list = await pb.collection("companions").getFullList();
+        const select = document.getElementById("compagnon");
+        select.innerHTML = "<option value=''>Aucun</option>";
 
-</body>
-</html>
+        list.forEach(c => {
+            select.innerHTML += `<option value="${c.id}">${c.nom} ${c.prenom}</option>`;
+        });
+    }
+
+    async function saveReservation() {
+        const data = {
+            type: document.getElementById("type").value,
+            compagnon: document.getElementById("compagnon").value || null,
+            startDate: document.getElementById("startDate").value,
+            endDate: document.get
