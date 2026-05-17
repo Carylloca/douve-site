@@ -141,8 +141,11 @@
         }
 
         try {
+            // 1️⃣ Ré-authentifier avec l'ancien mot de passe
+            await pb.collection("companions").authWithPassword(user.email_public, oldPassword);
+
+            // 2️⃣ Mise à jour du mot de passe
             await pb.collection("companions").update(user.id, {
-                oldPassword: oldPassword,
                 password: newPassword,
                 passwordConfirm: newPasswordConfirm
             });
