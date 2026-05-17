@@ -28,12 +28,41 @@
 
         h1 {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             text-shadow: 0 0 10px black;
         }
 
+        /* BOUTONS EN HAUT */
+        .top-buttons {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 18px;
+            background: #7A0010;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: #5A000C;
+        }
+
+        .btn-danger {
+            background: #b30000;
+        }
+
+        .btn-danger:hover {
+            background: #7a0000;
+        }
+
+        /* BLOC RÉDUIT À 50% */
         .card {
-            width: 70%;
+            width: 50%;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.92);
             color: black;
@@ -52,53 +81,41 @@
             color: #7A0010;
         }
 
+        /* PHOTO */
         .photo {
             width: 208px;
             height: 208px;
             border-radius: 10px;
             object-fit: cover;
             border: 3px solid #7A0010;
+            display: block;
+            margin-bottom: 10px;
         }
 
-        .btn {
-            display: inline-block;
-            padding: 10px 18px;
-            background: #7A0010;
-            color: white;
-            border-radius: 6px;
-            text-decoration: none;
-            margin-top: 20px;
-            margin-right: 10px;
-        }
-
-        .btn:hover {
-            background: #5A000C;
-        }
-
-        .btn-danger {
-            background: #b30000;
-        }
-
-        .btn-danger:hover {
-            background: #7a0000;
+        .photo-container {
+            text-align: center;
         }
     </style>
 </head>
 
 <body>
     <div class="overlay">
+
         <h1>Détails du compagnon</h1>
+
+        <!-- BOUTONS EN HAUT -->
+        <div class="top-buttons">
+            <a href="index.html" class="btn">Menu</a>
+            <a href="liste-compagnons.html" class="btn">← Retour</a>
+            <button class="btn" onclick="exportPDF()">Télécharger PDF</button>
+            <a id="editBtn" href="#" class="btn" style="display:none;">Modifier</a>
+            <button id="deleteBtn" class="btn btn-danger" style="display:none;" onclick="supprimerCompagnon()">Supprimer</button>
+        </div>
 
         <div class="card" id="details">
             Chargement...
         </div>
 
-        <div style="margin-top:20px;">
-            <a href="liste-compagnons.html" class="btn">← Retour à la liste</a>
-            <button class="btn" onclick="exportPDF()">Télécharger PDF</button>
-            <a id="editBtn" href="#" class="btn" style="display:none;">Modifier</a>
-            <button id="deleteBtn" class="btn btn-danger" style="display:none;" onclick="supprimerCompagnon()">Supprimer</button>
-        </div>
     </div>
 
     <!-- PocketBase -->
@@ -116,18 +133,14 @@
 
         let compagnonData = null;
 
-        /* 🎯 Formatage propre compatible avec "YYYY-MM-DD HH:MM:SS" */
+        /* FORMATAGE DATE COMPATIBLE AVEC "YYYY-MM-DD HH:MM:SS" */
         function formatDate(d) {
             if (!d) return "";
-
-            // On prend uniquement la partie date avant l'heure
-            const onlyDate = d.split(" ")[0]; // ex : "1970-04-05"
-
+            const onlyDate = d.split(" ")[0];
             if (onlyDate.includes("-")) {
                 const [y, m, day] = onlyDate.split("-");
                 return `${day}.${m}.${y}`;
             }
-
             return onlyDate;
         }
 
@@ -143,7 +156,8 @@
                 document.getElementById("details").innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:30px;">
 
-                        <div style="flex:1; max-width:70%;">
+                        <!-- TEXTE -->
+                        <div style="flex:1;">
                             <div class="row"><span class="label">Nom :</span> ${c.nom}</div>
                             <div class="row"><span class="label">Prénom :</span> ${c.prenom}</div>
                             <div class="row"><span class="label">Initiales :</span> ${c.initiales || ""}</div>
@@ -166,7 +180,11 @@
                             <div class="row"><span class="label">Email professionnel :</span> ${c.email_prof || ""}</div>
                         </div>
 
-                        <div>${photoHTML}</div>
+                        <!-- PHOTO + BOUTON ADMIN -->
+                        <div class="photo-container">
+                            ${photoHTML}
+                            <div id="photoBtnContainer"></div>
+                        </div>
                     </div>
                 `;
 
@@ -178,11 +196,8 @@
 
                     document.getElementById("deleteBtn").style.display = "inline-block";
 
-                    const photoBtn = document.createElement("a");
-                    photoBtn.className = "btn";
-                    photoBtn.textContent = "Changer la photo";
-                    photoBtn.href = "admin/admin-compagnon-modifier.html?id=" + id + "#photo";
-                    document.querySelector(".overlay").appendChild(photoBtn);
+                    document.getElementById("photoBtnContainer").innerHTML =
+                        `<a class="btn" href="admin/admin-compagnon-modifier.html?id=${id}#photo">Changer la photo</a>`;
                 }
 
             } catch (err) {
