@@ -1,4 +1,3 @@
-<!-- TEST CARYL 123 -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -56,6 +55,16 @@
             margin-top: 10px;
             font-size: 14px;
         }
+
+        .toggle {
+            cursor: pointer;
+            font-size: 12px;
+            color: #ffdddd;
+            margin-top: -10px;
+            margin-bottom: 10px;
+            display: block;
+            text-align: right;
+        }
     </style>
 </head>
 
@@ -67,12 +76,15 @@
 
     <label>Ancien mot de passe :</label>
     <input type="password" id="oldPassword">
+    <span class="toggle" onclick="togglePwd('oldPassword')">Afficher</span>
 
     <label>Nouveau mot de passe :</label>
     <input type="password" id="newPassword">
+    <span class="toggle" onclick="togglePwd('newPassword')">Afficher</span>
 
     <label>Confirmer le nouveau mot de passe :</label>
     <input type="password" id="newPasswordConfirm">
+    <span class="toggle" onclick="togglePwd('newPasswordConfirm')">Afficher</span>
 
     <button id="changeBtn">Modifier</button>
 
@@ -85,6 +97,11 @@
 <script>
     if (!pb.authStore.isValid) {
         window.location.href = "login.html";
+    }
+
+    function togglePwd(id) {
+        const input = document.getElementById(id);
+        input.type = input.type === "password" ? "text" : "password";
     }
 
     document.getElementById("changeBtn").addEventListener("click", async () => {
@@ -101,6 +118,11 @@
             return;
         }
 
+        if (newPassword.length < 8) {
+            msg.textContent = "Le mot de passe doit contenir au moins 8 caractères.";
+            return;
+        }
+
         if (newPassword !== newPasswordConfirm) {
             msg.textContent = "Les nouveaux mots de passe ne correspondent pas.";
             return;
@@ -108,19 +130,26 @@
 
         try {
             // 1️⃣ Ré-authentifier
-            await pb.collection("companions").authWithPassword(
+            const auth = await pb.collection("companions").authWithPassword(
                 pb.authStore.model.email,
                 oldPassword
             );
 
-            // 2️⃣ Mise à jour du mot de passe
+            // 2️⃣ Mise à jour du token + modèle
+            pb.authStore.save(auth.token, auth.record);
+
+            // 3️⃣ Mise à jour du mot de passe
             await pb.collection("companions").update(pb.authStore.model.id, {
                 password: newPassword,
                 passwordConfirm: newPasswordConfirm
             });
 
             msg.style.color = "#aaffaa";
-            msg.textContent = "Mot de passe modifié avec succès.";
+            msg.textContent = "Mot de passe modifié avec succès. Redirection...";
+
+            setTimeout(() => {
+                window.location.href = "index.html";
+            }, 1500);
 
         } catch (err) {
             msg.style.color = "#ffdddd";
