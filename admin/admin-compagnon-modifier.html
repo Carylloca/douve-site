@@ -60,7 +60,6 @@
             position: relative;
         }
 
-        /* PHOTO RESPONSIVE + CADRE */
         .photo-block {
             position: absolute;
             top: 15px;
@@ -123,7 +122,7 @@
             display: block;
         }
 
-        input {
+        input, select {
             width: 85%;
             padding: 7px;
             margin-top: 4px;
@@ -153,7 +152,6 @@
             width: 55%;
         }
 
-        /* RESPONSIVE MOBILE */
         @media (max-width: 900px) {
             .photo-block {
                 position: relative;
@@ -257,117 +255,134 @@
                     <input type="text" id="telephone_prof">
                 </div>
             </div>
-
-            <label>Date de naissance :</label>
-            <input type="date" id="date_naissance">
-
-            <div class="line">
-                <div>
-                    <label>Conjoint - nom :</label>
-                    <input type="text" id="conjoint_nom">
-                </div>
-                <div>
-                    <label>Conjoint - prénom :</label>
-                    <input type="text" id="conjoint_prenom">
-                </div>
-            </div>
-
-            <div style="text-align:center; margin-top:20px;">
-                <button class="btn" onclick="sauvegarder()">Enregistrer</button>
-                <a href="admin-compagnons.html" class="btn">Annuler</a>
-            </div>
-
-        </div>
+<div class="line role-line">
+    <div>
+        <label>Date de naissance :</label>
+        <input type="date" id="date_naissance">
     </div>
 
-    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+    <div>
+        <label>Rôle :</label>
+        <select id="role" style="width:85%;">
+            <option value="compagnon">Compagnon</option>
+            <option value="comite">Comité</option>
+        </select>
+    </div>
+</div>
 
-    <script>
-        const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+<div class="line">
+    <div>
+        <label>Conjoint - nom :</label>
+        <input type="text" id="conjoint_nom">
+    </div>
+    <div>
+        <label>Conjoint - prénom :</label>
+        <input type="text" id="conjoint_prenom">
+    </div>
+</div>
 
-        if (!pb.authStore.isValid) {
-            window.location.href = "../login.html";
+<div style="text-align:center; margin-top:20px;">
+    <button class="btn" onclick="sauvegarder()">Enregistrer</button>
+    <a href="admin-compagnons.html" class="btn">Annuler</a>
+</div>
+
+</div>
+</div>
+
+<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+<script>
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+if (!pb.authStore.isValid) {
+    window.location.href = "../login.html";
+}
+
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+document.getElementById("retourBtn").href = "../compagnon-details.html?id=" + id;
+
+async function charger() {
+    try {
+        const c = await pb.collection("companions").getOne(id);
+
+        document.getElementById("nom").value = c.nom;
+        document.getElementById("prenom").value = c.prenom;
+        document.getElementById("initiales").value = c.initiales || "";
+        document.getElementById("fonction").value = c.fonction || "";
+        document.getElementById("adresse").value = c.adresse || "";
+        document.getElementById("npa").value = c.npa || "";
+        document.getElementById("lieu").value = c.lieu || "";
+        document.getElementById("email_public").value = c.email_public || "";
+        document.getElementById("telephone").value = c.telephone || "";
+        document.getElementById("telephone_prof").value = c.telephone_prof || "";
+        document.getElementById("email_prof").value = c.email_prof || "";
+
+        if (c.date_naissance) {
+            document.getElementById("date_naissance").value = c.date_naissance.split(" ")[0];
         }
 
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get("id");
+        document.getElementById("conjoint_prenom").value = c.conjoint_prenom || "";
+        document.getElementById("conjoint_nom").value = c.conjoint_nom || "";
 
-        document.getElementById("retourBtn").href = "../compagnon-details.html?id=" + id;
+        /* 🔥 Chargement du rôle */
+        document.getElementById("role").value = c.role || "compagnon";
 
-        async function charger() {
-            try {
-                const c = await pb.collection("companions").getOne(id);
-
-                document.getElementById("nom").value = c.nom;
-                document.getElementById("prenom").value = c.prenom;
-                document.getElementById("initiales").value = c.initiales || "";
-                document.getElementById("fonction").value = c.fonction || "";
-                document.getElementById("adresse").value = c.adresse || "";
-                document.getElementById("npa").value = c.npa || "";
-                document.getElementById("lieu").value = c.lieu || "";
-                document.getElementById("email_public").value = c.email_public || "";
-                document.getElementById("telephone").value = c.telephone || "";
-
-                if (c.date_naissance) {
-                    document.getElementById("date_naissance").value = c.date_naissance.split(" ")[0];
-                }
-
-                document.getElementById("conjoint_prenom").value = c.conjoint_prenom || "";
-                document.getElementById("conjoint_nom").value = c.conjoint_nom || "";
-                document.getElementById("telephone_prof").value = c.telephone_prof || "";
-                document.getElementById("email_prof").value = c.email_prof || "";
-
-                if (c.photo) {
-                    const url = pb.files.getUrl(c, c.photo);
-                    const preview = document.getElementById("photoPreview");
-                    preview.src = url;
-                    preview.style.display = "block";
-                }
-
-            } catch (err) {
-                console.error(err);
-                alert("Erreur lors du chargement.");
-            }
+        if (c.photo) {
+            const url = pb.files.getUrl(c, c.photo);
+            const preview = document.getElementById("photoPreview");
+            preview.src = url;
+            preview.style.display = "block";
         }
 
-        charger();
+    } catch (err) {
+        console.error(err);
+        alert("Erreur lors du chargement.");
+    }
+}
 
-        async function sauvegarder() {
-            const formData = new FormData();
+charger();
 
-            formData.append("nom", document.getElementById("nom").value);
-            formData.append("prenom", document.getElementById("prenom").value);
-            formData.append("initiales", document.getElementById("initiales").value);
-            formData.append("fonction", document.getElementById("fonction").value);
-            formData.append("adresse", document.getElementById("adresse").value);
-            formData.append("npa", document.getElementById("npa").value);
-            formData.append("lieu", document.getElementById("lieu").value);
-            formData.append("email_public", document.getElementById("email_public").value);
-            formData.append("telephone", document.getElementById("telephone").value);
+async function sauvegarder() {
+    const formData = new FormData();
 
-            const dn = document.getElementById("date_naissance").value;
-            if (dn) formData.append("date_naissance", dn + " 23:30:00");
+    formData.append("nom", document.getElementById("nom").value);
+    formData.append("prenom", document.getElementById("prenom").value);
+    formData.append("initiales", document.getElementById("initiales").value);
+    formData.append("fonction", document.getElementById("fonction").value);
+    formData.append("adresse", document.getElementById("adresse").value);
+    formData.append("npa", document.getElementById("npa").value);
+    formData.append("lieu", document.getElementById("lieu").value);
+    formData.append("email_public", document.getElementById("email_public").value);
+    formData.append("telephone", document.getElementById("telephone").value);
 
-            formData.append("conjoint_prenom", document.getElementById("conjoint_prenom").value);
-            formData.append("conjoint_nom", document.getElementById("conjoint_nom").value);
-            formData.append("telephone_prof", document.getElementById("telephone_prof").value);
-            formData.append("email_prof", document.getElementById("email_prof").value);
+    const dn = document.getElementById("date_naissance").value;
+    if (dn) formData.append("date_naissance", dn + " 23:30:00");
 
-            const fileInput = document.getElementById("photo");
-            if (fileInput.files.length > 0) {
-                formData.append("photo", fileInput.files[0]);
-            }
+    formData.append("conjoint_prenom", document.getElementById("conjoint_prenom").value);
+    formData.append("conjoint_nom", document.getElementById("conjoint_nom").value);
+    formData.append("telephone_prof", document.getElementById("telephone_prof").value);
+    formData.append("email_prof", document.getElementById("email_prof").value);
 
-            try {
-                await pb.collection("companions").update(id, formData);
-                alert("Modifications enregistrées !");
-                window.location.href = "../compagnon-details.html?id=" + id;
-            } catch (err) {
-                console.error(err);
-                alert("Erreur lors de la sauvegarde.");
-            }
-        }
-    </script>
+    /* 🔥 Sauvegarde du rôle */
+    formData.append("role", document.getElementById("role").value);
+
+    const fileInput = document.getElementById("photo");
+    if (fileInput.files.length > 0) {
+        formData.append("photo", fileInput.files[0]);
+    }
+
+    try {
+        await pb.collection("companions").update(id, formData);
+        alert("Modifications enregistrées !");
+        window.location.href = "../compagnon-details.html?id=" + id;
+    } catch (err) {
+        console.error(err);
+        alert("Erreur lors de la sauvegarde.");
+    }
+}
+</script>
 
 </body>
 </html>
