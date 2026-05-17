@@ -49,8 +49,9 @@
             background: #5A000C;
         }
 
+        /* Carte légèrement réduite pour réduire l’espace entre colonnes */
         .card {
-            width: 55%;
+            width: 48%;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.92);
             color: black;
@@ -60,16 +61,17 @@
             position: relative;
         }
 
+        /* Photo fixe */
         .photo-block {
             position: absolute;
-            top: 25px;
-            right: -10px;
+            top: 20px;
+            right: -20px;
             text-align: center;
         }
 
         .photo-preview {
-            width: 160px;
-            height: 160px;
+            width: 150px;
+            height: 150px;
             object-fit: cover;
             border-radius: 10px;
             border: 3px solid #7A0010;
@@ -80,13 +82,13 @@
         label {
             font-weight: bold;
             color: #7A0010;
-            margin-top: 12px;
+            margin-top: 10px;
             display: block;
         }
 
-        /* Largeur harmonisée sur le champ Email */
+        /* Largeur harmonisée */
         input {
-            width: 50%;
+            width: 45%;
             padding: 7px;
             margin-top: 4px;
             border-radius: 6px;
@@ -94,17 +96,18 @@
             font-size: 15px;
         }
 
+        /* Lignes compactes */
         .line {
             display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
+            gap: 5px;
+            margin-bottom: 8px;
         }
 
         .line > div {
             flex: 1;
         }
 
-        /* Adresse alignée à la fin de la 2e colonne */
+        /* Adresse alignée */
         .full {
             width: 70%;
         }
@@ -187,7 +190,7 @@
             </div>
 
             <label>Date de naissance :</label>
-            <input type="date" id="date_naissance" style="width:50%;">
+            <input type="date" id="date_naissance" style="width:45%;">
 
             <div class="line">
                 <div>
