@@ -52,7 +52,7 @@
 
         /* BLOC RÉDUIT */
         .card {
-            width: 50%;
+            width: 55%;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.92);
             color: black;
@@ -61,10 +61,10 @@
             box-shadow: 0 0 15px rgba(0,0,0,0.4);
         }
 
-        /* 2 COLONNES */
+        /* 3 COLONNES */
         .grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 180px;
             gap: 20px;
         }
 
@@ -76,8 +76,8 @@
         }
 
         input {
-            width: 100%;
-            padding: 8px;
+            width: 90%;
+            padding: 7px;
             margin-top: 4px;
             border-radius: 6px;
             border: 1px solid #aaa;
@@ -87,8 +87,8 @@
         /* PHOTO */
         .photo-preview {
             margin-top: 10px;
-            width: 180px;
-            height: 180px;
+            width: 160px;
+            height: 160px;
             object-fit: cover;
             border-radius: 10px;
             border: 3px solid #7A0010;
@@ -117,7 +117,7 @@
 
             <div class="grid">
 
-                <!-- COLONNE GAUCHE -->
+                <!-- COLONNE 1 : IDENTITÉ -->
                 <div>
                     <label>Nom :</label>
                     <input type="text" id="nom">
@@ -130,7 +130,10 @@
 
                     <label>Fonction :</label>
                     <input type="text" id="fonction">
+                </div>
 
+                <!-- COLONNE 2 : ADRESSE + CONTACT -->
+                <div>
                     <label>Adresse :</label>
                     <input type="text" id="adresse">
 
@@ -148,10 +151,7 @@
 
                     <label>Date de naissance :</label>
                     <input type="date" id="date_naissance">
-                </div>
 
-                <!-- COLONNE DROITE -->
-                <div>
                     <label>Conjoint - prénom :</label>
                     <input type="text" id="conjoint_prenom">
 
@@ -163,13 +163,14 @@
 
                     <label>Email professionnel :</label>
                     <input type="email" id="email_prof">
+                </div>
 
+                <!-- COLONNE 3 : PHOTO -->
+                <div class="photo-block">
                     <label>Photo :</label>
                     <input type="file" id="photo" accept="image/*">
 
-                    <div class="photo-block">
-                        <img id="photoPreview" class="photo-preview" style="display:none;">
-                    </div>
+                    <img id="photoPreview" class="photo-preview" style="display:none;">
                 </div>
 
             </div>
@@ -212,7 +213,6 @@
                 document.getElementById("email_public").value = c.email_public || "";
                 document.getElementById("telephone").value = c.telephone || "";
 
-                /* Correction date */
                 if (c.date_naissance) {
                     document.getElementById("date_naissance").value = c.date_naissance.split(" ")[0];
                 }
