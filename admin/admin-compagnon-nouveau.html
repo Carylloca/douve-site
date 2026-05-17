@@ -112,6 +112,11 @@
             box-sizing: border-box;
         }
 
+        /* ALIGNEMENT PARFAIT DU CHAMP ROLE */
+        #role {
+            width: 85% !important;
+        }
+
         input[type="date"] {
             width: 85% !important;
         }
@@ -248,13 +253,13 @@
                 </div>
             </div>
 
-            <!-- DATE + ROLE -->
+            <!-- DATE + ROLE ALIGNÉS -->
             <div class="line">
                 <div>
                     <label>Date de naissance :</label>
                     <input type="date" id="date_naissance">
                 </div>
-                
+
                 <div>
                     <label>Rôle :</label>
                     <select id="role">
@@ -329,7 +334,7 @@
             formData.append("conjoint_nom", document.getElementById("conjoint_nom").value);
             formData.append("conjoint_prenom", document.getElementById("conjoint_prenom").value);
 
-            // 🔥 AJOUT DU ROLE
+            /* AJOUT DU ROLE */
             formData.append("role", document.getElementById("role").value);
 
             const fileInput = document.getElementById("photo");
