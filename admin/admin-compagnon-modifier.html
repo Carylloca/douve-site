@@ -1,187 +1,66 @@
-<style>
-    body {
-        margin: 0;
-        padding: 0;
-        background-image: url("../img/page-admin-compagnons.jpg");
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-        font-family: Arial, sans-serif;
-    }
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier un compagnon</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
 
-    .overlay {
-        background: rgba(0, 0, 0, 0.55);
-        min-height: 100vh;
-        padding: 40px 20px;
-        color: white;
-    }
-
-    h1 {
-        text-align: center;
-        margin-bottom: 20px;
-        text-shadow: 0 0 10px black;
-    }
-
-    .top-buttons {
-        text-align: center;
-        margin-bottom: 25px;
-    }
-
-    .btn {
-        display: inline-block;
-        padding: 10px 18px;
-        background: #7A0010;
-        color: white;
-        border-radius: 6px;
-        text-decoration: none;
-        margin: 5px;
-        cursor: pointer;
-    }
-
-    .btn:hover {
-        background: #5A000C;
-    }
-
-    /* Bloc principal */
-    .card {
-        width: 40%;
-        margin: 0 auto;
-        background: rgba(255, 255, 255, 0.92);
-        color: black;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 0 15px rgba(0,0,0,0.4);
-        position: relative;
-    }
-
-    /* PHOTO RESPONSIVE EN HAUT À DROITE */
-    .photo-block {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 10px;
-        max-width: 40%; /* empêche le débordement */
-    }
-
-    .photo-preview {
-        width: 100%;
-        max-width: 280px;
-        aspect-ratio: 1 / 1;
-        object-fit: cover;
-        border-radius: 10px;
-        border: 3px solid #7A0010;
-        margin-bottom: 12px;
-    }
-
-    /* Bouton fichier responsive */
-    #photo {
-        width: 100%;
-        max-width: 180px;
-        overflow: hidden;
-        color: transparent;
-    }
-
-    #photo::-webkit-file-upload-button,
-    #photo::file-selector-button {
-        visibility: hidden;
-    }
-
-    #photo::before {
-        content: "Choisir un fichier";
-        display: inline-block;
-        background: #7A0010;
-        color: white;
-        padding: 8px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 15px;
-        text-align: center;
-    }
-
-    /* MODE MOBILE — PHOTO AU-DESSUS, CENTRÉE */
-    @media (max-width: 900px) {
-        .photo-block {
-            position: relative;
-            right: 0;
-            margin: 0 auto 20px auto;
-            align-items: center;
-            max-width: 60%;
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("../img/page-admin-compagnons.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
         }
 
-        .card {
-            width: 90%;
-            padding-top: 330px; /* espace pour la photo */
-        }
-    }
-
-    @media (max-width: 600px) {
-        .photo-block {
-            max-width: 80%;
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: white;
         }
 
-        .card {
-            padding-top: 300px;
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px black;
         }
-    }
-</style>
-        #photo::before {
-            content: "Choisir un fichier";
+
+        .top-buttons {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .btn {
             display: inline-block;
+            padding: 10px 18px;
             background: #7A0010;
             color: white;
-            padding: 8px 12px;
             border-radius: 6px;
+            text-decoration: none;
+            margin: 5px;
             cursor: pointer;
-            font-size: 15px;
-            text-align: center;
         }
 
-        label {
-            font-weight: bold;
-            color: #7A0010;
-            margin-top: 10px;
-            display: block;
+        .btn:hover {
+            background: #5A000C;
         }
 
-        /* Champs rallongés */
-        input {
-            width: 85%;
-            padding: 7px;
-            margin-top: 4px;
-            border-radius: 6px;
-            border: 1px solid #aaa;
-            font-size: 15px;
-            box-sizing: border-box;
+        .card {
+            width: 40%;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.92);
+            color: black;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.4);
+            position: relative;
         }
 
-        /* Correction spéciale pour le champ date */
-        input[type="date"] {
-            width: 85% !important;
-            min-width: 0;
-        }
-
-        /* Colonnes rapprochées */
-        .line {
-            display: flex;
-            gap: 6px;
-            justify-content: flex-start;
-            margin-bottom: 10px;
-        }
-
-        .line > div {
-            flex: 0 0 auto;
-        }
-
-        /* Adresse raccourcie */
-        .full {
-            width: 55%;
-        }
-
-        /* --- RESPONSIVE PHOTO & BOUTON --- */
-
+        /* PHOTO RESPONSIVE */
         .photo-block {
             position: absolute;
             top: 15px;
@@ -215,7 +94,56 @@
             visibility: hidden;
         }
 
-        /* --- MODE MOBILE --- */
+        #photo::before {
+            content: "Choisir un fichier";
+            display: inline-block;
+            background: #7A0010;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            text-align: center;
+        }
+
+        label {
+            font-weight: bold;
+            color: #7A0010;
+            margin-top: 10px;
+            display: block;
+        }
+
+        input {
+            width: 85%;
+            padding: 7px;
+            margin-top: 4px;
+            border-radius: 6px;
+            border: 1px solid #aaa;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+
+        input[type="date"] {
+            width: 85% !important;
+            min-width: 0;
+        }
+
+        .line {
+            display: flex;
+            gap: 6px;
+            justify-content: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .line > div {
+            flex: 0 0 auto;
+        }
+
+        .full {
+            width: 55%;
+        }
+
+        /* RESPONSIVE MOBILE */
         @media (max-width: 900px) {
             .photo-block {
                 position: relative;
