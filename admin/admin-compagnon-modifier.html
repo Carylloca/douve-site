@@ -147,6 +147,11 @@
             flex: 0 0 auto;
         }
 
+        /* ALIGNEMENT PARFAIT DE LA LIGNE DATE + ROLE */
+        .role-fix > div:first-child {
+            width: 240px;
+        }
+
         .full {
             width: 55%;
         }
@@ -254,8 +259,9 @@
                     <input type="text" id="telephone_prof">
                 </div>
             </div>
-                    <!-- LIGNE DATE + ROLE (alignée parfaitement) -->
-            <div class="line">
+
+            <!-- LIGNE DATE + ROLE (alignée parfaitement) -->
+            <div class="line role-fix">
                 <div>
                     <label>Date de naissance :</label>
                     <input type="date" id="date_naissance">
@@ -325,7 +331,6 @@
                 document.getElementById("conjoint_prenom").value = c.conjoint_prenom || "";
                 document.getElementById("conjoint_nom").value = c.conjoint_nom || "";
 
-                /* 🔥 Chargement du rôle */
                 document.getElementById("role").value = c.role || "compagnon";
 
                 if (c.photo) {
@@ -364,7 +369,6 @@
             formData.append("telephone_prof", document.getElementById("telephone_prof").value);
             formData.append("email_prof", document.getElementById("email_prof").value);
 
-            /* 🔥 Sauvegarde du rôle */
             formData.append("role", document.getElementById("role").value);
 
             const fileInput = document.getElementById("photo");
