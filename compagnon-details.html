@@ -116,11 +116,12 @@
 
         let compagnonData = null;
 
-        /* 🎯 Formatage simple sans correction de jour */
+        /* 🎯 Formatage propre compatible avec "YYYY-MM-DD HH:MM:SS" */
         function formatDate(d) {
             if (!d) return "";
 
-            const onlyDate = d.split("T")[0];
+            // On prend uniquement la partie date avant l'heure
+            const onlyDate = d.split(" ")[0]; // ex : "1970-04-05"
 
             if (onlyDate.includes("-")) {
                 const [y, m, day] = onlyDate.split("-");
