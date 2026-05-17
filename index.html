@@ -34,10 +34,11 @@
 
         #welcome {
             text-align: center;
-            margin-top: -10px;
-            font-size: 20px;
-            color: #ffe6e6;
-            text-shadow: 1px 1px 4px black;
+            margin-top: 10px;      /* plus bas */
+            font-size: 28px;       /* plus grand */
+            font-weight: bold;
+            color: white;          /* blanc */
+            text-shadow: 0 0 10px black;
         }
 
         .buttons {
@@ -134,7 +135,7 @@
 
             // Afficher Bonjour {nom}
             const nom = user.nom || user.name || user.email || "compagnon";
-            document.getElementById("welcome").textContent = "Bonjour " + nom;
+            document.getElementById("welcome").textContent = "Salut Compagnon " + nom;
 
             // Afficher Administration si user
             if (user.collectionName === "users") {
