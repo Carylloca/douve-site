@@ -34,7 +34,7 @@
             border-radius: 10px;
         }
 
-        .panel {
+        .panel, .table-panel {
             max-width: 1100px;
             margin: 20px auto;
             background: white;
@@ -69,6 +69,28 @@
         #deleteBtn {
             background: #444;
             margin-left: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background: #7A0010;
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background: #f0f0f0;
         }
     </style>
 </head>
@@ -119,12 +141,29 @@
     <button id="deleteBtn" onclick="deleteReservation()" style="display:none;">Supprimer</button>
 </div>
 
+<div class="table-panel">
+    <h3>Liste des réservations</h3>
+
+    <table id="reservationsTable">
+        <thead>
+            <tr>
+                <th onclick="sortTable(0)">Type</th>
+                <th onclick="sortTable(1)">Compagnon</th>
+                <th onclick="sortTable(2)">Début</th>
+                <th onclick="sortTable(3)">Fin</th>
+                <th onclick="sortTable(4)">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="reservationsBody"></tbody>
+    </table>
+</div>
+
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
     let currentEventId = null;
+    let reservationsList = [];
 
-    // Charger les compagnons
     async function loadCompagnons() {
         const list = await pb.collection("companions").getFullList();
         const select = document.getElementById("compagnon");
@@ -135,7 +174,6 @@
         });
     }
 
-    // Sauvegarder une réservation
     async function saveReservation() {
         const data = {
             type: document.getElementById("type").value,
@@ -159,7 +197,6 @@
         location.reload();
     }
 
-    // Supprimer une réservation
     async function deleteReservation() {
         if (!currentEventId) return;
 
@@ -169,7 +206,6 @@
         }
     }
 
-    // Charger une réservation dans le panneau
     async function loadReservation(id) {
         const r = await pb.collection("chalet_reservations").getOne(id);
 
@@ -189,13 +225,86 @@
         document.getElementById("deleteBtn").style.display = "inline-block";
     }
 
-    // Initialisation du calendrier
+    function populateTable() {
+        const tbody = document.getElementById("reservationsBody");
+        tbody.innerHTML = "";
+
+        reservationsList.forEach(r => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${r.type}</td>
+                    <td>${r.compagnonName || "-"}</td>
+                    <td>${r.startDate.substring(0,10)}</td>
+                    <td>${r.endDate.substring(0,10)}</td>
+                    <td>
+                        <button onclick="loadReservation('${r.id}')">Modifier</button>
+                        <button onclick="deleteReservationFromTable('${r.id}')">Supprimer</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    async function deleteReservationFromTable(id) {
+        if (confirm("Supprimer cette réservation ?")) {
+            await pb.collection("chalet_reservations").delete(id);
+            location.reload();
+        }
+    }
+
+    function sortTable(col) {
+        const table = document.getElementById("reservationsTable");
+        let switching = true;
+        let dir = "asc";
+
+        while (switching) {
+            switching = false;
+            const rows = table.rows;
+
+            for (let i = 1; i < rows.length - 1; i++) {
+                let shouldSwitch = false;
+
+                const x = rows[i].getElementsByTagName("TD")[col];
+                const y = rows[i + 1].getElementsByTagName("TD")[col];
+
+                if (dir === "asc" && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                    shouldSwitch = true;
+                } else if (dir === "desc" && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                    shouldSwitch = true;
+                }
+
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    break;
+                }
+            }
+
+            if (!switching && dir === "asc") {
+                dir = "desc";
+                switching = true;
+            }
+        }
+    }
+
     document.addEventListener("DOMContentLoaded", async function () {
         await loadCompagnons();
 
         const calendarEl = document.getElementById("calendar");
 
-        const events = await pb.collection("chalet_reservations").getFullList();
+        const events = await pb.collection("chalet_reservations").getFullList({
+            expand: "compagnon"
+        });
+
+        reservationsList = events.map(r => ({
+            id: r.id,
+            type: r.type,
+            startDate: r.startDate,
+            endDate: r.endDate,
+            compagnonName: r.expand?.compagnon ? r.expand.compagnon.nom + " " + r.expand.compagnon.prenom : null
+        }));
+
+        populateTable();
 
         const calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: "dayGridMonth",
