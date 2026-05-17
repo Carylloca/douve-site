@@ -84,7 +84,7 @@
             display: block;
         }
 
-        /* Largeur harmonisée et plus compacte */
+        /* Largeur harmonisée */
         input {
             width: 42%;
             padding: 7px;
@@ -94,15 +94,17 @@
             font-size: 15px;
         }
 
-        /* Lignes très compactes */
+        /* Lignes compactes + colonnes rapprochées */
         .line {
             display: flex;
-            gap: 10px;
+            gap: 3px;
+            justify-content: flex-start;
             margin-bottom: 8px;
         }
 
+        /* Correction clé : les colonnes ne prennent plus 50% chacune */
         .line > div {
-            flex: 1;
+            flex: 0 0 auto;
         }
 
         /* Adresse alignée */
