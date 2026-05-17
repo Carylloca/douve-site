@@ -128,9 +128,13 @@
             margin-bottom: 10px;
         }
 
-        /* 🔥 colonnes de même largeur → alignement parfait de la 2e colonne */
         .line > div {
-            flex: 1;
+            flex: 0 0 auto;
+        }
+
+        /* 🔥 Correction d’alignement uniquement pour la ligne Date + Rôle */
+        .role-line > div:first-child {
+            min-width: 185px; /* largeur parfaite pour aligner la 2e colonne */
         }
 
         .full {
@@ -255,7 +259,7 @@
             </div>
 
             <!-- DATE + ROLE ALIGNÉS -->
-            <div class="line">
+            <div class="line role-line">
                 <div>
                     <label>Date de naissance :</label>
                     <input type="date" id="date_naissance">
