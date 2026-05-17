@@ -29,7 +29,6 @@
             text-shadow: 0 0 10px black;
         }
 
-        /* Bloc principal identique */
         .card {
             width: 40%;
             margin: 0 auto;
@@ -52,7 +51,6 @@
             gap: 10px;
         }
 
-        /* Cadre vide */
         .photo-frame {
             width: 280px;
             height: 280px;
@@ -64,7 +62,6 @@
             align-items: center;
         }
 
-        /* Photo dans le cadre */
         .photo-preview {
             width: 100%;
             height: 100%;
@@ -73,7 +70,6 @@
             display: none;
         }
 
-        /* Bouton fichier stylisé */
         #photo {
             width: 180px;
             overflow: hidden;
@@ -103,7 +99,6 @@
             display: block;
         }
 
-        /* Champs harmonisés */
         input {
             width: 85%;
             padding: 7px;
@@ -114,12 +109,10 @@
             box-sizing: border-box;
         }
 
-        /* Date même largeur */
         input[type="date"] {
             width: 85% !important;
         }
 
-        /* Deux colonnes identiques à la page modifier */
         .line {
             display: flex;
             gap: 6px;
@@ -131,7 +124,6 @@
             flex: 0 0 auto;
         }
 
-        /* Adresse raccourcie */
         .full {
             width: 55%;
         }
@@ -168,7 +160,7 @@
                 <input type="file" id="photo" accept="image/*">
             </div>
 
-            <!-- COLONNES IDENTIQUES À LA PAGE MODIFIER -->
+            <!-- FORMULAIRE IDENTIQUE À LA PAGE MODIFIER -->
 
             <div class="line">
                 <div>
@@ -208,8 +200,8 @@
 
             <div class="line">
                 <div>
-                    <label>Email :</label>
-                    <input type="email" id="email_public">
+                    <label>Email (connexion) :</label>
+                    <input type="email" id="email_public" required>
                 </div>
                 <div>
                     <label>Téléphone :</label>
@@ -248,7 +240,6 @@
         </div>
     </div>
 
-    <!-- PocketBase -->
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <script>
@@ -271,24 +262,37 @@
         async function ajouterCompagnon() {
             const formData = new FormData();
 
+            // Email Auth + Email public
+            const email = document.getElementById("email_public").value;
+            formData.append("email", email);
+            formData.append("email_public", email);
+
+            // Mot de passe temporaire basé sur le NPA
+            const npa = document.getElementById("npa").value;
+            const tempPassword = "Douve" + npa;
+
+            formData.append("password", tempPassword);
+            formData.append("passwordConfirm", tempPassword);
+
+            // Champs classiques
             formData.append("nom", document.getElementById("nom").value);
             formData.append("prenom", document.getElementById("prenom").value);
             formData.append("initiales", document.getElementById("initiales").value);
             formData.append("fonction", document.getElementById("fonction").value);
             formData.append("adresse", document.getElementById("adresse").value);
-            formData.append("npa", document.getElementById("npa").value);
+            formData.append("npa", npa);
             formData.append("lieu", document.getElementById("lieu").value);
-            formData.append("email_public", document.getElementById("email_public").value);
             formData.append("telephone", document.getElementById("telephone").value);
+            formData.append("email_prof", document.getElementById("email_prof").value);
+            formData.append("telephone_prof", document.getElementById("telephone_prof").value);
 
             const dn = document.getElementById("date_naissance").value;
             if (dn) formData.append("date_naissance", dn + " 23:30:00");
 
-            formData.append("conjoint_prenom", document.getElementById("conjoint_prenom").value);
             formData.append("conjoint_nom", document.getElementById("conjoint_nom").value);
-            formData.append("telephone_prof", document.getElementById("telephone_prof").value);
-            formData.append("email_prof", document.getElementById("email_prof").value);
+            formData.append("conjoint_prenom", document.getElementById("conjoint_prenom").value);
 
+            // Photo
             const fileInput = document.getElementById("photo");
             if (fileInput.files.length > 0) {
                 formData.append("photo", fileInput.files[0]);
@@ -296,11 +300,11 @@
 
             try {
                 await pb.collection("companions").create(formData);
-                alert("Compagnon créé !");
+                alert("Compagnon créé avec succès !");
                 window.location.href = "admin-compagnons.html";
             } catch (err) {
                 console.error(err);
-                alert("Erreur lors de la création.");
+                alert("Erreur lors de la création du compagnon.");
             }
         }
     </script>
