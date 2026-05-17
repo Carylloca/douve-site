@@ -15,7 +15,7 @@ async function login(email, password) {
         console.log("Connecté comme USER :", authUser);
 
         // Redirection admin
-        window.location.href = "admin/admin-manifestations.html";
+        window.location.href = "admin/admin-menu.html";
         return true;
 
     } catch (e) {
@@ -29,7 +29,7 @@ async function login(email, password) {
         console.log("Connecté comme COMPANION :", authComp);
 
         // Redirection compagnon
-        window.location.href = "compagnons.html";
+        window.location.href = "index.html";
         return true;
 
     } catch (error) {
