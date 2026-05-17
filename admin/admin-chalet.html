@@ -2,28 +2,17 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Admin – Liste des Réservations du Chalet</title>
+    <title>Admin – Gestion du Chalet Le Bon Laron</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="../favicon.png">
 
-    <!-- FullCalendar -->
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-
     <!-- PocketBase -->
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
-    <!-- PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-
-    <!-- Excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
     <style>
         body {
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             margin: 0;
             background: url("../img/chalet-bg.jpg") no-repeat center center fixed;
             background-size: cover;
@@ -38,10 +27,10 @@
             backdrop-filter: blur(4px);
         }
 
-        /* Bloc premium réduit */
-        .panel, #calendar {
-            width: 600px;
-            margin: 30px auto;
+        /* 🔥 Bloc réduit comme les autres pages */
+        .panel {
+            width: 600px;               /* largeur réduite */
+            margin: 40px auto;          /* centré */
             background: rgba(255,255,255,0.90);
             padding: 25px;
             border-radius: 12px;
@@ -49,204 +38,159 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.25);
         }
 
-        table {
+        label { font-weight: bold; }
+
+        input, select, textarea {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
         }
-
-        th {
-            background: #7A0010;
-            color: white;
-            padding: 10px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-
-        tr:hover { background: #f0f0f0; }
 
         button {
             background: #7A0010;
             color: white;
-            padding: 8px 12px;
+            padding: 10px 15px;
             border: none;
             cursor: pointer;
             border-radius: 6px;
-            margin-left: 5px;
+            margin-right: 10px;
         }
 
         button:hover { background: #5a000c; }
 
-        .top-buttons {
-            width: 600px;
-            margin: 20px auto;
-            text-align: right;
-        }
+        #deleteBtn { background: #444; }
     </style>
 </head>
 
 <body>
 
-<header>Liste des Réservations – Chalet Le Bon Laron</header>
+<header>Gestion du Chalet – Admin</header>
 
-<div class="top-buttons">
-    <button onclick="window.location.href='admin-chalet.html'">⬅ Retour gestion</button>
-    <button onclick="exportPDF()">PDF</button>
-    <button onclick="exportExcel()">Excel</button>
+<!-- 🔗 Bouton vers la liste des réservations -->
+<div style="width:600px; margin:20px auto; text-align:right;">
+    <button onclick="window.location.href='admin-chalet-liste.html'">
+        📋 Liste des réservations
+    </button>
 </div>
 
-<div id="calendar"></div>
-
 <div class="panel">
-    <h3>Liste complète des réservations</h3>
+    <h3>Nouvelle / Modifier une réservation</h3>
 
-    <table id="reservationsTable">
-        <thead>
-            <tr>
-                <th onclick="sortTable(0)">Type</th>
-                <th onclick="sortTable(1)">Compagnon</th>
-                <th onclick="sortTable(2)">Début</th>
-                <th onclick="sortTable(3)">Fin</th>
-            </tr>
-        </thead>
-        <tbody id="reservationsBody"></tbody>
-    </table>
+    <label>Type</label>
+    <select id="type">
+        <option value="Interne">Interne</option>
+        <option value="Nettoyage">Nettoyage</option>
+        <option value="Frairie">Frairie</option>
+        <option value="Externe">Externe</option>
+        <option value="Travaux">Travaux</option>
+    </select>
+
+    <label>Compagnon (si interne)</label>
+    <select id="compagnon"></select>
+
+    <label>Date début</label>
+    <input type="date" id="startDate">
+
+    <label>Date fin</label>
+    <input type="date" id="endDate">
+
+    <label>Description</label>
+    <textarea id="description"></textarea>
+
+    <label>Électricité – début</label>
+    <input type="number" id="electricityStart">
+
+    <label>Électricité – fin</label>
+    <input type="number" id="electricityEnd">
+
+    <label>Eau – début</label>
+    <input type="number" id="waterStart">
+
+    <label>Eau – fin</label>
+    <input type="number" id="waterEnd">
+
+    <button onclick="saveReservation()">Enregistrer</button>
+    <button id="deleteBtn" onclick="deleteReservation()" style="display:none;">Supprimer</button>
 </div>
 
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
-    let reservationsList = [];
 
-    function sortTable(col) {
-        const table = document.getElementById("reservationsTable");
-        let switching = true;
-        let dir = "asc";
+    let currentEventId = null;
 
-        while (switching) {
-            switching = false;
-            const rows = table.rows;
+    async function loadCompagnons() {
+        const list = await pb.collection("companions").getFullList();
+        const select = document.getElementById("compagnon");
+        select.innerHTML = "<option value=''>Aucun</option>";
 
-            for (let i = 1; i < rows.length - 1; i++) {
-                let shouldSwitch = false;
+        list.forEach(c => {
+            select.innerHTML += `<option value="${c.id}">${c.nom} ${c.prenom}</option>`;
+        });
+    }
 
-                const x = rows[i].getElementsByTagName("TD")[col];
-                const y = rows[i + 1].getElementsByTagName("TD")[col];
+    async function saveReservation() {
+        const data = {
+            type: type.value,
+            compagnon: compagnon.value || null,
+            startDate: startDate.value,
+            endDate: endDate.value,
+            description: description.value,
+            electricityStart: electricityStart.value || null,
+            electricityEnd: electricityEnd.value || null,
+            waterStart: waterStart.value || null,
+            waterEnd: waterEnd.value || null,
+            created_by: pb.authStore.model.id
+        };
 
-                if (dir === "asc" && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                    shouldSwitch = true;
-                } else if (dir === "desc" && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                    shouldSwitch = true;
-                }
+        if (currentEventId) {
+            await pb.collection("chalet_reservations").update(currentEventId, data);
+        } else {
+            await pb.collection("chalet_reservations").create(data);
+        }
 
-                if (shouldSwitch) {
-                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                    switching = true;
-                    break;
-                }
-            }
+        alert("Réservation enregistrée !");
+        location.reload();
+    }
 
-            if (!switching && dir === "asc") {
-                dir = "desc";
-                switching = true;
-            }
+    async function deleteReservation() {
+        if (!currentEventId) return;
+
+        if (confirm("Supprimer définitivement cette réservation ?")) {
+            await pb.collection("chalet_reservations").delete(currentEventId);
+            alert("Réservation supprimée !");
+            location.reload();
         }
     }
 
-    function populateTable() {
-        const tbody = document.getElementById("reservationsBody");
-        tbody.innerHTML = "";
+    async function loadReservation(id) {
+        const r = await pb.collection("chalet_reservations").getOne(id);
 
-        reservationsList.forEach(r => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>${r.type}</td>
-                    <td>${r.compagnonName || "-"}</td>
-                    <td>${r.startDate.substring(0,10)}</td>
-                    <td>${r.endDate.substring(0,10)}</td>
-                </tr>
-            `;
-        });
-    }
+        currentEventId = id;
 
-    function exportPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
+        type.value = r.type;
+        compagnon.value = r.compagnon || "";
+        startDate.value = r.startDate.substring(0, 10);
+        endDate.value = r.endDate.substring(0, 10);
+        description.value = r.description || "";
 
-        const rows = reservationsList.map(r => [
-            r.type,
-            r.compagnonName || "-",
-            r.startDate.substring(0,10),
-            r.endDate.substring(0,10)
-        ]);
+        electricityStart.value = r.electricityStart || "";
+        electricityEnd.value = r.electricityEnd || "";
+        waterStart.value = r.waterStart || "";
+        waterEnd.value = r.waterEnd || "";
 
-        doc.text("Liste des réservations du chalet", 14, 15);
-
-        doc.autoTable({
-            head: [["Type", "Compagnon", "Début", "Fin"]],
-            body: rows,
-            startY: 25
-        });
-
-        doc.save("chalet_reservations.pdf");
-    }
-
-    function exportExcel() {
-        const rows = reservationsList.map(r => ({
-            Type: r.type,
-            Compagnon: r.compagnonName || "-",
-            Début: r.startDate.substring(0,10),
-            Fin: r.endDate.substring(0,10)
-        }));
-
-        const worksheet = XLSX.utils.json_to_sheet(rows);
-        const workbook = XLSX.utils.book_new();
-
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Réservations");
-
-        XLSX.writeFile(workbook, "chalet_reservations.xlsx");
+        deleteBtn.style.display = "inline-block";
     }
 
     document.addEventListener("DOMContentLoaded", async function () {
-        const events = await pb.collection("chalet_reservations").getFullList({
-            expand: "compagnon"
-        });
+        if (!pb.authStore.isValid) {
+            window.location.href = "admin-login.html";
+            return;
+        }
 
-        reservationsList = events.map(r => ({
-            id: r.id,
-            type: r.type,
-            startDate: r.startDate,
-            endDate: r.endDate,
-            compagnonName: r.expand?.compagnon ? r.expand.compagnon.nom + " " + r.expand.compagnon.prenom : null
-        }));
-
-        populateTable();
-
-        const calendarEl = document.getElementById("calendar");
-
-        const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: "dayGridMonth",
-            locale: "fr",
-            events: events.map(r => ({
-                id: r.id,
-                title: r.type + (r.expand?.compagnon ? " – " + r.expand.compagnon.nom : ""),
-                start: r.startDate,
-                end: r.endDate,
-                backgroundColor: {
-                    "Interne": "#7A0010",
-                    "Nettoyage": "#1E90FF",
-                    "Frairie": "#32CD32",
-                    "Externe": "#FF8C00",
-                    "Travaux": "#8B4513"
-                }[r.type] || "#555"
-            }))
-        });
-
-        calendar.render();
+        await loadCompagnons();
     });
 </script>
 
