@@ -29,7 +29,6 @@
             text-shadow: 0 0 10px black;
         }
 
-        /* BOUTONS EN HAUT */
         .top-buttons {
             text-align: center;
             margin-bottom: 25px;
@@ -50,7 +49,6 @@
             background: #5A000C;
         }
 
-        /* BLOC CENTRAL */
         .card {
             width: 55%;
             margin: 0 auto;
@@ -62,7 +60,6 @@
             position: relative;
         }
 
-        /* PHOTO FIXE EN HAUT À DROITE */
         .photo-block {
             position: absolute;
             top: 25px;
@@ -80,7 +77,6 @@
             margin-bottom: 10px;
         }
 
-        /* CHAMPS */
         label {
             font-weight: bold;
             color: #7A0010;
@@ -97,7 +93,6 @@
             font-size: 15px;
         }
 
-        /* LIGNES FLEX */
         .line {
             display: flex;
             gap: 20px;
@@ -108,7 +103,10 @@
             flex: 1;
         }
 
-        /* Adresse pleine largeur */
+        .col2 input {
+            width: 50%;
+        }
+
         .full {
             width: 95%;
         }
@@ -120,7 +118,6 @@
 
         <h1>Modifier un compagnon</h1>
 
-        <!-- BOUTONS EN HAUT -->
         <div class="top-buttons">
             <a href="../index.html" class="btn">Menu</a>
             <a href="../compagnon-details.html?id=" class="btn" id="retourBtn">Retour</a>
@@ -128,13 +125,11 @@
 
         <div class="card">
 
-            <!-- PHOTO FIXE -->
             <div class="photo-block">
                 <img id="photoPreview" class="photo-preview" style="display:none;">
                 <input type="file" id="photo" accept="image/*">
             </div>
 
-            <!-- LIGNE 1 : NOM - PRÉNOM -->
             <div class="line">
                 <div>
                     <label>Nom :</label>
@@ -146,7 +141,6 @@
                 </div>
             </div>
 
-            <!-- LIGNE 2 : INITIALes - FONCTION -->
             <div class="line">
                 <div>
                     <label>Initiales :</label>
@@ -158,12 +152,10 @@
                 </div>
             </div>
 
-            <!-- LIGNE 3 : ADRESSE (PLEINE LARGEUR) -->
             <label>Adresse :</label>
             <input type="text" id="adresse" class="full">
 
-            <!-- LIGNE 4 : NPA - LIEU -->
-            <div class="line">
+            <div class="line col2">
                 <div>
                     <label>N° postal :</label>
                     <input type="text" id="npa">
@@ -174,8 +166,7 @@
                 </div>
             </div>
 
-            <!-- LIGNE 5 : EMAIL - TÉLÉPHONE -->
-            <div class="line">
+            <div class="line col2">
                 <div>
                     <label>Email :</label>
                     <input type="email" id="email_public">
@@ -186,8 +177,7 @@
                 </div>
             </div>
 
-            <!-- LIGNE 6 : EMAIL PROF - TÉLÉPHONE PROF -->
-            <div class="line">
+            <div class="line col2">
                 <div>
                     <label>Email professionnel :</label>
                     <input type="email" id="email_prof">
@@ -198,12 +188,10 @@
                 </div>
             </div>
 
-            <!-- LIGNE 7 : DATE DE NAISSANCE -->
             <label>Date de naissance :</label>
             <input type="date" id="date_naissance" style="width:40%;">
 
-            <!-- LIGNE 8 : CONJOINT -->
-            <div class="line">
+            <div class="line col2">
                 <div>
                     <label>Conjoint - prénom :</label>
                     <input type="text" id="conjoint_prenom">
@@ -222,7 +210,6 @@
         </div>
     </div>
 
-    <!-- PocketBase -->
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <script>
@@ -237,7 +224,6 @@
 
         document.getElementById("retourBtn").href = "../compagnon-details.html?id=" + id;
 
-        /* Charger les données */
         async function charger() {
             try {
                 const c = await pb.collection("companions").getOne(id);
@@ -276,7 +262,6 @@
 
         charger();
 
-        /* Sauvegarder */
         async function sauvegarder() {
             const formData = new FormData();
 
