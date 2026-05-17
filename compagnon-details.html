@@ -161,7 +161,27 @@
                             <div class="row"><span class="label">Email :</span> ${c.email_public || ""}</div>
                             <div class="row"><span class="label">Téléphone :</span> ${c.telephone || ""}</div>
 
-                            <div class="row"><span class="label">Date de naissance :</span> ${formatDate(c.date_naissance)}</div>
+                            function formatDate(d) {
+                            if (!d) return "";
+                            
+                            // On récupère uniquement la partie date
+                            const onlyDate = d.split("T")[0];
+                            
+                            // Format YYYY-MM-DD → DD.MM.YYYY
+                            if (onlyDate.includes("-")) {
+                            const [y, m, day] = onlyDate.split("-");
+                            return `${day}.${m}.${y}`;
+                            }
+                            
+                            // Format JJ.MM.AAAA → on renvoie tel quel
+                            if (onlyDate.includes(".")) {
+                            
+                            return onlyDate;
+                            }
+                                
+                            return onlyDate;
+                            
+                        }
 
                             <div class="row"><span class="label">Conjoint :</span> 
                                 ${(c.conjoint_prenom || "") + " " + (c.conjoint_nom || "")}
@@ -185,6 +205,15 @@
 
                     document.getElementById("deleteBtn").style.display = "inline-block";
                 }
+                
+                if (user && user.collectionName === "users") {
+                    const photoBtn = document.createElement("a");
+                    photoBtn.className = "btn";
+                    photoBtn.textContent = "Changer la photo";
+                    photoBtn.href = "admin/admin-compagnon-modifier.html?id=" + id + "#photo";
+                    document.querySelector(".overlay").appendChild(photoBtn);
+                }
+
 
             } catch (err) {
                 document.getElementById("details").innerHTML =
