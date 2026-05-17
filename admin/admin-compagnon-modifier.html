@@ -49,9 +49,9 @@
             background: #5A000C;
         }
 
-        /* Bloc légèrement réduit */
+        /* Bloc légèrement élargi pour éviter le débordement */
         .card {
-            width: 38%;
+            width: 40%;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.92);
             color: black;
@@ -65,7 +65,7 @@
         .photo-block {
             position: absolute;
             top: 20px;
-            right: -20px;
+            right: -10px; /* réduit pour éviter le débordement */
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -73,8 +73,8 @@
         }
 
         .photo-preview {
-            width: 150px;
-            height: 150px;
+            width: 130px; /* réduit pour ne plus dépasser */
+            height: 130px;
             object-fit: cover;
             border-radius: 10px;
             border: 3px solid #7A0010;
@@ -83,7 +83,7 @@
 
         /* Bouton fichier propre */
         #photo {
-            width: 150px;
+            width: 130px;
             overflow: hidden;
         }
 
@@ -109,7 +109,7 @@
             display: block;
         }
 
-        /* Champs rallongés (même largeur que Email professionnel) */
+        /* Champs rallongés */
         input {
             width: 85%;
             padding: 7px;
@@ -117,6 +117,12 @@
             border-radius: 6px;
             border: 1px solid #aaa;
             font-size: 15px;
+            box-sizing: border-box;
+        }
+
+        /* Correction spéciale pour les champs date */
+        input[type="date"] {
+            width: 85% !important;
         }
 
         /* Colonnes rapprochées */
