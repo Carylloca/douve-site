@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-UTF-8">
     <title>Modifier un compagnon</title>
     <link rel="icon" type="image/png" href="../favicon.png">
 
@@ -60,7 +60,7 @@
             position: relative;
         }
 
-        /* PHOTO RESPONSIVE */
+        /* PHOTO RESPONSIVE + CADRE */
         .photo-block {
             position: absolute;
             top: 15px;
@@ -72,14 +72,24 @@
             max-width: 40%;
         }
 
-        .photo-preview {
+        .photo-frame {
             width: 100%;
             max-width: 280px;
             aspect-ratio: 1 / 1;
-            object-fit: cover;
-            border-radius: 10px;
             border: 3px solid #7A0010;
-            margin-bottom: 12px;
+            border-radius: 10px;
+            background: #f8f8f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .photo-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 7px;
+            display: none;
         }
 
         #photo {
@@ -184,7 +194,9 @@
         <div class="card">
 
             <div class="photo-block">
-                <img id="photoPreview" class="photo-preview" style="display:none;">
+                <div class="photo-frame">
+                    <img id="photoPreview" class="photo-preview">
+                </div>
                 <input type="file" id="photo" accept="image/*">
             </div>
 
