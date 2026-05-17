@@ -86,8 +86,6 @@
         window.location.href = "login.html";
     }
 
-    const user = getUser();
-
     document.getElementById("changeBtn").addEventListener("click", async () => {
 
         const oldPassword = document.getElementById("oldPassword").value.trim();
@@ -109,16 +107,13 @@
 
         try {
             // 1️⃣ Ré-authentifier
-            await pb.collection("companions").authWithPassword(user.email, oldPassword);
+            const auth = await pb.collection("companions").authWithPassword(
+                pb.authStore.model.email,
+                oldPassword
+            );
 
-            // 2️⃣ Charger le record complet (nom, prenom, etc.)
-            const fullUser = await pb.collection("companions").getOne(user.id);
-
-            // 3️⃣ Mise à jour avec champs required
-            await pb.collection("companions").update(user.id, {
-                email: fullUser.email,
-                nom: fullUser.nom,
-                prenom: fullUser.prenom,
+            // 2️⃣ Mise à jour du mot de passe
+            await pb.collection("companions").update(pb.authStore.model.id, {
                 password: newPassword,
                 passwordConfirm: newPasswordConfirm
             });
