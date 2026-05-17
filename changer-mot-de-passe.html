@@ -138,8 +138,15 @@
             // 2️⃣ Mise à jour du token + modèle
             pb.authStore.save(auth.token, auth.record);
 
-            // 3️⃣ Mise à jour du mot de passe
+            // 3️⃣ Charger le record complet (pour récupérer les champs REQUIRED)
+            const full = await pb.collection("companions").getOne(pb.authStore.model.id);
+
+            // 4️⃣ Mise à jour avec TOUS les champs required + password
             await pb.collection("companions").update(pb.authStore.model.id, {
+                email: full.email,
+                nom: full.nom,
+                prenom: full.prenom,
+                role: full.role, // si présent dans ta collection
                 password: newPassword,
                 passwordConfirm: newPasswordConfirm
             });
