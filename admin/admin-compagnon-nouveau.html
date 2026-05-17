@@ -40,7 +40,7 @@
             position: relative;
         }
 
-        /* PHOTO EN HAUT À DROITE */
+        /* PHOTO EN HAUT À DROITE — RESPONSIVE */
         .photo-block {
             position: absolute;
             top: 15px;
@@ -49,11 +49,13 @@
             flex-direction: column;
             align-items: flex-end;
             gap: 10px;
+            max-width: 40%; /* empêche le débordement */
         }
 
         .photo-frame {
-            width: 280px;
-            height: 280px;
+            width: 100%;
+            max-width: 280px;
+            aspect-ratio: 1 / 1; /* carré responsive */
             border: 3px solid #7A0010;
             border-radius: 10px;
             background: #f8f8f8;
@@ -70,8 +72,10 @@
             display: none;
         }
 
+        /* BOUTON RESPONSIVE */
         #photo {
-            width: 180px;
+            width: 100%;
+            max-width: 180px;
             overflow: hidden;
             color: transparent;
         }
@@ -90,6 +94,7 @@
             border-radius: 6px;
             cursor: pointer;
             font-size: 15px;
+            text-align: center;
         }
 
         label {
@@ -142,6 +147,32 @@
 
         .btn:hover {
             background: #5A000C;
+        }
+
+        /* MODE MOBILE — PHOTO AU-DESSUS, CENTRÉE */
+        @media (max-width: 900px) {
+            .photo-block {
+                position: relative;
+                right: 0;
+                margin: 0 auto 20px auto;
+                align-items: center;
+                max-width: 60%;
+            }
+
+            .card {
+                width: 90%;
+                padding-top: 330px; /* espace pour la photo */
+            }
+        }
+
+        @media (max-width: 600px) {
+            .photo-block {
+                max-width: 80%;
+            }
+
+            .card {
+                padding-top: 300px;
+            }
         }
     </style>
 </head>
