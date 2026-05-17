@@ -201,7 +201,10 @@
             formData.append("lieu", document.getElementById("lieu").value);
             formData.append("email_public", document.getElementById("email_public").value);
             formData.append("telephone", document.getElementById("telephone").value);
-            formData.append("date_naissance", document.getElementById("date_naissance").value);
+            
+            const dn = document.getElementById("date_naissance").value;
+            if (dn) formData.append("date_naissance", dn + " 23:30:00");
+
             formData.append("conjoint_prenom", document.getElementById("conjoint_prenom").value);
             formData.append("conjoint_nom", document.getElementById("conjoint_nom").value);
             formData.append("telephone_prof", document.getElementById("telephone_prof").value);
