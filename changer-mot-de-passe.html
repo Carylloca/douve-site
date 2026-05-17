@@ -7,7 +7,7 @@
     <!-- PocketBase -->
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
-    <!-- Auth -->
+    <!-- Auth (contient déjà pb = new PocketBase(...)) -->
     <script src="js/auth.js"></script>
 
     <style>
@@ -115,8 +115,6 @@
 </div>
 
 <script>
-    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
-
     // Vérifier si l'utilisateur est connecté
     if (!isLoggedIn()) {
         window.location.href = "login.html";
@@ -129,6 +127,8 @@
         const newPassword = document.getElementById("newPassword").value.trim();
         const newPasswordConfirm = document.getElementById("newPasswordConfirm").value.trim();
         const msg = document.getElementById("message");
+
+        msg.style.color = "#ffdddd";
 
         if (!oldPassword || !newPassword || !newPasswordConfirm) {
             msg.textContent = "Veuillez remplir tous les champs.";
