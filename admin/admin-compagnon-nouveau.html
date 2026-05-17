@@ -112,7 +112,6 @@
             box-sizing: border-box;
         }
 
-        /* rôle même largeur que les autres champs */
         #role {
             width: 85% !important;
         }
@@ -132,9 +131,9 @@
             flex: 0 0 auto;
         }
 
-        /* 🔥 Correction d’alignement uniquement pour la ligne Date + Rôle */
+        /* Ajustement fin de la ligne Date + Rôle pour aligner la 2e colonne */
         .role-line > div:first-child {
-            min-width: 185px; /* largeur parfaite pour aligner la 2e colonne */
+            width: 200px;
         }
 
         .full {
