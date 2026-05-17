@@ -41,30 +41,41 @@
             position: relative;
         }
 
-        /* Photo en haut à gauche */
+        /* PHOTO EN HAUT À DROITE */
         .photo-block {
             position: absolute;
             top: 15px;
-            left: 15px;
-            text-align: center;
+            right: 15px;
             display: flex;
             flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        /* Cadre vide */
+        .photo-frame {
+            width: 280px;
+            height: 280px;
+            border: 3px solid #7A0010;
+            border-radius: 10px;
+            background: #f8f8f8;
+            display: flex;
+            justify-content: center;
             align-items: center;
         }
 
+        /* Photo dans le cadre */
         .photo-preview {
-            width: 280px;
-            height: 280px;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
-            border-radius: 10px;
-            border: 3px solid #7A0010;
-            margin-bottom: 12px;
+            border-radius: 7px;
             display: none;
         }
 
-        /* Bouton fichier stylisé + suppression du texte parasite */
+        /* Bouton fichier stylisé */
         #photo {
-            width: 280px;
+            width: 180px;
             overflow: hidden;
             color: transparent;
         }
@@ -151,11 +162,13 @@
 
             <!-- PHOTO -->
             <div class="photo-block">
-                <img id="photoPreview" class="photo-preview">
+                <div class="photo-frame">
+                    <img id="photoPreview" class="photo-preview">
+                </div>
                 <input type="file" id="photo" accept="image/*">
             </div>
 
-            <!-- COLONNE 1 / 2 IDENTIQUE À LA PAGE MODIFIER -->
+            <!-- COLONNES IDENTIQUES À LA PAGE MODIFIER -->
 
             <div class="line">
                 <div>
