@@ -51,7 +51,7 @@
 
         /* Bloc légèrement réduit */
         .card {
-            width: 43%;
+            width: 38%;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.92);
             color: black;
@@ -79,6 +79,27 @@
             border-radius: 10px;
             border: 3px solid #7A0010;
             margin-bottom: 10px;
+        }
+
+        /* Bouton fichier propre */
+        #photo {
+            width: 150px;
+            overflow: hidden;
+        }
+
+        #photo::-webkit-file-upload-button {
+            visibility: hidden;
+        }
+
+        #photo::before {
+            content: "Choisir un fichier";
+            display: inline-block;
+            background: #7A0010;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
         }
 
         label {
@@ -110,7 +131,7 @@
             flex: 0 0 auto;
         }
 
-        /* Adresse raccourcie (s'arrête comme le 2e champ) */
+        /* Adresse raccourcie */
         .full {
             width: 55%;
         }
@@ -193,7 +214,7 @@
             </div>
 
             <label>Date de naissance :</label>
-            <input type="date" id="date_naissance" style="width:85%;">
+            <input type="date" id="date_naissance">
 
             <div class="line">
                 <div>
