@@ -49,7 +49,7 @@
             background: #5A000C;
         }
 
-        /* Bloc comme avant, mais propre */
+        /* Bloc principal */
         .card {
             width: 40%;
             margin: 0 auto;
@@ -61,11 +61,11 @@
             position: relative;
         }
 
-        /* Photo bien dans le coin haut‑droite, avec marge intérieure */
+        /* Photo x2 dans le coin haut-droite */
         .photo-block {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 15px;
+            right: 15px;
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -73,17 +73,17 @@
         }
 
         .photo-preview {
-            width: 150px;
-            height: 150px;
+            width: 280px;
+            height: 280px;
             object-fit: cover;
             border-radius: 10px;
             border: 3px solid #7A0010;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
-        /* Bouton fichier simple, sans texte qui déborde */
+        /* Bouton fichier propre */
         #photo {
-            width: 150px;
+            width: 280px;
             overflow: hidden;
         }
 
@@ -96,10 +96,10 @@
             display: inline-block;
             background: #7A0010;
             color: white;
-            padding: 6px 10px;
+            padding: 8px 12px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 15px;
         }
 
         label {
@@ -109,7 +109,7 @@
             display: block;
         }
 
-        /* Champs rallongés, tous identiques (Nom, Email, Date, etc.) */
+        /* Champs rallongés */
         input {
             width: 85%;
             padding: 7px;
@@ -120,11 +120,10 @@
             box-sizing: border-box;
         }
 
-        /* Forcer le type date à se comporter comme les autres */
+        /* Correction spéciale pour le champ date */
         input[type="date"] {
-            width: 85%;
-            padding: 7px;
-            box-sizing: border-box;
+            width: 85% !important;
+            min-width: 0;
         }
 
         /* Colonnes rapprochées */
@@ -139,7 +138,7 @@
             flex: 0 0 auto;
         }
 
-        /* Adresse plus courte (s’arrête comme le 2e champ) */
+        /* Adresse raccourcie */
         .full {
             width: 55%;
         }
