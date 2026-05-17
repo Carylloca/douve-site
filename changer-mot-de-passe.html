@@ -82,7 +82,7 @@
 </div>
 
 <script>
-    if (!isLoggedIn()) {
+    if (!pb.authStore.isValid) {
         window.location.href = "login.html";
     }
 
@@ -107,7 +107,7 @@
 
         try {
             // 1️⃣ Ré-authentifier
-            const auth = await pb.collection("companions").authWithPassword(
+            await pb.collection("companions").authWithPassword(
                 pb.authStore.model.email,
                 oldPassword
             );
