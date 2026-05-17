@@ -112,7 +112,7 @@
             box-sizing: border-box;
         }
 
-        /* ALIGNEMENT PARFAIT DU CHAMP ROLE */
+        /* rôle même largeur que les autres champs */
         #role {
             width: 85% !important;
         }
@@ -128,8 +128,9 @@
             margin-bottom: 10px;
         }
 
+        /* 🔥 colonnes de même largeur → alignement parfait de la 2e colonne */
         .line > div {
-            flex: 0 0 auto;
+            flex: 1;
         }
 
         .full {
@@ -334,7 +335,6 @@
             formData.append("conjoint_nom", document.getElementById("conjoint_nom").value);
             formData.append("conjoint_prenom", document.getElementById("conjoint_prenom").value);
 
-            /* AJOUT DU ROLE */
             formData.append("role", document.getElementById("role").value);
 
             const fileInput = document.getElementById("photo");
