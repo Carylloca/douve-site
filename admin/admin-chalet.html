@@ -116,4 +116,64 @@
             type: document.getElementById("type").value,
             compagnon: document.getElementById("compagnon").value || null,
             startDate: document.getElementById("startDate").value,
-            endDate: document.get
+            endDate: document.getElementById("endDate").value,
+            description: document.getElementById("description").value,
+            created_by: pb.authStore.model.id
+        };
+
+        if (currentEventId) {
+            await pb.collection("chalet_reservations").update(currentEventId, data);
+        } else {
+            await pb.collection("chalet_reservations").create(data);
+        }
+
+        location.reload();
+    }
+
+    document.addEventListener("DOMContentLoaded", async function () {
+        await loadCompagnons();
+
+        const calendarEl = document.getElementById("calendar");
+
+        const events = await pb.collection("chalet_reservations").getFullList();
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: "dayGridMonth",
+            locale: "fr",
+            events: events.map(r => ({
+                id: r.id,
+                title: r.type,
+                start: r.startDate,
+                end: r.endDate,
+                backgroundColor: {
+                    "Interne": "#7A0010",
+                    "Nettoyage": "#1E90FF",
+                    "Frairie": "#32CD32",
+                    "Externe": "#FF8C00",
+                    "Travaux": "#8B4513"
+                }[r.type] || "#555"
+            })),
+            eventClick: function (info) {
+                currentEventId = info.event.id;
+                loadReservation(info.event.id);
+            }
+        });
+
+        calendar.render();
+    });
+
+    async function loadReservation(id) {
+        const r = await pb.collection("chalet_reservations").getOne(id);
+
+        document.getElementById("type").value = r.type;
+        document.getElementById("compagnon").value = r.compagnon || "";
+        document.getElementById("startDate").value = r.startDate.substring(0, 10);
+        document.getElementById("endDate").value = r.endDate.substring(0, 10);
+        document.getElementById("description").value = r.description;
+    }
+</script>
+
+<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+</body>
+</html>
