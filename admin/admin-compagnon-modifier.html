@@ -134,7 +134,6 @@
 
         input[type="date"] {
             width: 85% !important;
-            min-width: 0;
         }
 
         .line {
@@ -256,6 +255,7 @@
                 </div>
             </div>
 
+            <!-- LIGNE DATE + ROLE (alignée parfaitement) -->
             <div class="line">
                 <div>
                     <label>Date de naissance :</label>
@@ -326,7 +326,6 @@
                 document.getElementById("conjoint_prenom").value = c.conjoint_prenom || "";
                 document.getElementById("conjoint_nom").value = c.conjoint_nom || "";
 
-                // rôle
                 document.getElementById("role").value = c.role || "compagnon";
 
                 if (c.photo) {
@@ -365,7 +364,6 @@
             formData.append("telephone_prof", document.getElementById("telephone_prof").value);
             formData.append("email_prof", document.getElementById("email_prof").value);
 
-            // rôle
             formData.append("role", document.getElementById("role").value);
 
             const fileInput = document.getElementById("photo");
