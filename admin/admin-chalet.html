@@ -27,13 +27,15 @@
             backdrop-filter: blur(4px);
         }
 
+        /* 🔥 Bloc réduit comme les autres pages */
         .panel {
-            max-width: 1100px;
-            margin: 30px auto;
-            background: rgba(255,255,255,0.92);
-            padding: 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(3px);
+            width: 600px;               /* largeur réduite */
+            margin: 40px auto;          /* centré */
+            background: rgba(255,255,255,0.90);
+            padding: 25px;
+            border-radius: 12px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
         }
 
         label { font-weight: bold; }
@@ -43,6 +45,8 @@
             padding: 8px;
             margin-top: 5px;
             margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
         }
 
         button {
@@ -51,7 +55,7 @@
             padding: 10px 15px;
             border: none;
             cursor: pointer;
-            border-radius: 5px;
+            border-radius: 6px;
             margin-right: 10px;
         }
 
@@ -65,7 +69,8 @@
 
 <header>Gestion du Chalet – Admin</header>
 
-<div style="max-width:1100px; margin:20px auto; text-align:right;">
+<!-- 🔗 Bouton vers la liste des réservations -->
+<div style="width:600px; margin:20px auto; text-align:right;">
     <button onclick="window.location.href='admin-chalet-liste.html'">
         📋 Liste des réservations
     </button>
