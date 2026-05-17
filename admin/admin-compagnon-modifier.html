@@ -84,8 +84,9 @@
             display: block;
         }
 
+        /* Largeur harmonisée sur le champ Email */
         input {
-            width: 60%;
+            width: 50%;
             padding: 7px;
             margin-top: 4px;
             border-radius: 6px;
@@ -95,7 +96,7 @@
 
         .line {
             display: flex;
-            gap: 20px;
+            gap: 10px;
             margin-bottom: 10px;
         }
 
@@ -103,12 +104,9 @@
             flex: 1;
         }
 
-        .col2 input {
-            width: 50%;
-        }
-
+        /* Adresse alignée à la fin de la 2e colonne */
         .full {
-            width: 95%;
+            width: 70%;
         }
     </style>
 </head>
@@ -155,7 +153,7 @@
             <label>Adresse :</label>
             <input type="text" id="adresse" class="full">
 
-            <div class="line col2">
+            <div class="line">
                 <div>
                     <label>N° postal :</label>
                     <input type="text" id="npa">
@@ -166,7 +164,7 @@
                 </div>
             </div>
 
-            <div class="line col2">
+            <div class="line">
                 <div>
                     <label>Email :</label>
                     <input type="email" id="email_public">
@@ -177,7 +175,7 @@
                 </div>
             </div>
 
-            <div class="line col2">
+            <div class="line">
                 <div>
                     <label>Email professionnel :</label>
                     <input type="email" id="email_prof">
@@ -189,16 +187,16 @@
             </div>
 
             <label>Date de naissance :</label>
-            <input type="date" id="date_naissance" style="width:40%;">
+            <input type="date" id="date_naissance" style="width:50%;">
 
-            <div class="line col2">
-                <div>
-                    <label>Conjoint - prénom :</label>
-                    <input type="text" id="conjoint_prenom">
-                </div>
+            <div class="line">
                 <div>
                     <label>Conjoint - nom :</label>
                     <input type="text" id="conjoint_nom">
+                </div>
+                <div>
+                    <label>Conjoint - prénom :</label>
+                    <input type="text" id="conjoint_prenom">
                 </div>
             </div>
 
