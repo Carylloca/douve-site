@@ -40,7 +40,6 @@
             position: relative;
         }
 
-        /* PHOTO EN HAUT À DROITE — RESPONSIVE */
         .photo-block {
             position: absolute;
             top: 15px;
@@ -49,13 +48,13 @@
             flex-direction: column;
             align-items: flex-end;
             gap: 10px;
-            max-width: 40%; /* empêche le débordement */
+            max-width: 40%;
         }
 
         .photo-frame {
             width: 100%;
             max-width: 280px;
-            aspect-ratio: 1 / 1; /* carré responsive */
+            aspect-ratio: 1 / 1;
             border: 3px solid #7A0010;
             border-radius: 10px;
             background: #f8f8f8;
@@ -72,7 +71,6 @@
             display: none;
         }
 
-        /* BOUTON RESPONSIVE */
         #photo {
             width: 100%;
             max-width: 180px;
@@ -104,7 +102,7 @@
             display: block;
         }
 
-        input {
+        input, select {
             width: 85%;
             padding: 7px;
             margin-top: 4px;
@@ -149,7 +147,6 @@
             background: #5A000C;
         }
 
-        /* MODE MOBILE — PHOTO AU-DESSUS, CENTRÉE */
         @media (max-width: 900px) {
             .photo-block {
                 position: relative;
@@ -161,7 +158,7 @@
 
             .card {
                 width: 90%;
-                padding-top: 330px; /* espace pour la photo */
+                padding-top: 330px;
             }
         }
 
@@ -191,7 +188,7 @@
                 <input type="file" id="photo" accept="image/*">
             </div>
 
-            <!-- FORMULAIRE IDENTIQUE À LA PAGE MODIFIER -->
+            <!-- FORMULAIRE -->
 
             <div class="line">
                 <div>
@@ -251,8 +248,21 @@
                 </div>
             </div>
 
-            <label>Date de naissance :</label>
-            <input type="date" id="date_naissance">
+            <!-- DATE + ROLE -->
+            <div class="line">
+                <div>
+                    <label>Date de naissance :</label>
+                    <input type="date" id="date_naissance">
+                </div>
+
+                <div>
+                    <label>Rôle :</label>
+                    <select id="role">
+                        <option value="compagnon" selected>Compagnon</option>
+                        <option value="comite">Comité</option>
+                    </select>
+                </div>
+            </div>
 
             <div class="line">
                 <div>
@@ -280,7 +290,6 @@
             window.location.href = "../login.html";
         }
 
-        // Aperçu photo
         document.getElementById("photo").addEventListener("change", function() {
             const file = this.files[0];
             if (file) {
@@ -293,19 +302,16 @@
         async function ajouterCompagnon() {
             const formData = new FormData();
 
-            // Email Auth + Email public
             const email = document.getElementById("email_public").value;
             formData.append("email", email);
             formData.append("email_public", email);
 
-            // Mot de passe temporaire basé sur le NPA
             const npa = document.getElementById("npa").value;
             const tempPassword = "Douve" + npa;
 
             formData.append("password", tempPassword);
             formData.append("passwordConfirm", tempPassword);
 
-            // Champs classiques
             formData.append("nom", document.getElementById("nom").value);
             formData.append("prenom", document.getElementById("prenom").value);
             formData.append("initiales", document.getElementById("initiales").value);
@@ -323,7 +329,9 @@
             formData.append("conjoint_nom", document.getElementById("conjoint_nom").value);
             formData.append("conjoint_prenom", document.getElementById("conjoint_prenom").value);
 
-            // Photo
+            // 🔥 AJOUT DU ROLE
+            formData.append("role", document.getElementById("role").value);
+
             const fileInput = document.getElementById("photo");
             if (fileInput.files.length > 0) {
                 formData.append("photo", fileInput.files[0]);
