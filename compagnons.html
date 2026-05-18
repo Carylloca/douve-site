@@ -181,85 +181,89 @@
             });
 
             futures.forEach(m => {
-                const d = new Date(m.date);
-                const dateAff = d.toLocaleDateString("fr-CH");
+    const d = new Date(m.date);
+    const dateAff = d.toLocaleDateString("fr-CH");
 
-                let heureAff = "";
-                if (typeof m.date === "string" && m.date.includes(" ")) {
-                    const parts = m.date.split(" ");
-                    if (parts[1]) heureAff = parts[1].slice(0,5);
-                }
+    let heureAff = "";
+    if (typeof m.date === "string" && m.date.includes(" ")) {
+        const parts = m.date.split(" ");
+        if (parts[1]) heureAff = parts[1].slice(0,5);
+    }
 
-                const limite = new Date(m.date_limite);
-                const limiteAff = !isNaN(limite.getTime())
-                    ? limite.toLocaleDateString("fr-CH")
-                    : "Non définie";
-                const isClosed = !isNaN(limite.getTime()) && now > limite;
+    const limite = new Date(m.date_limite);
+    const limiteAff = !isNaN(limite.getTime())
+        ? limite.toLocaleDateString("fr-CH")
+        : "Non définie";
+    const isClosed = !isNaN(limite.getTime()) && now > limite;
 
-                let responsable = "Non défini";
-                if (m.expand?.responsables?.length > 0) {
-                    responsable = m.expand.responsables
-                        .map(r => `${r.nom} ${r.prenom} (${r.initiales || ""})`)
-                        .join(", ");
-                }
+    let responsable = "Non défini";
+    if (m.expand?.responsables?.length > 0) {
+        responsable = m.expand.responsables
+            .map(r => `${r.nom} ${r.prenom} (${r.initiales || ""})`)
+            .join(", ");
+    }
 
-                const inscription = inscriptions.find(i =>
-                    i.manifestation === m.id ||
-                    (i.expand && i.expand.manifestation && i.expand.manifestation.id === m.id)
-                );
+    const inscription = inscriptions.find(i =>
+        i.manifestation === m.id ||
+        (i.expand && i.expand.manifestation && i.expand.manifestation.id === m.id)
+    );
 
-                const estInscrit = Boolean(inscription);
+    const estInscrit = Boolean(inscription);
 
-                let badge = estInscrit ? `<div class="badge">INSCRIT</div>` : "";
+    const hideInscription = (role !== "companion");
 
-                let status = estInscrit
-                    ? `<div class="status" style="color:green;">✔ Inscrit (${inscription.nb_personnes} pers.)</div>`
-                    : `<div class="status" style="color:#7b0f23;">✖ Non inscrit</div>`;
+    let badge = estInscrit ? `<div class="badge">INSCRIT</div>` : "";
 
-                let actionBtn = "";
+    let status = estInscrit
+        ? `<div class="status" style="color:green;">✔ Inscrit (${inscription.nb_personnes} pers.)</div>`
+        : `<div class="status" style="color:#7b0f23;">✖ Non inscrit</div>`;
 
-                if (estInscrit) {
-                    if (isClosed) {
-                        actionBtn = `<button class="btn-action btn-disabled">Modification impossible (date limite dépassée)</button>`;
-                    } else {
-                        actionBtn = `
-                            <button class="btn-action" onclick="goTo('${m.id}', '${inscription.id}')">Modifier mon inscription</button>
-                            <button class="btn-action" style="background:#444;" onclick="desinscrire('${inscription.id}')">Se désinscrire</button>
-                        `;
-                    }
-                } else {
-                    if (isClosed) {
-                        actionBtn = `<button class="btn-action btn-disabled">Inscriptions fermées</button>`;
-                    } else {
-                        actionBtn = `<button class="btn-action" onclick="goTo('${m.id}', '')">S’inscrire</button>`;
-                    }
-                }
+    let actionBtn = "";
 
-                container.innerHTML += `
-                    <div class="card">
-                        ${hideInscription ? "" : badge}
+    if (estInscrit) {
+        if (isClosed) {
+            actionBtn = `<button class="btn-action btn-disabled">Modification impossible (date limite dépassée)</button>`;
+        } else {
+            actionBtn = `
+                <button class="btn-action" onclick="goTo('${m.id}', '${inscription.id}')">Modifier mon inscription</button>
+                <button class="btn-action" style="background:#444;" onclick="desinscrire('${inscription.id}')">Se désinscrire</button>
+            `;
+        }
+    } else {
+        if (isClosed) {
+            actionBtn = `<button class="btn-action btn-disabled">Inscriptions fermées</button>`;
+        } else {
+            actionBtn = `<button class="btn-action" onclick="goTo('${m.id}', '')">S’inscrire</button>`;
+        }
+    }
 
-                        <h2>${m.title}</h2>
+    container.innerHTML += `
+        <div class="card">
 
-                        <div class="desc">${m.description || "Aucune description."}</div>
+            ${hideInscription ? "" : badge}
 
-                        <div class="info" style="display:flex; justify-content:space-between; align-items:center;">
-                            <span>📅 ${dateAff}${heureAff ? " à " + heureAff : ""}</span>
-                            <span>⏳ Date limite : ${limiteAff}</span>
-                        </div>
-                        
-                        <div class="info">📌 Organisateur : ${responsable}</div>
+            <h2>${m.title}</h2>
 
-                        ${hideInscription ? "" : status}
-                        ${hideInscription ? "" : actionBtn}
+            <div class="desc">${m.description || "Aucune description."}</div>
 
-                        <button class="btn-action" style="background:#555;margin-top:15px;"
-                            onclick="window.location.href='liste-inscrits-compagnon.html?id=${m.id}'">
-                            Voir la liste des inscrits
-                        </button>
-                    </div>
-                `;
-            });
+            <div class="info" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>📅 ${dateAff}${heureAff ? " à " + heureAff : ""}</span>
+                <span>⏳ Date limite : ${limiteAff}</span>
+            </div>
+            
+            <div class="info">📌 Organisateur : ${responsable}</div>
+
+            ${hideInscription ? "" : status}
+            ${hideInscription ? "" : actionBtn}
+
+            <button class="btn-action" style="background:#555;margin-top:15px;"
+                onclick="window.location.href='liste-inscrits-compagnon.html?id=${m.id}'">
+                Voir la liste des inscrits
+            </button>
+        </div>
+    `;
+});
+
 
             if (futures.length === 0) {
                 container.innerHTML = "Aucune manifestation à venir.";
