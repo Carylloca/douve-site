@@ -16,6 +16,41 @@
             font-family: Arial, sans-serif;
         }
 
+        /* --- Barre supérieure --- */
+        header {
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        }
+
+        .left-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: #7A0010;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #5A000C;
+        }
+
         .overlay {
             background: rgba(0, 0, 0, 0.55);
             min-height: 100vh;
@@ -40,13 +75,14 @@
             position: relative;
         }
 
+        /* --- PHOTO --- */
         .photo-block {
             position: absolute;
             top: 15px;
             right: 15px;
             display: flex;
             flex-direction: column;
-            align-items: flex-end;
+            align-items: center;
             gap: 10px;
             max-width: 40%;
         }
@@ -71,28 +107,19 @@
             display: none;
         }
 
-        #photo {
-            width: 100%;
-            max-width: 180px;
-            overflow: hidden;
-            color: transparent;
-        }
-
-        #photo::-webkit-file-upload-button,
-        #photo::file-selector-button {
-            visibility: hidden;
-        }
-
-        #photo::before {
-            content: "Choisir un fichier";
-            display: inline-block;
+        .photo-upload-btn {
             background: #7A0010;
             color: white;
-            padding: 8px 12px;
+            padding: 8px 14px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 15px;
-            text-align: center;
+            border: none;
+            transition: 0.2s;
+        }
+
+        .photo-upload-btn:hover {
+            background: #5A000C;
         }
 
         label {
@@ -112,14 +139,6 @@
             box-sizing: border-box;
         }
 
-        #role {
-            width: 85% !important;
-        }
-
-        input[type="date"] {
-            width: 85% !important;
-        }
-
         .line {
             display: flex;
             gap: 6px;
@@ -131,29 +150,8 @@
             flex: 0 0 auto;
         }
 
-        /* Ajustement fin de la ligne Date + Rôle pour aligner la 2e colonne */
-        .role-line > div:first-child {
-            width: 200px;
-        }
-
         .full {
             width: 55%;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 10px 18px;
-            background: #7A0010;
-            color: white;
-            border-radius: 6px;
-            text-decoration: none;
-            margin-top: 20px;
-            margin-right: 10px;
-            cursor: pointer;
-        }
-
-        .btn:hover {
-            background: #5A000C;
         }
 
         @media (max-width: 900px) {
@@ -184,8 +182,18 @@
 </head>
 
 <body>
+
+    <!-- BARRE SUPÉRIEURE -->
+    <header>
+        <div class="left-buttons">
+            <a href="../index.html" class="btn">🏠 Menu</a>
+            <a href="admin-menu.html" class="btn">📋 Accueil admin</a>
+        </div>
+        <h2>Ajouter un compagnon</h2>
+        <button class="btn" onclick="logout()">⏻ Déconnexion</button>
+    </header>
+
     <div class="overlay">
-        <h1>Ajouter un compagnon</h1>
 
         <div class="card">
 
@@ -193,12 +201,14 @@
             <div class="photo-block">
                 <div class="photo-frame">
                     <img id="photoPreview" class="photo-preview">
+                    <span id="photoPlaceholder">Aucune image</span>
                 </div>
-                <input type="file" id="photo" accept="image/*">
+
+                <input type="file" id="photoInput" accept="image/*" style="display:none;">
+                <button class="photo-upload-btn" onclick="document.getElementById('photoInput').click()">📷 Charger une image</button>
             </div>
 
             <!-- FORMULAIRE -->
-
             <div class="line">
                 <div>
                     <label>Nom :</label>
@@ -257,7 +267,6 @@
                 </div>
             </div>
 
-            <!-- DATE + ROLE ALIGNÉS -->
             <div class="line role-line">
                 <div>
                     <label>Date de naissance :</label>
@@ -290,6 +299,7 @@
         </div>
     </div>
 
+    <!-- PocketBase -->
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <script>
@@ -299,12 +309,16 @@
             window.location.href = "../login.html";
         }
 
-        document.getElementById("photo").addEventListener("change", function() {
+        // Prévisualisation photo
+        document.getElementById("photoInput").addEventListener("change", function () {
             const file = this.files[0];
             if (file) {
                 const preview = document.getElementById("photoPreview");
                 preview.src = URL.createObjectURL(file);
                 preview.style.display = "block";
+
+                const placeholder = document.getElementById("photoPlaceholder");
+                if (placeholder) placeholder.style.display = "none";
             }
         });
 
@@ -340,7 +354,7 @@
 
             formData.append("role", document.getElementById("role").value);
 
-            const fileInput = document.getElementById("photo");
+            const fileInput = document.getElementById("photoInput");
             if (fileInput.files.length > 0) {
                 formData.append("photo", fileInput.files[0]);
             }
