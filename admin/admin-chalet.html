@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Admin – Gestion du Chalet Le Bon Laron</title>
+    <title>Admin – Gestion du Bon Laron</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="../favicon.png">
@@ -18,43 +18,60 @@
             background-size: cover;
         }
 
-        /* 🔥 Barre du haut harmonisée */
+        /* --- Barre supérieure (identique à admin-manifestations) --- */
         header {
-            background: rgba(122, 0, 16, 0.85);
+            background: rgba(0, 0, 0, 0.85);
             color: white;
-            padding: 15px;
-            text-align: center;
-            font-size: 22px;
-            backdrop-filter: blur(4px);
-            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
         }
 
-        .top-buttons {
-            position: absolute;
-            top: 10px;
-            left: 10px;
+        .left-buttons {
+            display: flex;
+            gap: 10px;
         }
 
-        .top-buttons button {
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
             background: #7A0010;
             color: white;
-            padding: 8px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.2s;
             border: none;
             cursor: pointer;
-            border-radius: 6px;
-            margin-right: 5px;
-            font-size: 14px;
         }
 
-        .top-buttons button:hover {
-            background: #5a000c;
+        .btn:hover {
+            background: #5A000C;
         }
 
-        /* 🔥 Bloc premium réduit */
+        h2 {
+            text-align: center;
+            color: white;
+            margin: 0;
+            text-shadow: 0 0 10px black;
+        }
+
+        /* Overlay sombre */
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 30px 0;
+        }
+
+        /* Bloc premium */
         .panel {
             width: 600px;
-            margin: 40px auto;
-            background: rgba(255,255,255,0.90);
+            margin: 20px auto;
+            background: rgba(255,255,255,0.92);
             padding: 25px;
             border-radius: 12px;
             backdrop-filter: blur(4px);
@@ -62,14 +79,14 @@
             border-left: 10px solid transparent; /* Code couleur dynamique */
         }
 
-        /* 🧩 Deux colonnes */
+        /* Deux colonnes */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px 25px;
         }
 
-        /* Champs pleine largeur */
+        /* Pleine largeur */
         .full {
             grid-column: span 2;
         }
@@ -113,90 +130,99 @@
 
 <body>
 
+<!-- Barre supérieure -->
 <header>
-    Gestion du Chalet – Admin
-    <div class="top-buttons">
-        <button onclick="window.location.href='../index.html'">🏠 Menu</button>
-        <button onclick="window.location.href='admin-menu.html'">📄 Menu admin</button>
-        <button onclick="logout()">⏻ Déconnexion</button>
+    <div class="left-buttons">
+        <a href="../index.html" class="btn">🏠 Menu</a>
+        <a href="admin-menu.html" class="btn">📋 Accueil admin</a>
     </div>
+
+    <h2>Admin – Gestion du Bon Laron</h2>
+
+    <button class="btn" onclick="logout()">⏻ Déconnexion</button>
 </header>
 
-<div class="panel" id="panel">
-    <h3>Nouvelle / Modifier une réservation</h3>
+<div class="overlay">
 
-    <div class="form-grid">
+    <div class="panel" id="panel">
+        <h3 style="text-align:center;">Nouvelle / Modifier une réservation</h3>
 
-        <!-- STATUS EN HAUT -->
-        <div class="full">
-            <label>Status</label>
-            <select id="status" onchange="updateStatusColor()">
-                <option value="Réservation en cours">Réservation en cours</option>
-                <option value="Confirmée">Confirmée</option>
-                <option value="Terminée">Terminée</option>
-                <option value="Annulée">Annulée</option>
-            </select>
+        <div class="form-grid">
+
+            <!-- STATUS EN HAUT -->
+            <div class="full">
+                <label>Status</label>
+                <select id="status" onchange="updateStatusColor()">
+                    <option value="Réservation en cours">Réservation en cours</option>
+                    <option value="Confirmée">Confirmée</option>
+                    <option value="Terminée">Terminée</option>
+                    <option value="Annulée">Annulée</option>
+                </select>
+            </div>
+
+            <!-- DESCRIPTION JUSTE EN DESSOUS -->
+            <div class="full">
+                <label>Description</label>
+                <textarea id="description"></textarea>
+            </div>
+
+            <!-- TYPE + COMPAGNON EN DEUXIÈME LIGNE -->
+            <div>
+                <label>Type</label>
+                <select id="type">
+                    <option value="Interne">Interne</option>
+                    <option value="Nettoyage">Nettoyage</option>
+                    <option value="Frairie">Frairie</option>
+                    <option value="Externe">Externe</option>
+                    <option value="Travaux">Travaux</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Compagnon (si interne)</label>
+                <select id="compagnon"></select>
+            </div>
+
+            <!-- DATES CÔTE À CÔTÉ -->
+            <div>
+                <label>Date début</label>
+                <input type="date" id="startDate">
+            </div>
+
+            <div>
+                <label>Date fin</label>
+                <input type="date" id="endDate">
+            </div>
+
+            <!-- RELEVÉS -->
+            <div>
+                <label>Électricité – début</label>
+                <input type="number" id="electricityStart">
+            </div>
+
+            <div>
+                <label>Électricité – fin</label>
+                <input type="number" id="electricityEnd">
+            </div>
+
+            <div>
+                <label>Eau – début</label>
+                <input type="number" id="waterStart">
+            </div>
+
+            <div>
+                <label>Eau – fin</label>
+                <input type="number" id="waterEnd">
+            </div>
+
+            <div class="full" style="text-align:center; margin-top:10px;">
+                <button class="action" onclick="saveReservation()">Enregistrer</button>
+                <button class="action" id="deleteBtn" onclick="deleteReservation()" style="display:none;">Supprimer</button>
+            </div>
+
         </div>
-
-        <!-- DESCRIPTION JUSTE EN DESSOUS -->
-        <div class="full">
-            <label>Description</label>
-            <textarea id="description"></textarea>
-        </div>
-
-        <!-- DATES CÔTE À CÔTÉ -->
-        <div>
-            <label>Date début</label>
-            <input type="date" id="startDate">
-        </div>
-
-        <div>
-            <label>Date fin</label>
-            <input type="date" id="endDate">
-        </div>
-
-        <div>
-            <label>Type</label>
-            <select id="type">
-                <option value="Interne">Interne</option>
-                <option value="Nettoyage">Nettoyage</option>
-                <option value="Frairie">Frairie</option>
-                <option value="Externe">Externe</option>
-                <option value="Travaux">Travaux</option>
-            </select>
-        </div>
-
-        <div>
-            <label>Compagnon (si interne)</label>
-            <select id="compagnon"></select>
-        </div>
-
-        <div>
-            <label>Électricité – début</label>
-            <input type="number" id="electricityStart">
-        </div>
-
-        <div>
-            <label>Électricité – fin</label>
-            <input type="number" id="electricityEnd">
-        </div>
-
-        <div>
-            <label>Eau – début</label>
-            <input type="number" id="waterStart">
-        </div>
-
-        <div>
-            <label>Eau – fin</label>
-            <input type="number" id="waterEnd">
-        </div>
-
-        <div class="full" style="text-align:center; margin-top:10px;">
-            <button class="action" onclick="saveReservation()">Enregistrer</button>
-            <button class="action" id="deleteBtn" onclick="deleteReservation()" style="display:none;">Supprimer</button>
-        </div>
-
     </div>
+
 </div>
 
 <script>
