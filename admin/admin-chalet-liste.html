@@ -220,11 +220,22 @@
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
     let reservationsList = [];
 
+    /* Couleurs des statuts */
     const statusColors = {
         "réservation en cours": "#1E90FF",
         "confirmée": "#32CD32",
         "terminée": "#8B4513",
         "annulée": "#B22222"
+    };
+
+    /* Icônes par type */
+    const typeIcons = {
+        "Interne 🍷🍽️": "🍷🍽️",
+        "Interne 👤": "👤",
+        "Nettoyage": "🧹",
+        "Frairie": "🧑‍🤝‍🧑",
+        "Externe": "↗️",
+        "Travaux": "🛠️"
     };
 
     function formatDate(d) {
@@ -247,7 +258,7 @@
                         <span class="open-icon" onclick="openRes('${r.id}')">🔍</span>
                         ${shortDesc}
                     </td>
-                    <td>${r.type}</td>
+                    <td>${typeIcons[r.type] || ""} ${r.type}</td>
                     <td>${r.companionName || "-"}</td>
                     <td class="date-col">${formatDate(r.startDate)}</td>
                     <td class="date-col">${formatDate(r.endDate)}</td>
@@ -351,7 +362,9 @@
             displayEventTime: false,
             events: reservationsList.map(r => ({
                 id: r.id,
-                title: r.description.substring(0, 40) + (r.description.length > 40 ? "…" : ""),
+                title: `${typeIcons[r.type] || ""} ` +
+                       r.description.substring(0, 40) +
+                       (r.description.length > 40 ? "…" : ""),
                 start: r.startDate,
                 end: r.endDate,
                 backgroundColor: statusColors[r.status] || "#555"
@@ -361,6 +374,7 @@
         calendar.render();
     });
 </script>
+
 
 </body>
 </html>
