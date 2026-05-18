@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <title>Chalet – Espace Compagnon</title>
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/png" href="../favicon.png">
 
     <!-- FullCalendar -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
@@ -18,165 +17,197 @@
         body {
             font-family: Arial;
             margin: 0;
-            background: url("img/chalet-bg.jpg") no-repeat center center fixed;
+            background: url("../img/page-admin-chalet.jpg") no-repeat center center fixed;
             background-size: cover;
         }
 
         header {
-            background: rgba(122, 0, 16, 0.85);
+            background: rgba(0,0,0,0.85);
             color: white;
-            padding: 15px;
-            text-align: center;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
             font-size: 22px;
-            backdrop-filter: blur(4px);
+        }
+
+        .btn {
+            background: #7A0010;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        .layout {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            max-width: 1200px;
+            margin: 20px auto;
         }
 
         #calendar {
-            max-width: 1100px;
-            margin: 30px auto;
-            background: rgba(255,255,255,0.92);
-            padding: 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(3px);
+            width: 350px;
+            background: rgba(255,255,255,0.90);
+            padding: 15px;
+            border-radius: 12px;
         }
 
         .panel {
-            max-width: 1100px;
-            margin: 20px auto;
-            background: rgba(255,255,255,0.92);
-            padding: 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(3px);
+            flex: 1;
+            background: rgba(255,255,255,0.90);
+            padding: 25px;
+            border-radius: 12px;
         }
 
-        label { font-weight: bold; }
-
-        input {
+        table {
             width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            margin-bottom: 15px;
+            border-collapse: collapse;
+            margin-top: 15px;
         }
 
-        button {
+        th {
             background: #7A0010;
             color: white;
-            padding: 10px 15px;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
         }
 
-        button:hover { background: #5a000c; }
+        th.desc-col { text-align: left; }
+
+        th.type-col, td.type-col {
+            width: 55px;
+            text-align: center;
+            font-size: 22px;
+        }
+
+        /* Correction du titre Type */
+        th.type-col {
+            font-size: 16px !important;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        td.desc-col { text-align: left; }
+        td.date-col { width: 90px; }
+
+        tr:hover {
+            background: #f0f0f0;
+            cursor: pointer;
+        }
     </style>
 </head>
 
 <body>
 
-<header>Espace Compagnon – Chalet Le Bon Laron</header>
+<header>
+    <a class="btn" href="../index.html">Menu</a>
+    <h1>Réservations du Chalet – Espace Compagnon</h1>
+    <div></div>
+</header>
 
-<div id="calendar"></div>
+<div class="layout">
 
-<div class="panel" id="myReservationPanel" style="display:none;">
-    <h3>Ma réservation</h3>
+    <div id="calendar"></div>
 
-    <p><b>Type :</b> <span id="type"></span></p>
-    <p><b>Du :</b> <span id="start"></span></p>
-    <p><b>Au :</b> <span id="end"></span></p>
+    <div class="panel">
+        <h3>Liste des réservations</h3>
 
-    <label>Électricité – début</label>
-    <input type="number" id="electricityStart">
+        <table id="reservationsTable">
+            <thead>
+                <tr>
+                    <th class="desc-col">Description</th>
+                    <th class="type-col">Type</th>
+                    <th>Compagnon</th>
+                    <th class="date-col">Début</th>
+                    <th class="date-col">Fin</th>
+                </tr>
+            </thead>
+            <tbody id="reservationsBody"></tbody>
+        </table>
+    </div>
 
-    <label>Électricité – fin</label>
-    <input type="number" id="electricityEnd">
-
-    <label>Eau – début</label>
-    <input type="number" id="waterStart">
-
-    <label>Eau – fin</label>
-    <input type="number" id="waterEnd">
-
-    <button onclick="saveMyReadings()">Enregistrer mes relevés</button>
 </div>
 
 <script>
-    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-    let myReservationId = null;
+let currentUser = null;
 
-    async function loadMyReservation() {
-        const userId = pb.authStore.model.id;
+async function init() {
+    currentUser = pb.authStore.model;
 
-        const list = await pb.collection("chalet_reservations").getFullList({
-            filter: `compagnon = "${userId}"`
-        });
-
-        if (list.length === 0) return;
-
-        const r = list[0];
-        myReservationId = r.id;
-
-        document.getElementById("type").textContent = r.type;
-        document.getElementById("start").textContent = r.startDate.substring(0,10);
-        document.getElementById("end").textContent = r.endDate.substring(0,10);
-
-        document.getElementById("electricityStart").value = r.electricityStart || "";
-        document.getElementById("electricityEnd").value = r.electricityEnd || "";
-        document.getElementById("waterStart").value = r.waterStart || "";
-        document.getElementById("waterEnd").value = r.waterEnd || "";
-
-        document.getElementById("myReservationPanel").style.display = "block";
+    if (!currentUser) {
+        alert("Veuillez vous connecter.");
+        window.location.href = "../login.html";
+        return;
     }
 
-    async function saveMyReadings() {
-        if (!myReservationId) return;
+    loadReservations();
+    loadCalendar();
+}
 
-        const data = {
-            electricityStart: document.getElementById("electricityStart").value || null,
-            electricityEnd: document.getElementById("electricityEnd").value || null,
-            waterStart: document.getElementById("waterStart").value || null,
-            waterEnd: document.getElementById("waterEnd").value || null
+async function loadReservations() {
+    const records = await pb.collection("chalet_reservations").getFullList({
+        expand: "compagnon"
+    });
+
+    const tbody = document.getElementById("reservationsBody");
+    tbody.innerHTML = "";
+
+    records.forEach(r => {
+        const tr = document.createElement("tr");
+
+        tr.onclick = () => {
+            if (r.expand.compagnon.id === currentUser.id) {
+                window.location.href = "compagnon-chalet-edit.html?id=" + r.id;
+            }
         };
 
-        await pb.collection("chalet_reservations").update(myReservationId, data);
+        tr.innerHTML = `
+            <td class="desc-col">${r.description}</td>
+            <td class="type-col">${r.type}</td>
+            <td>${r.expand.compagnon.prenom} ${r.expand.compagnon.nom}</td>
+            <td>${r.startDate}</td>
+            <td>${r.endDate}</td>
+        `;
 
-        alert("Relevés enregistrés !");
-    }
-
-    document.addEventListener("DOMContentLoaded", async function () {
-        if (!pb.authStore.isValid) {
-            window.location.href = "compagnon-login.html";
-            return;
-        }
-
-        await loadMyReservation();
-
-        const calendarEl = document.getElementById("calendar");
-
-        const events = await pb.collection("chalet_reservations").getFullList({
-            expand: "compagnon"
-        });
-
-        const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: "dayGridMonth",
-            locale: "fr",
-            events: events.map(r => ({
-                id: r.id,
-                title: r.type + (r.expand?.compagnon ? " – " + r.expand.compagnon.nom : ""),
-                start: r.startDate,
-                end: r.endDate,
-                backgroundColor: {
-                    "Interne": "#7A0010",
-                    "Nettoyage": "#1E90FF",
-                    "Frairie": "#32CD32",
-                    "Externe": "#FF8C00",
-                    "Travaux": "#8B4513"
-                }[r.type] || "#555"
-            }))
-        });
-
-        calendar.render();
+        tbody.appendChild(tr);
     });
+}
+
+function loadCalendar() {
+    const calendarEl = document.getElementById("calendar");
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "dayGridMonth",
+        locale: "fr",
+        events: async (info, success) => {
+            const records = await pb.collection("chalet_reservations").getFullList();
+            success(records.map(r => ({
+                title: r.description,
+                start: r.startDate,
+                end: r.endDate
+            })));
+        }
+    });
+
+    calendar.render();
+}
+
+init();
 </script>
 
 </body>
