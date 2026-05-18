@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier ma réservation – Chalet</title>
+
+    <link rel="icon" type="image/png" href="../favicon.png">
+
+    <!-- PocketBase -->
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <style>
+        body {
+            font-family: Arial;
+            margin: 0;
+            background: url("../img/page-admin-chalet.jpg") no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        header {
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .btn {
+            background: #7A0010;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        .panel {
+            max-width: 600px;
+            margin: 30px auto;
+            background: rgba(255,255,255,0.92);
+            padding: 25px;
+            border-radius: 12px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 6px;
+            border: 1px solid #aaa;
+        }
+
+        input[readonly] {
+            background: #eee;
+        }
+
+        .save-btn {
+            margin-top: 25px;
+            width: 100%;
+            padding: 12px;
+            background: #7A0010;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .save-btn:hover {
+            background: #5a000c;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <a class="btn" href="compagnon-chalet.html">Retour</a>
+    <h1>Modifier ma réservation</h1>
+    <div></div>
+</header>
+
+<div class="panel">
+    <h2 id="desc"></h2>
+
+    <label>Description</label>
+    <input id="description" readonly>
+
+    <label>Type</label>
+    <input id="type" readonly>
+
+    <label>Date de début</label>
+    <input id="startDate" readonly>
+
+    <label>Date de fin</label>
+    <input id="endDate" readonly>
+
+    <label>Compagnon</label>
+    <input id="compagnon" readonly>
+
+    <hr>
+
+    <label>Électricité – Début</label>
+    <input id="electricityStart">
+
+    <label>Électricité – Fin</label>
+    <input id="electricityEnd">
+
+    <label>Eau – Début</label>
+    <input id="waterStart">
+
+    <label>Eau – Fin</label>
+    <input id="waterEnd">
+
+    <button class="save-btn" onclick="save()">Enregistrer</button>
+</div>
+
+<script>
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+let currentUser = null;
+let reservation = null;
+
+async function init() {
+    currentUser = pb.authStore.model;
+
+    if (!currentUser) {
+        alert("Veuillez vous connecter.");
+        window.location.href = "../login.html";
+        return;
+    }
+
+    const id = new URLSearchParams(window.location.search).get("id");
+    if (!id) {
+        alert("Réservation introuvable.");
+        window.location.href = "compagnon-chalet.html";
+        return;
+    }
+
+    reservation = await pb.collection("chalet_reservations").getOne(id, {
+        expand: "compagnon"
+    });
+
+    // Vérification des droits
+    if (reservation.expand.compagnon.id !== currentUser.id) {
+        alert("Vous ne pouvez modifier que vos propres réservations.");
+        window.location.href = "compagnon-chalet.html";
+        return;
+    }
+
+    // Remplir les champs
+    document.getElementById("desc").innerText = reservation.description;
+
+    document.getElementById("description").value = reservation.description;
+    document.getElementById("type").value = reservation.type;
+    document.getElementById("startDate").value = reservation.startDate;
+    document.getElementById("endDate").value = reservation.endDate;
+    document.getElementById("compagnon").value =
+        reservation.expand.compagnon.prenom + " " + reservation.expand.compagnon.nom;
+
+    document.getElementById("electricityStart").value = reservation.electricityStart || "";
+    document.getElementById("electricityEnd").value = reservation.electricityEnd || "";
+    document.getElementById("waterStart").value = reservation.waterStart || "";
+    document.getElementById("waterEnd").value = reservation.waterEnd || "";
+}
+
+async function save() {
+    const data = {
+        electricityStart: document.getElementById("electricityStart").value,
+        electricityEnd: document.getElementById("electricityEnd").value,
+        waterStart: document.getElementById("waterStart").value,
+        waterEnd: document.getElementById("waterEnd").value
+    };
+
+    await pb.collection("chalet_reservations").update(reservation.id, data);
+
+    alert("Modifications enregistrées.");
+    window.location.href = "compagnon-chalet.html";
+}
+
+init();
+</script>
+
+</body>
+</html>
