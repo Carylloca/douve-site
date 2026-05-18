@@ -132,10 +132,7 @@
 <div class="overlay">
 
     <div class="header">
-        <a href="index.html" class="btn">Menu</a>
-
-        <a id="btnAdmin" href="admin/admin-menu.html" class="btn" style="display:none;">Menu admin</a>
-
+        <a href="index.html" class="btn">← Retour au menu</a>
         <div style="font-size:22px;font-weight:bold;">Mes manifestations</div>
         <button class="btn" onclick="logout()">Déconnexion</button>
     </div>
@@ -148,14 +145,6 @@
 
 <script>
     requireCompanion();
-
-    const role = pb.authStore.model.role;
-
-    const hideInscription = (role === "comite");
-
-    if (role === "comite") {
-        document.getElementById("btnAdmin").style.display = "inline-block";
-    }
 
     async function loadManifestations() {
         const container = document.getElementById("manifestList");
@@ -184,7 +173,6 @@
             futures.forEach(m => {
                 const d = new Date(m.date);
                 const dateAff = d.toLocaleDateString("fr-CH");
-
                 let heureAff = "";
                 if (typeof m.date === "string" && m.date.includes(" ")) {
                     const parts = m.date.split(" ");
@@ -198,6 +186,7 @@
                 const isClosed = !isNaN(limite.getTime()) && now > limite;
 
                 let responsable = "Non défini";
+                
                 if (m.expand?.responsables?.length > 0) {
                     responsable = m.expand.responsables
                         .map(r => `${r.nom} ${r.prenom} (${r.initiales || ""})`)
@@ -238,9 +227,7 @@
 
                 container.innerHTML += `
                     <div class="card">
-
-                        ${hideInscription ? "" : badge}
-
+                        ${badge}
                         <h2>${m.title}</h2>
 
                         <div class="desc">${m.description || "Aucune description."}</div>
@@ -252,8 +239,8 @@
                         
                         <div class="info">📌 Organisateur : ${responsable}</div>
 
-                        ${hideInscription ? "" : status}
-                        ${hideInscription ? "" : actionBtn}
+                        ${status}
+                        ${actionBtn}
 
                         <button class="btn-action" style="background:#555;margin-top:15px;"
                             onclick="window.location.href='liste-inscrits-compagnon.html?id=${m.id}'">
