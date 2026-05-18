@@ -7,10 +7,7 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="icon" type="image/png" href="../favicon.png">
 
-    <!-- jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-    <!-- SheetJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
@@ -24,7 +21,6 @@
             font-family: "DM Sans", sans-serif;
         }
 
-        /* HEADER FIXE */
         .header {
             position: fixed;
             top: 0;
@@ -79,7 +75,6 @@
             color: white;
         }
 
-        /* Tri */
         th.sortable {
             cursor: pointer;
         }
@@ -87,7 +82,6 @@
             background: #9c1a33;
         }
 
-        /* Boutons */
         .btn {
             padding: 8px 12px;
             border-radius: 6px;
@@ -102,7 +96,6 @@
             font-size: 13px;
         }
 
-        /* Bouton Modifier jaune vin blanc */
         .btn-modifier {
             background: #fff7c2 !important;
             color: #7b0f23 !important;
@@ -119,7 +112,6 @@
             justify-content: center;
         }
 
-        /* Boutons export alignés à droite */
         .export-buttons {
             margin: 10px 0 20px 0;
             display: flex;
@@ -127,23 +119,16 @@
             gap: 10px;
         }
 
-        /* Icône œil */
-        .view-icon {
-            font-size: 20px;
-            cursor: pointer;
-            text-decoration: none;
-            color: #7b0f23;
-            font-weight: bold;
-        }
-        .view-icon:hover {
-            color: #9c1a33;
+        .top-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <div class="header">
     <div class="header-left">
         <a href="../index.html" class="btn">🏠 Menu</a>
@@ -159,7 +144,10 @@
 
 <div class="overlay">
 
-    <a href="admin-manifestation-nouveau.html" class="btn">+ Nouvelle manifestation</a>
+    <div class="top-buttons">
+        <a href="admin-manifestation-nouveau.html" class="btn">+ Nouvelle manifestation</a>
+        <a href="../compagnons.html" class="btn">Liste des manifestations</a>
+    </div>
 
     <div class="export-buttons">
         <button class="btn" onclick="exportPDF()">Export PDF</button>
@@ -169,7 +157,6 @@
     <table>
         <thead>
         <tr>
-            <th></th> <!-- colonne icône 👁️ -->
             <th class="sortable" onclick="sortTable('title')">Titre</th>
             <th class="sortable" onclick="sortTable('date')">Date</th>
             <th class="sortable" onclick="sortTable('heure')">Heure</th>
@@ -202,7 +189,6 @@
     let manifestationsCache = [];
     let sortDirection = 1;
 
-    /* ---------------- TRI ---------------- */
     function sortTable(field) {
         sortDirection *= -1;
 
@@ -226,7 +212,6 @@
         displayTable();
     }
 
-    /* ---------------- AFFICHAGE TABLEAU ---------------- */
     function displayTable() {
         const table = document.getElementById("tableBody");
         table.innerHTML = "";
@@ -246,20 +231,7 @@
 
             table.innerHTML += `
                 <tr>
-
-                    <!-- 👁️ Icône Voir -->
-                    <td>
-                        <a class="view-icon" href="../manifestation.html?id=${m.id}" title="Voir la manifestation">👁️</a>
-                    </td>
-
-                    <!-- Titre cliquable -->
-                    <td>
-                        <a href="../manifestation.html?id=${m.id}" 
-                           style="color:#7b0f23; font-weight:bold; text-decoration:none;">
-                           ${m.title}
-                        </a>
-                    </td>
-
+                    <td>${m.title}</td>
                     <td>${dateAff}</td>
                     <td>${heureAff}</td>
                     <td>${dateLimite}</td>
@@ -275,10 +247,9 @@
         }
     }
 
-    /* ---------------- CHARGEMENT ---------------- */
     async function loadManifestations() {
         const table = document.getElementById("tableBody");
-        table.innerHTML = "<tr><td colspan='7'>Chargement...</td></tr>";
+        table.innerHTML = "<tr><td colspan='6'>Chargement...</td></tr>";
 
         try {
             const list = await pb.collection("manifestations").getFullList({
@@ -300,13 +271,12 @@
 
         } catch (err) {
             console.error(err);
-            table.innerHTML = "<tr><td colspan='7'>Erreur de chargement</td></tr>";
+            table.innerHTML = "<tr><td colspan='6'>Erreur de chargement</td></tr>";
         }
     }
 
     loadManifestations();
 
-    /* ---------------- SUPPRESSION ---------------- */
     async function supprimer(id) {
         if (!confirm("Supprimer cette manifestation ?")) return;
 
@@ -318,7 +288,6 @@
         }
     }
 
-    /* ---------------- EXPORT PDF ---------------- */
     function exportPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
@@ -338,7 +307,6 @@
         doc.save("manifestations.pdf");
     }
 
-    /* ---------------- EXPORT EXCEL ---------------- */
     function exportExcel() {
         const rows = manifestationsCache.map(m => {
             const d = new Date(m.date);
