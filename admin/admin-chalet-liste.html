@@ -91,6 +91,24 @@
             border-radius: 12px;
             backdrop-filter: blur(4px);
             box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            position: relative;
+        }
+
+        /* Bouton nouvelle réservation */
+        .new-btn {
+            position: absolute;
+            right: 25px;
+            top: 25px;
+            background: #7A0010;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .new-btn:hover {
+            background: #5a000c;
         }
 
         table {
@@ -137,6 +155,14 @@
             font-size: 16px;
         }
 
+        .status-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
         @media (max-width: 900px) {
             .layout {
                 flex-direction: column;
@@ -170,6 +196,8 @@
     <div id="calendar"></div>
 
     <div class="panel">
+        <button class="new-btn" onclick="window.location.href='admin-chalet.html'">+ Nouvelle réservation</button>
+
         <h3>Liste complète des réservations</h3>
 
         <table id="reservationsTable">
@@ -192,6 +220,13 @@
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
     let reservationsList = [];
 
+    const statusColors = {
+        "réservation en cours": "#1E90FF",
+        "confirmée": "#32CD32",
+        "terminée": "#8B4513",
+        "annulée": "#B22222"
+    };
+
     function formatDate(d) {
         return d.substring(8,10) + "." + d.substring(5,7) + "." + d.substring(0,4);
     }
@@ -208,6 +243,7 @@
             tbody.innerHTML += `
                 <tr data-id="${r.id}">
                     <td class="desc-col">
+                        <span class="status-dot" style="background:${statusColors[r.status]}"></span>
                         <span class="open-icon" onclick="openRes('${r.id}')">🔍</span>
                         ${shortDesc}
                     </td>
@@ -224,12 +260,10 @@
         window.location.href = "admin-chalet.html?id=" + id;
     }
 
-    /* OPTION D — Double‑clic sur la ligne */
+    /* Double‑clic */
     document.addEventListener("dblclick", e => {
         const row = e.target.closest("tr[data-id]");
-        if (row) {
-            openRes(row.dataset.id);
-        }
+        if (row) openRes(row.dataset.id);
     });
 
     function exportPDF() {
@@ -280,6 +314,7 @@
         reservationsList = events.map(r => ({
             id: r.id,
             type: r.type,
+            status: r.status,
             startDate: r.startDate,
             endDate: r.endDate,
             description: r.description,
@@ -296,19 +331,13 @@
             initialView: "dayGridMonth",
             locale: "fr",
             height: 450,
-            displayEventTime: false, /* SUPPRESSION DE L’HEURE */
+            displayEventTime: false,
             events: events.map(r => ({
                 id: r.id,
                 title: r.description.substring(0, 40) + (r.description.length > 40 ? "…" : ""),
                 start: r.startDate,
                 end: r.endDate,
-                backgroundColor: {
-                    "Interne": "#7A0010",
-                    "Nettoyage": "#1E90FF",
-                    "Frairie": "#32CD32",
-                    "Externe": "#FF8C00",
-                    "Travaux": "#8B4513"
-                }[r.type] || "#555"
+                backgroundColor: statusColors[r.status] || "#555"
             }))
         });
 
