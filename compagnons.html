@@ -50,7 +50,9 @@
 requireCompanion();
 
 const user = pb.authStore.model;
-if (user.role === "comite" && user.collectionName === "users") {
+const isComite = (user.role === "comite" && user.collectionName === "users");
+
+if (isComite) {
     document.getElementById("btnAdmin").style.display = "inline-block";
 }
 
@@ -77,7 +79,6 @@ async function loadManifestations() {
 
             const limite = new Date(m.date_limite);
             const limiteAff = !isNaN(limite.getTime()) ? limite.toLocaleDateString("fr-CH") : "Non définie";
-            const isClosed = !isNaN(limite.getTime()) && now > limite;
 
             let responsable = "Non défini";
             if (m.expand?.responsables?.length > 0) {
@@ -90,25 +91,21 @@ async function loadManifestations() {
             );
 
             const estInscrit = Boolean(inscription);
-            let badge = estInscrit ? `<div class="badge">INSCRIT</div>` : "";
-            let status = estInscrit
-                ? `<div class="status" style="color:green;">✔ Inscrit (${inscription.nb_personnes} pers.)</div>`
-                : `<div class="status" style="color:#7b0f23;">✖ Non inscrit</div>`;
 
+            let badge = "";
+            let status = "";
             let actionBtn = "";
-            if (estInscrit) {
-                if (isClosed) {
-                    actionBtn = `<button class="btn-action btn-disabled">Modification impossible (date limite dépassée)</button>`;
-                } else {
+
+            if (!isComite) {
+                if (estInscrit) {
+                    badge = `<div class="badge">INSCRIT</div>`;
+                    status = `<div class="status" style="color:green;">✔ Inscrit (${inscription.nb_personnes} pers.)</div>`;
                     actionBtn = `
                         <button class="btn-action" onclick="goTo('${m.id}', '${inscription.id}')">Modifier mon inscription</button>
                         <button class="btn-action" style="background:#444;" onclick="desinscrire('${inscription.id}')">Se désinscrire</button>
                     `;
-                }
-            } else {
-                if (isClosed) {
-                    actionBtn = `<button class="btn-action btn-disabled">Inscriptions fermées</button>`;
                 } else {
+                    status = `<div class="status" style="color:#7b0f23;">✖ Non inscrit</div>`;
                     actionBtn = `<button class="btn-action" onclick="goTo('${m.id}', '')">S’inscrire</button>`;
                 }
             }
