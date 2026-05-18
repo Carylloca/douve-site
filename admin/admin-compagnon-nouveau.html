@@ -75,21 +75,25 @@
             position: relative;
         }
 
-        /* --- PHOTO --- */
+        /* --- PHOTO responsive --- */
         .photo-block {
             position: absolute;
             top: 15px;
             right: 15px;
+
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 10px;
-            max-width: 40%;
+
+            /* Responsive */
+            width: 30%;
+            min-width: 150px;
+            max-width: 280px;
         }
 
         .photo-frame {
             width: 100%;
-            max-width: 280px;
             aspect-ratio: 1 / 1;
             border: 3px solid #7A0010;
             border-radius: 10px;
@@ -108,14 +112,17 @@
         }
 
         .photo-upload-btn {
+            width: 100%;
+            text-align: center;
             background: #7A0010;
             color: white;
             padding: 8px 14px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 15px;
             border: none;
-            transition: 0.2s;
+
+            /* Responsive text */
+            font-size: clamp(12px, 1.5vw, 16px);
         }
 
         .photo-upload-btn:hover {
@@ -154,24 +161,26 @@
             width: 55%;
         }
 
+        /* --- Responsive mobile --- */
         @media (max-width: 900px) {
             .photo-block {
                 position: relative;
                 right: 0;
                 margin: 0 auto 20px auto;
-                align-items: center;
-                max-width: 60%;
+                width: 50%;
+                max-width: 250px;
             }
 
             .card {
                 width: 90%;
-                padding-top: 330px;
+                padding-top: 350px;
             }
         }
 
         @media (max-width: 600px) {
             .photo-block {
-                max-width: 80%;
+                width: 70%;
+                max-width: 220px;
             }
 
             .card {
