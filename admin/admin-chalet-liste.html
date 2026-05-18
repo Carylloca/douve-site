@@ -307,6 +307,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", async function () {
+
         const events = await pb.collection("chalet_reservations").getFullList({
             expand: "compagnon"
         });
@@ -323,8 +324,24 @@
                 : null
         }));
 
+        /* 🔥 Mise à jour automatique des statuts */
+        const today = new Date().toISOString().substring(0, 10);
+
+        for (const r of reservationsList) {
+            if (r.endDate < today && r.status !== "annulée" && r.status !== "terminée") {
+                await pb.collection("chalet_reservations").update(r.id, {
+                    status: "terminée"
+                });
+                r.status = "terminée";
+            }
+        }
+
+        /* 🔥 Tri automatique par date de début */
+        reservationsList.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+
         populateTable();
 
+        /* CALENDRIER */
         const calendarEl = document.getElementById("calendar");
 
         const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -332,7 +349,7 @@
             locale: "fr",
             height: 450,
             displayEventTime: false,
-            events: events.map(r => ({
+            events: reservationsList.map(r => ({
                 id: r.id,
                 title: r.description.substring(0, 40) + (r.description.length > 40 ? "…" : ""),
                 start: r.startDate,
