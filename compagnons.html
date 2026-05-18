@@ -150,11 +150,10 @@
     requireCompanion();
 
     const role = pb.authStore.model.role;
-    const hideInscription = (role !== "compagnon");
 
-    if (!hideInscription) {
-        document.getElementById("btnAdmin").style.display = "none";
-    } else {
+    const hideInscription = (role === "comite");
+
+    if (role === "comite") {
         document.getElementById("btnAdmin").style.display = "inline-block";
     }
 
