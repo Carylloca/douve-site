@@ -132,8 +132,15 @@
 <div class="overlay">
 
     <div class="header">
-        <a href="index.html" class="btn">← Retour au menu</a>
+
+        <!-- BOUTONS GAUCHE -->
+        <div style="display:flex; gap:10px; align-items:center;">
+            <a href="index.html" class="btn">Menu</a>
+            <a id="btnAdmin" href="admin/admin-menu.html" class="btn" style="display:none;">Menu admin</a>
+        </div>
+
         <div style="font-size:22px;font-weight:bold;">Mes manifestations</div>
+
         <button class="btn" onclick="logout()">Déconnexion</button>
     </div>
 
@@ -145,6 +152,13 @@
 
 <script>
     requireCompanion();
+
+    const role = pb.authStore.model.role;
+
+    // 🔥 Affiche le bouton Menu admin uniquement pour les comite
+    if (role === "comite") {
+        document.getElementById("btnAdmin").style.display = "inline-block";
+    }
 
     async function loadManifestations() {
         const container = document.getElementById("manifestList");
