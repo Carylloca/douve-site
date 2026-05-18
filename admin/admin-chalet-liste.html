@@ -39,15 +39,16 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.5);
         }
 
+        .header-left {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
         header h1 {
             margin: 0;
             font-size: 22px;
             text-shadow: 0 0 10px black;
-        }
-
-        .header-buttons {
-            display: flex;
-            gap: 10px;
         }
 
         .btn {
@@ -103,26 +104,31 @@
             color: white;
             padding: 10px;
             border-radius: 4px;
+            text-align: center;
+        }
+
+        th.desc-col {
+            text-align: left;
         }
 
         td {
             padding: 10px;
             border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        td.desc-col {
+            text-align: left;
+            width: 40%;
+        }
+
+        td.date-col {
+            width: 90px;
         }
 
         tr:hover {
             background: #f0f0f0;
             cursor: pointer;
-        }
-
-        /* Colonnes */
-        td.date-col, th.date-col {
-            width: 90px;
-            text-align: center;
-        }
-
-        td.desc-col {
-            width: 40%;
         }
 
         .open-icon {
@@ -146,11 +152,14 @@
 <body>
 
 <header>
+    <div class="header-left">
+        <a class="btn" href="../index.html">Menu</a>
+        <a class="btn" href="admin-menu.html">Menu admin</a>
+    </div>
+
     <h1>Liste des Réservations – Chalet Le Bon Laron</h1>
 
-    <div class="header-buttons">
-        <a class="btn" href="../index.html">🏠 Menu</a>
-        <a class="btn" href="admin-menu.html">🛠 Admin</a>
+    <div class="header-right">
         <button class="btn" onclick="exportPDF()">PDF</button>
         <button class="btn" onclick="exportExcel()">Excel</button>
     </div>
@@ -166,7 +175,7 @@
         <table id="reservationsTable">
             <thead>
                 <tr>
-                    <th>Description</th>
+                    <th class="desc-col">Description</th>
                     <th>Type</th>
                     <th>Compagnon</th>
                     <th class="date-col">Début</th>
@@ -287,6 +296,7 @@
             initialView: "dayGridMonth",
             locale: "fr",
             height: 450,
+            displayEventTime: false, /* SUPPRESSION DE L’HEURE */
             events: events.map(r => ({
                 id: r.id,
                 title: r.description.substring(0, 40) + (r.description.length > 40 ? "…" : ""),
