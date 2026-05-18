@@ -5,144 +5,13 @@
     <title>Modifier ma réservation – Chalet</title>
 
     <link rel="icon" type="image/png" href="../favicon.png">
-
-    <!-- PocketBase -->
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
             font-family: Arial;
             margin: 0;
-            background: url("../img/page-admin-chalet-edit.jpg") no-repeat center center fixed;
-            background-size: cover;
-        }
-
-        header {
-            background: rgba(0,0,0,0.85);
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 22px;
-        }
-
-        .btn {
-            background: #7A0010;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-        }
-
-        .panel {
-            max-width: 600px;
-            margin: 30px auto;
-            background: rgba(255,255,255,0.92);
-            padding: 25px;
-            border-radius: 12px;
-        }
-
-        label {
-            font-weight: bold;
-            display: block;
-            margin-top: 15px;
-        }
-
-        input {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            border-radius: 6px;
-            border: 1px solid #aaa;
-        }
-
-        input[readonly] {
-            background: #eee;
-        }
-
-        .save-btn {
-            margin-top: 25px;
-            width: 100%;
-            padding: 12px;
-            background: #7A0010;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        .save-btn:hover {
-            background: #5a000c;
-        }
-    </style>
-</head>
-
-<body>
-
-<header>
-    <a class="btn" href="compagnon-chalet.html">Retour</a>
-    <h1>Modifier ma réservation</h1>
-    <div></div>
-</header>
-
-<div class="panel">
-    <h2 id="desc"></h2>
-
-    <label>Description</label>
-    <input id="description" readonly>
-
-    <label>Type</label>
-    <input id="type" readonly>
-
-    <label>Date de début</label>
-    <input id="startDate" readonly>
-
-    <label>Date de fin</label>
-    <input id="endDate" readonly>
-
-    <label>Compagnon</label>
-    <input id="compagnon" readonly>
-
-    <hr>
-
-    <label>Électricité – Début</label>
-    <input id="electricityStart">
-
-    <label>Électricité – Fin</label>
-    <input id="electricityEnd">
-
-    <label>Eau – Début</label>
-    <input id="waterStart">
-
-    <label>Eau – Fin</label>
-    <input id="waterEnd">
-
-    <button class="save-btn" onclick="save()">Enregistrer</button>
-</div>
-
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Modifier ma réservation – Chalet</title>
-
-    <link rel="icon" type="image/png" href="../favicon.png">
-    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
-
-    <style>
-        body {
-            font-family: Arial;
-            margin: 0;
-            background: url("../img/page-compagnon-chalet.jpg") no-repeat center center fixed;
+            background: url("../img/page-compagnon-chalet-edit.jpg") no-repeat center center fixed;
             background-size: cover;
         }
 
@@ -198,7 +67,7 @@
             margin-top: 15px;
         }
 
-        input, select, textarea {
+        input, textarea {
             width: 100%;
             padding: 8px;
             margin-top: 5px;
@@ -354,10 +223,6 @@ async function save() {
 
 init();
 </script>
-
-</body>
-</html>
-
 
 </body>
 </html>
