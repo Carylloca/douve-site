@@ -28,37 +28,44 @@
             background-size: cover;
         }
 
+        /* HEADER PREMIUM */
         header {
-            background: rgba(122, 0, 16, 0.85);
+            background: rgba(0, 0, 0, 0.85);
             color: white;
-            padding: 15px;
-            text-align: center;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        }
+
+        header h1 {
+            margin: 0;
             font-size: 22px;
-            backdrop-filter: blur(4px);
+            text-shadow: 0 0 10px black;
         }
 
-        .top-buttons {
-            width: 100%;
-            max-width: 1200px;
-            margin: 20px auto;
-            text-align: right;
+        .header-buttons {
+            display: flex;
+            gap: 10px;
         }
 
-        button, .action-btn {
+        .btn {
             background: #7A0010;
             color: white;
             padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
             border: none;
             cursor: pointer;
-            border-radius: 6px;
-            margin-left: 5px;
-            font-size: 14px;
         }
 
-        button:hover, .action-btn:hover {
+        .btn:hover {
             background: #5a000c;
         }
 
+        /* Layout */
         .layout {
             display: flex;
             justify-content: center;
@@ -95,7 +102,6 @@
             background: #7A0010;
             color: white;
             padding: 10px;
-            cursor: pointer;
             border-radius: 4px;
         }
 
@@ -106,6 +112,23 @@
 
         tr:hover {
             background: #f0f0f0;
+            cursor: pointer;
+        }
+
+        /* Colonnes */
+        td.date-col, th.date-col {
+            width: 90px;
+            text-align: center;
+        }
+
+        td.desc-col {
+            width: 40%;
+        }
+
+        .open-icon {
+            cursor: pointer;
+            margin-right: 6px;
+            font-size: 16px;
         }
 
         @media (max-width: 900px) {
@@ -122,14 +145,16 @@
 
 <body>
 
-<header>Liste des Réservations – Chalet Le Bon Laron</header>
+<header>
+    <h1>Liste des Réservations – Chalet Le Bon Laron</h1>
 
-<div class="top-buttons">
-    <button onclick="window.location.href='../index.html'">🏠 Menu</button>
-    <button onclick="window.location.href='admin-menu.html'">🛠 Menu admin</button>
-    <button onclick="exportPDF()">PDF</button>
-    <button onclick="exportExcel()">Excel</button>
-</div>
+    <div class="header-buttons">
+        <a class="btn" href="../index.html">🏠 Menu</a>
+        <a class="btn" href="admin-menu.html">🛠 Admin</a>
+        <button class="btn" onclick="exportPDF()">PDF</button>
+        <button class="btn" onclick="exportExcel()">Excel</button>
+    </div>
+</header>
 
 <div class="layout">
 
@@ -141,12 +166,11 @@
         <table id="reservationsTable">
             <thead>
                 <tr>
-                    <th onclick="sortTable(0)">Type</th>
-                    <th onclick="sortTable(1)">Compagnon</th>
-                    <th onclick="sortTable(2)">Début</th>
-                    <th onclick="sortTable(3)">Fin</th>
                     <th>Description</th>
-                    <th>Action</th>
+                    <th>Type</th>
+                    <th>Compagnon</th>
+                    <th class="date-col">Début</th>
+                    <th class="date-col">Fin</th>
                 </tr>
             </thead>
             <tbody id="reservationsBody"></tbody>
@@ -159,39 +183,8 @@
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
     let reservationsList = [];
 
-    function sortTable(col) {
-        const table = document.getElementById("reservationsTable");
-        let switching = true;
-        let dir = "asc";
-
-        while (switching) {
-            switching = false;
-            const rows = table.rows;
-
-            for (let i = 1; i < rows.length - 1; i++) {
-                let shouldSwitch = false;
-
-                const x = rows[i].getElementsByTagName("TD")[col];
-                const y = rows[i + 1].getElementsByTagName("TD")[col];
-
-                if (dir === "asc" && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                    shouldSwitch = true;
-                } else if (dir === "desc" && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                    shouldSwitch = true;
-                }
-
-                if (shouldSwitch) {
-                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                    switching = true;
-                    break;
-                }
-            }
-
-            if (!switching && dir === "asc") {
-                dir = "desc";
-                switching = true;
-            }
-        }
+    function formatDate(d) {
+        return d.substring(8,10) + "." + d.substring(5,7) + "." + d.substring(0,4);
     }
 
     function populateTable() {
@@ -200,42 +193,52 @@
 
         reservationsList.forEach(r => {
             const shortDesc = r.description
-                ? r.description.substring(0, 60) + (r.description.length > 60 ? "…" : "")
+                ? r.description.substring(0, 80) + (r.description.length > 80 ? "…" : "")
                 : "-";
 
             tbody.innerHTML += `
-                <tr>
+                <tr data-id="${r.id}">
+                    <td class="desc-col">
+                        <span class="open-icon" onclick="openRes('${r.id}')">🔍</span>
+                        ${shortDesc}
+                    </td>
                     <td>${r.type}</td>
                     <td>${r.companionName || "-"}</td>
-                    <td>${r.startDate.substring(0,10)}</td>
-                    <td>${r.endDate.substring(0,10)}</td>
-                    <td>${shortDesc}</td>
-                    <td>
-                        <button class="action-btn" onclick="window.location.href='admin-chalet.html?id=${r.id}'">
-                            Ouvrir
-                        </button>
-                    </td>
+                    <td class="date-col">${formatDate(r.startDate)}</td>
+                    <td class="date-col">${formatDate(r.endDate)}</td>
                 </tr>
             `;
         });
     }
+
+    function openRes(id) {
+        window.location.href = "admin-chalet.html?id=" + id;
+    }
+
+    /* OPTION D — Double‑clic sur la ligne */
+    document.addEventListener("dblclick", e => {
+        const row = e.target.closest("tr[data-id]");
+        if (row) {
+            openRes(row.dataset.id);
+        }
+    });
 
     function exportPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
         const rows = reservationsList.map(r => [
+            r.description || "-",
             r.type,
             r.companionName || "-",
-            r.startDate.substring(0,10),
-            r.endDate.substring(0,10),
-            r.description || "-"
+            formatDate(r.startDate),
+            formatDate(r.endDate)
         ]);
 
         doc.text("Liste des réservations du chalet", 14, 15);
 
         doc.autoTable({
-            head: [["Type", "Compagnon", "Début", "Fin", "Description"]],
+            head: [["Description", "Type", "Compagnon", "Début", "Fin"]],
             body: rows,
             startY: 25
         });
@@ -245,11 +248,11 @@
 
     function exportExcel() {
         const rows = reservationsList.map(r => ({
+            Description: r.description || "-",
             Type: r.type,
             Compagnon: r.companionName || "-",
-            Début: r.startDate.substring(0,10),
-            Fin: r.endDate.substring(0,10),
-            Description: r.description || "-"
+            Début: formatDate(r.startDate),
+            Fin: formatDate(r.endDate)
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(rows);
@@ -286,7 +289,7 @@
             height: 450,
             events: events.map(r => ({
                 id: r.id,
-                title: r.type + (r.expand?.compagnon ? " – " + r.expand.compagnon.nom : ""),
+                title: r.description.substring(0, 40) + (r.description.length > 40 ? "…" : ""),
                 start: r.startDate,
                 end: r.endDate,
                 backgroundColor: {
