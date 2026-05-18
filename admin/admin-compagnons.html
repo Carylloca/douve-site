@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Admin – Compagnons</title>
 
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="../favicon.png">
 
     <!-- jsPDF -->
@@ -24,33 +23,52 @@
             font-family: Arial, sans-serif;
         }
 
-        .overlay {
-            background: rgba(0, 0, 0, 0.55);
-            min-height: 100vh;
-            padding: 40px 20px;
+        /* --- Barre supérieure --- */
+        header {
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
         }
 
-        h1 {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-            text-shadow: 0 0 10px black;
+        .left-buttons {
+            display: flex;
+            gap: 10px;
         }
 
         .btn {
-            display: inline-block;
-            padding: 12px 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
             background: #7A0010;
             color: white;
             border-radius: 6px;
             text-decoration: none;
             font-weight: bold;
             transition: 0.2s;
-            margin: 5px;
+            border: none;
+            cursor: pointer;
         }
 
         .btn:hover {
             background: #5A000C;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin: 30px 0 20px;
+            text-shadow: 0 0 10px black;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 20px;
         }
 
         .comp-card {
@@ -93,15 +111,21 @@
 </head>
 
 <body>
-    <div class="overlay">
-        <h1>Gestion des compagnons</h1>
+    <!-- Barre supérieure -->
+    <header>
+        <div class="left-buttons">
+            <a href="../index.html" class="btn">🏠 Menu</a>
+            <a href="admin-menu.html" class="btn">📋 Accueil admin</a>
+        </div>
+        <h2>Gestion des compagnons</h2>
+        <button class="btn" onclick="logout()">⏻ Déconnexion</button>
+    </header>
 
+    <div class="overlay">
         <div style="text-align:center;">
-            <a href="admin-menu.html" class="btn">← Retour au menu</a>
             <a href="admin-compagnon-nouveau.html" class="btn">+ Ajouter un compagnon</a>
             <button class="btn" onclick="exportPDF()">Export PDF</button>
             <button class="btn" onclick="exportExcel()">Export Excel</button>
-            <button class="btn" onclick="logout()">⏻ Déconnexion</button>
         </div>
 
         <div id="companions">
@@ -176,12 +200,10 @@
             }
         }
 
-        /* --- Format nom fichier --- */
         function formatFileName() {
             return "Compagnons_" + new Date().toISOString().split("T")[0];
         }
 
-        /* --- Export PDF --- */
         function exportPDF() {
             if (companionsList.length === 0) return;
 
@@ -200,7 +222,6 @@
             doc.save(formatFileName() + ".pdf");
         }
 
-        /* --- Export Excel --- */
         function exportExcel() {
             if (companionsList.length === 0) return;
 
