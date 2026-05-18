@@ -126,6 +126,18 @@
             justify-content: flex-end;
             gap: 10px;
         }
+
+        /* Icône œil */
+        .view-icon {
+            font-size: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #7b0f23;
+            font-weight: bold;
+        }
+        .view-icon:hover {
+            color: #9c1a33;
+        }
     </style>
 </head>
 
@@ -157,6 +169,7 @@
     <table>
         <thead>
         <tr>
+            <th></th> <!-- colonne icône 👁️ -->
             <th class="sortable" onclick="sortTable('title')">Titre</th>
             <th class="sortable" onclick="sortTable('date')">Date</th>
             <th class="sortable" onclick="sortTable('heure')">Heure</th>
@@ -223,7 +236,6 @@
             const d = new Date(m.date);
             const dateAff = d.toLocaleDateString("fr-CH");
 
-            // 🔥 Heure brute sans décalage UTC
             const heureAff = m.date.split(" ")[1].slice(0,5);
 
             let dateLimite = "";
@@ -234,7 +246,20 @@
 
             table.innerHTML += `
                 <tr>
-                    <td>${m.title}</td>
+
+                    <!-- 👁️ Icône Voir -->
+                    <td>
+                        <a class="view-icon" href="../manifestation.html?id=${m.id}" title="Voir la manifestation">👁️</a>
+                    </td>
+
+                    <!-- Titre cliquable -->
+                    <td>
+                        <a href="../manifestation.html?id=${m.id}" 
+                           style="color:#7b0f23; font-weight:bold; text-decoration:none;">
+                           ${m.title}
+                        </a>
+                    </td>
+
                     <td>${dateAff}</td>
                     <td>${heureAff}</td>
                     <td>${dateLimite}</td>
@@ -253,7 +278,7 @@
     /* ---------------- CHARGEMENT ---------------- */
     async function loadManifestations() {
         const table = document.getElementById("tableBody");
-        table.innerHTML = "<tr><td colspan='6'>Chargement...</td></tr>";
+        table.innerHTML = "<tr><td colspan='7'>Chargement...</td></tr>";
 
         try {
             const list = await pb.collection("manifestations").getFullList({
@@ -268,8 +293,6 @@
                 });
 
                 m._nbInscrits = inscrits.length;
-
-                // 🔥 Heure brute pour le tri
                 m._heure = m.date.split(" ")[1].slice(0,5);
             }
 
@@ -277,7 +300,7 @@
 
         } catch (err) {
             console.error(err);
-            table.innerHTML = "<tr><td colspan='6'>Erreur de chargement</td></tr>";
+            table.innerHTML = "<tr><td colspan='7'>Erreur de chargement</td></tr>";
         }
     }
 
