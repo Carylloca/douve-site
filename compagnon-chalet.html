@@ -105,7 +105,6 @@
 
         tr:hover {
             background: #f0f0f0;
-            cursor: pointer;
         }
     </style>
 </head>
@@ -170,11 +169,15 @@ async function loadReservations() {
     records.forEach(r => {
         const tr = document.createElement("tr");
 
-        tr.onclick = () => {
-            if (r.expand.compagnon.id === currentUser.id) {
+        // Clic uniquement si la réservation appartient au compagnon connecté
+        if (r.expand.compagnon.id === currentUser.id) {
+            tr.onclick = () => {
                 window.location.href = "compagnon-chalet-edit.html?id=" + r.id;
-            }
-        };
+            };
+            tr.style.cursor = "pointer";
+        } else {
+            tr.style.cursor = "default";
+        }
 
         tr.innerHTML = `
             <td class="desc-col">${r.description}</td>
