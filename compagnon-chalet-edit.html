@@ -9,70 +9,97 @@
 
     <style>
         body {
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             margin: 0;
             background: url("../img/page-compagnon-chalet-edit.jpg") no-repeat center center fixed;
             background-size: cover;
         }
 
+        /* --- Barre supérieure --- */
         header {
-            background: rgba(0,0,0,0.85);
+            background: rgba(0, 0, 0, 0.85);
             color: white;
-            padding: 15px 20px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.5);
         }
 
-        header h1 {
-            margin: 0;
-            font-size: 22px;
-            text-shadow: 0 0 10px black;
-        }
-
         .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
             background: #7A0010;
             color: white;
-            padding: 8px 12px;
             border-radius: 6px;
             text-decoration: none;
             font-weight: bold;
+            transition: 0.2s;
             border: none;
             cursor: pointer;
         }
 
         .btn:hover {
-            background: #5a000c;
-        }
-
-        /* PANEL PRINCIPAL */
-        #panel {
-            max-width: 700px;
-            margin: 30px auto;
-            background: rgba(255,255,255,0.92);
-            padding: 25px;
-            border-radius: 12px;
-            border-left: 12px solid #1E90FF; /* couleur dynamique */
-            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            background: #5A000C;
         }
 
         h2 {
-            margin-top: 0;
+            text-align: center;
+            color: white;
+            margin: 0;
+            text-shadow: 0 0 10px black;
         }
 
-        label {
-            font-weight: bold;
-            display: block;
-            margin-top: 15px;
+        /* Overlay sombre */
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 30px 0;
         }
 
-        input, textarea {
+        /* Bloc premium */
+        .panel {
+            width: 600px;
+            margin: 20px auto;
+            background: rgba(255,255,255,0.92);
+            padding: 25px;
+            border-radius: 12px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            border-left: 10px solid transparent;
+        }
+
+        /* Deux colonnes */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px 25px;
+        }
+
+        .full {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 700px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .full {
+                grid-column: span 1;
+            }
+        }
+
+        label { font-weight: bold; }
+
+        input, select, textarea {
             width: 100%;
             padding: 8px;
             margin-top: 5px;
+            margin-bottom: 10px;
             border-radius: 6px;
-            border: 1px solid #aaa;
+            border: 1px solid #ccc;
         }
 
         input[readonly], textarea[readonly] {
@@ -85,15 +112,15 @@
         }
 
         .save-btn {
-            margin-top: 25px;
-            width: 100%;
-            padding: 12px;
             background: #7A0010;
             color: white;
+            padding: 10px 15px;
             border: none;
-            border-radius: 6px;
-            font-size: 16px;
             cursor: pointer;
+            border-radius: 6px;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 10px;
         }
 
         .save-btn:hover {
@@ -105,45 +132,82 @@
 <body>
 
 <header>
-    <a class="btn" href="compagnon-chalet.html">Retour</a>
-    <h1>Modifier ma réservation</h1>
+    <a href="compagnon-chalet.html" class="btn">⬅ Retour</a>
+    <h2>Modifier ma réservation</h2>
     <div></div>
 </header>
 
-<div id="panel">
+<div class="overlay">
 
-    <h2 id="desc"></h2>
+    <div class="panel" id="panel">
 
-    <label>Description</label>
-    <textarea id="description" readonly></textarea>
+        <h3 style="text-align:center;">Ma réservation</h3>
 
-    <label>Type</label>
-    <input id="type" readonly>
+        <div class="form-grid">
 
-    <label>Date de début</label>
-    <input id="startDate" readonly>
+            <!-- STATUS (readonly) -->
+            <div class="full">
+                <label>Status</label>
+                <input id="status" readonly>
+            </div>
 
-    <label>Date de fin</label>
-    <input id="endDate" readonly>
+            <!-- TYPE + COMPAGNON (readonly) -->
+            <div>
+                <label>Type</label>
+                <input id="type" readonly>
+            </div>
 
-    <label>Compagnon</label>
-    <input id="compagnon" readonly>
+            <div>
+                <label>Compagnon</label>
+                <input id="compagnon" readonly>
+            </div>
 
-    <hr>
+            <!-- DESCRIPTION -->
+            <div class="full">
+                <label>Description</label>
+                <textarea id="description" readonly></textarea>
+            </div>
 
-    <label>Électricité – Début</label>
-    <input id="electricityStart">
+            <!-- DATES -->
+            <div>
+                <label>Date début</label>
+                <input type="date" id="startDate" readonly>
+            </div>
 
-    <label>Électricité – Fin</label>
-    <input id="electricityEnd">
+            <div>
+                <label>Date fin</label>
+                <input type="date" id="endDate" readonly>
+            </div>
 
-    <label>Eau – Début</label>
-    <input id="waterStart">
+            <!-- RELEVÉS (modifiables) -->
+            <div>
+                <label>Électricité – début</label>
+                <input type="number" id="electricityStart">
+            </div>
 
-    <label>Eau – Fin</label>
-    <input id="waterEnd">
+            <div>
+                <label>Électricité – fin</label>
+                <input type="number" id="electricityEnd">
+            </div>
 
-    <button class="save-btn" onclick="save()">Enregistrer</button>
+            <div>
+                <label>Eau – début</label>
+                <input type="number" id="waterStart">
+            </div>
+
+            <div>
+                <label>Eau – fin</label>
+                <input type="number" id="waterEnd">
+            </div>
+
+            <!-- BOUTON -->
+            <div class="full" style="text-align:center;">
+                <button class="save-btn" onclick="save()">Enregistrer</button>
+            </div>
+
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -180,7 +244,6 @@ async function init() {
         expand: "compagnon"
     });
 
-    // Vérification des droits
     if (reservation.expand.compagnon.id !== currentUser.id) {
         alert("Vous ne pouvez modifier que vos propres réservations.");
         window.location.href = "compagnon-chalet.html";
@@ -188,21 +251,20 @@ async function init() {
     }
 
     // Remplir les champs
-    document.getElementById("desc").innerText = reservation.description;
-
-    document.getElementById("description").value = reservation.description;
+    document.getElementById("status").value = reservation.status;
     document.getElementById("type").value = reservation.type;
+    document.getElementById("description").value = reservation.description;
     document.getElementById("startDate").value = reservation.startDate.substring(0,10);
     document.getElementById("endDate").value = reservation.endDate.substring(0,10);
     document.getElementById("compagnon").value =
-        reservation.expand.compagnon.prenom + " " + reservation.expand.compagnon.nom;
+        reservation.expand.compagnon.nom + " " + reservation.expand.compagnon.prenom;
 
     document.getElementById("electricityStart").value = reservation.electricityStart || "";
     document.getElementById("electricityEnd").value = reservation.electricityEnd || "";
     document.getElementById("waterStart").value = reservation.waterStart || "";
     document.getElementById("waterEnd").value = reservation.waterEnd || "";
 
-    // Couleur du panneau selon statut
+    // Couleur du panneau
     document.getElementById("panel").style.borderLeftColor =
         statusColors[reservation.status] || "#1E90FF";
 }
