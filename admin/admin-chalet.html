@@ -27,7 +27,7 @@
             backdrop-filter: blur(4px);
         }
 
-        /* 🔥 Bloc premium réduit */
+        /* Bloc premium réduit */
         .panel {
             width: 600px;
             margin: 40px auto;
@@ -38,7 +38,7 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.25);
         }
 
-        /* 🧩 Deux colonnes */
+        /* Deux colonnes */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -84,6 +84,12 @@
         button:hover { background: #5a000c; }
 
         #deleteBtn { background: #444; }
+
+        .top-buttons {
+            width: 600px;
+            margin: 20px auto;
+            text-align: right;
+        }
     </style>
 </head>
 
@@ -91,11 +97,11 @@
 
 <header>Gestion du Chalet – Admin</header>
 
-<!-- 🔗 Bouton vers la liste des réservations -->
-<div style="width:600px; margin:20px auto; text-align:right;">
-    <button onclick="window.location.href='admin-chalet-liste.html'">
-        📋 Liste des réservations
-    </button>
+<div class="top-buttons">
+    <button onclick="window.location.href='../index.html'">🏠 Menu</button>
+    <button onclick="window.location.href='admin-menu.html'">🛠 Menu admin</button>
+    <button onclick="logout()">🚪 Déconnexion</button>
+    <button onclick="window.location.href='admin-chalet-liste.html'">📋 Liste des réservations</button>
 </div>
 
 <div class="panel">
@@ -111,6 +117,16 @@
                 <option value="Frairie">Frairie</option>
                 <option value="Externe">Externe</option>
                 <option value="Travaux">Travaux</option>
+            </select>
+        </div>
+
+        <div>
+            <label>Status</label>
+            <select id="status">
+                <option value="Réservation en cours">Réservation en cours</option>
+                <option value="Confirmée">Confirmée</option>
+                <option value="Terminée">Terminée</option>
+                <option value="Annulée">Annulée</option>
             </select>
         </div>
 
@@ -180,6 +196,7 @@
     async function saveReservation() {
         const data = {
             type: type.value,
+            status: status.value || "Réservation en cours",
             compagnon: compagnon.value || null,
             startDate: startDate.value,
             endDate: endDate.value,
@@ -217,7 +234,8 @@
         currentEventId = id;
 
         type.value = r.type;
-        compagnon.value = r.compagnon || "";
+        status.value = r.status || "Réservation en cours";
+        compagnon.value = r.companon || r.compagnon || "";
         startDate.value = r.startDate.substring(0, 10);
         endDate.value = r.endDate.substring(0, 10);
         description.value = r.description || "";
@@ -228,6 +246,11 @@
         waterEnd.value = r.waterEnd || "";
 
         deleteBtn.style.display = "inline-block";
+    }
+
+    function logout() {
+        pb.authStore.clear();
+        window.location.href = "admin-login.html";
     }
 
     document.addEventListener("DOMContentLoaded", async function () {
