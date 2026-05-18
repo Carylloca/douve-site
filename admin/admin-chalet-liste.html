@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Admin – Liste des Réservations du Chalet</title>
 
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="../favicon.png">
 
     <!-- FullCalendar -->
@@ -38,7 +37,6 @@
             backdrop-filter: blur(4px);
         }
 
-        /* Boutons du haut */
         .top-buttons {
             width: 100%;
             max-width: 1200px;
@@ -46,7 +44,7 @@
             text-align: right;
         }
 
-        button {
+        button, .action-btn {
             background: #7A0010;
             color: white;
             padding: 8px 12px;
@@ -54,11 +52,13 @@
             cursor: pointer;
             border-radius: 6px;
             margin-left: 5px;
+            font-size: 14px;
         }
 
-        button:hover { background: #5a000c; }
+        button:hover, .action-btn:hover {
+            background: #5a000c;
+        }
 
-        /* Layout 2 colonnes */
         .layout {
             display: flex;
             justify-content: center;
@@ -67,7 +67,6 @@
             margin: 20px auto;
         }
 
-        /* Calendrier à gauche */
         #calendar {
             width: 350px;
             background: rgba(255,255,255,0.90);
@@ -77,7 +76,6 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.25);
         }
 
-        /* Liste à droite */
         .panel {
             flex: 1;
             background: rgba(255,255,255,0.90);
@@ -106,18 +104,16 @@
             border-bottom: 1px solid #ddd;
         }
 
-        tr:hover { background: #f0f0f0; }
+        tr:hover {
+            background: #f0f0f0;
+        }
 
-        /* Responsive */
         @media (max-width: 900px) {
             .layout {
                 flex-direction: column;
                 align-items: center;
             }
-            #calendar {
-                width: 90%;
-            }
-            .panel {
+            #calendar, .panel {
                 width: 90%;
             }
         }
@@ -137,10 +133,8 @@
 
 <div class="layout">
 
-    <!-- CALENDRIER À GAUCHE -->
     <div id="calendar"></div>
 
-    <!-- LISTE À DROITE -->
     <div class="panel">
         <h3>Liste complète des réservations</h3>
 
@@ -151,6 +145,8 @@
                     <th onclick="sortTable(1)">Compagnon</th>
                     <th onclick="sortTable(2)">Début</th>
                     <th onclick="sortTable(3)">Fin</th>
+                    <th>Description</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody id="reservationsBody"></tbody>
@@ -203,12 +199,22 @@
         tbody.innerHTML = "";
 
         reservationsList.forEach(r => {
+            const shortDesc = r.description
+                ? r.description.substring(0, 60) + (r.description.length > 60 ? "…" : "")
+                : "-";
+
             tbody.innerHTML += `
                 <tr>
                     <td>${r.type}</td>
-                    <td>${r.compagnonName || "-"}</td>
+                    <td>${r.companionName || "-"}</td>
                     <td>${r.startDate.substring(0,10)}</td>
                     <td>${r.endDate.substring(0,10)}</td>
+                    <td>${shortDesc}</td>
+                    <td>
+                        <button class="action-btn" onclick="window.location.href='admin-chalet.html?id=${r.id}'">
+                            Ouvrir
+                        </button>
+                    </td>
                 </tr>
             `;
         });
@@ -220,15 +226,16 @@
 
         const rows = reservationsList.map(r => [
             r.type,
-            r.compagnonName || "-",
+            r.companionName || "-",
             r.startDate.substring(0,10),
-            r.endDate.substring(0,10)
+            r.endDate.substring(0,10),
+            r.description || "-"
         ]);
 
         doc.text("Liste des réservations du chalet", 14, 15);
 
         doc.autoTable({
-            head: [["Type", "Compagnon", "Début", "Fin"]],
+            head: [["Type", "Compagnon", "Début", "Fin", "Description"]],
             body: rows,
             startY: 25
         });
@@ -239,9 +246,10 @@
     function exportExcel() {
         const rows = reservationsList.map(r => ({
             Type: r.type,
-            Compagnon: r.compagnonName || "-",
+            Compagnon: r.companionName || "-",
             Début: r.startDate.substring(0,10),
-            Fin: r.endDate.substring(0,10)
+            Fin: r.endDate.substring(0,10),
+            Description: r.description || "-"
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(rows);
@@ -262,7 +270,10 @@
             type: r.type,
             startDate: r.startDate,
             endDate: r.endDate,
-            compagnonName: r.expand?.compagnon ? r.expand.compagnon.nom + " " + r.expand.compagnon.prenom : null
+            description: r.description,
+            companionName: r.expand?.compagnon
+                ? r.expand.compagnon.nom + " " + r.expand.compagnon.prenom
+                : null
         }));
 
         populateTable();
