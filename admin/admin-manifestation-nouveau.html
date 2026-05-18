@@ -10,63 +10,36 @@
     <style>
         body {
             margin: 0;
-            font-family: "DM Sans", sans-serif;
+            padding: 0;
             background-image: url("../img/page-admin-manifestation-nouveau.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
+            font-family: "DM Sans", sans-serif;
         }
 
         .overlay {
-            background: rgba(0,0,0,0.55);
+            background: rgba(0, 0, 0, 0.55);
             min-height: 100vh;
-            padding-top: 100px;
-            padding-bottom: 40px;
-        }
-
-        /* HEADER IDENTIQUE AUX AUTRES PAGES */
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 70px;
-            background: rgba(0,0,0,0.75);
-            backdrop-filter: blur(4px);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            z-index: 1000;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-        }
-
-        .btn {
-            padding: 8px 12px;
-            border-radius: 6px;
-            background: white;
-            color: #7b0f23;
-            text-decoration: none;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .btn:hover {
-            background: #ffe6ea;
+            padding: 20px 10px;
         }
 
         h1 {
             text-align: center;
             color: white;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             text-shadow: 0 0 10px black;
             font-size: 26px;
         }
 
+        .btn {
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
         form {
-            background: rgba(255,255,255,0.92);
-            padding: 20px;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 12px 18px;
             border-radius: 8px;
             max-width: 560px;
             margin: 0 auto;
@@ -76,14 +49,16 @@
         .row {
             display: flex;
             align-items: center;
-            margin: 6px 0;
+            margin: 4px 0;
         }
 
         .row label {
             width: 22%;
-            font-weight: bold;
-            font-size: 14px;
+            text-align: left;
             padding-right: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 1.1;
         }
 
         .row input,
@@ -110,8 +85,8 @@
         #responsables {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 4px;
-            margin-top: 4px;
+            gap: 2px 4px;
+            margin-top: 2px;
         }
 
         .responsable-item {
@@ -119,11 +94,24 @@
             align-items: center;
             gap: 6px;
             font-size: 13px;
+            padding: 1px 0;
             white-space: nowrap;
         }
 
+        .responsable-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+        }
+
+        .responsable-item span {
+            flex: 1;
+            text-align: left;
+            padding-left: 2px;
+        }
+
         .btn-submit {
-            margin-top: 15px;
+            margin-top: 12px;
             width: 100%;
             padding: 10px;
         }
@@ -131,25 +119,14 @@
 </head>
 
 <body>
-
-<!-- HEADER IDENTIQUE AUX AUTRES PAGES -->
-<div class="header">
-
-    <div style="display:flex; gap:10px; align-items:center;">
-        <a href="../index.html" class="btn">Menu</a>
-        <a href="admin-menu.html" class="btn">Menu admin</a>
-        <a href="../compagnons.html" class="btn">Liste des manifestations</a>
-    </div>
-
-    <div style="font-size:22px; font-weight:bold;">Nouvelle manifestation</div>
-
-    <button class="btn" onclick="logout()">Déconnexion</button>
-
-</div>
-
 <div class="overlay">
 
     <h1>Créer une nouvelle manifestation</h1>
+
+    <!-- 🔥 BLOC EXACTEMENT COMME AVANT (VERTICAL) -->
+    <a href="../index.html" class="btn">Menu</a>
+    <a href="admin-menu.html" class="btn">Menu admin</a>
+    <a href="../compagnons.html" class="btn">Liste des manifestations</a>
 
     <form id="manifestForm">
 
