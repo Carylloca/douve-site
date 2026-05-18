@@ -18,7 +18,7 @@
             background-size: cover;
         }
 
-        /* --- Barre supérieure (style admin-manifestations) --- */
+        /* --- Barre supérieure --- */
         header {
             background: rgba(0, 0, 0, 0.85);
             color: white;
@@ -86,12 +86,10 @@
             gap: 15px 25px;
         }
 
-        /* Pleine largeur */
         .full {
             grid-column: span 2;
         }
 
-        /* Responsive */
         @media (max-width: 700px) {
             .form-grid {
                 grid-template-columns: 1fr;
@@ -130,7 +128,6 @@
 
 <body>
 
-<!-- Barre supérieure -->
 <header>
     <div class="left-buttons">
         <a href="../index.html" class="btn">🏠 Menu</a>
@@ -143,7 +140,6 @@
     <button class="btn" onclick="logout()">⏻ Déconnexion</button>
 </header>
 
-
 <div class="overlay">
 
     <div class="panel" id="panel">
@@ -151,7 +147,6 @@
 
         <div class="form-grid">
 
-            <!-- STATUS EN HAUT -->
             <div class="full">
                 <label>Status</label>
                 <select id="status" onchange="updateStatusColor()">
@@ -162,7 +157,6 @@
                 </select>
             </div>
 
-            <!-- TYPE + COMPAGNON JUSTE EN DESSOUS -->
             <div>
                 <label>Type</label>
                 <select id="type">
@@ -179,13 +173,11 @@
                 <select id="compagnon"></select>
             </div>
 
-            <!-- DESCRIPTION -->
             <div class="full">
                 <label>Description</label>
                 <textarea id="description"></textarea>
             </div>
 
-            <!-- DATES CÔTE À CÔTÉ -->
             <div>
                 <label>Date début</label>
                 <input type="date" id="startDate">
@@ -196,7 +188,6 @@
                 <input type="date" id="endDate">
             </div>
 
-            <!-- RELEVÉS -->
             <div>
                 <label>Électricité – début</label>
                 <input type="number" id="electricityStart">
@@ -218,8 +209,8 @@
             </div>
 
             <div class="full" style="text-align:center; margin-top:10px;">
-                <button class="action" onclick="saveReservation()">Enregistrer</button>
-                <button class="action" id="deleteBtn" onclick="deleteReservation()" style="display:none;">Supprimer</button>
+                <button class="action" type="button" onclick="saveReservation()">Enregistrer</button>
+                <button class="action" type="button" id="deleteBtn" onclick="deleteReservation()" style="display:none;">Supprimer</button>
             </div>
 
         </div>
@@ -231,10 +222,9 @@
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
     let currentEventId = null;
 
-    /* 🎨 CODE COULEUR AUTOMATIQUE */
     function updateStatusColor() {
         const panel = document.getElementById("panel");
-        const status = document.getElementById("status").value;
+        const statusValue = document.getElementById("status").value;
 
         const colors = {
             "Réservation en cours": "#1E90FF",
@@ -243,74 +233,102 @@
             "Annulée": "#B22222"
         };
 
-        panel.style.borderLeftColor = colors[status] || "transparent";
+        panel.style.borderLeftColor = colors[statusValue] || "transparent";
     }
 
     async function loadCompagnons() {
-        const list = await pb.collection("companions").getFullList();
-        const select = document.getElementById("compagnon");
-        select.innerHTML = "<option value=''>Aucun</option>";
+        try {
+            const list = await pb.collection("companions").getFullList();
+            const select = document.getElementById("compagnon");
+            select.innerHTML = "<option value=''>Aucun</option>";
 
-        list.forEach(c => {
-            select.innerHTML += `<option value="${c.id}">${c.nom} ${c.prenom}</option>`;
-        });
+            list.forEach(c => {
+                select.innerHTML += `<option value="${c.id}">${c.nom} ${c.prenom}</option>`;
+            });
+        } catch (e) {
+            console.error(e);
+            alert("Erreur lors du chargement des compagnons.");
+        }
     }
 
     async function saveReservation() {
-        const data = {
-            status: status.value,
-            type: type.value,
-            compagnon: compagnon.value || null,
-            startDate: startDate.value,
-            endDate: endDate.value,
-            description: description.value,
-            electricityStart: electricityStart.value || null,
-            electricityEnd: electricityEnd.value || null,
-            waterStart: waterStart.value || null,
-            waterEnd: waterEnd.value || null,
-            created_by: pb.authStore.model.id
-        };
+        const statusEl = document.getElementById("status");
+        const typeEl = document.getElementById("type");
+        const compagnonEl = document.getElementById("compagnon");
+        const startDateEl = document.getElementById("startDate");
+        const endDateEl = document.getElementById("endDate");
+        const descriptionEl = document.getElementById("description");
+        const electricityStartEl = document.getElementById("electricityStart");
+        const electricityEndEl = document.getElementById("electricityEnd");
+        const waterStartEl = document.getElementById("waterStart");
+        const waterEndEl = document.getElementById("waterEnd");
 
-        if (currentEventId) {
-            await pb.collection("chalet_reservations").update(currentEventId, data);
-        } else {
-            await pb.collection("chalet_reservations").create(data);
+        try {
+            const data = {
+                status: statusEl.value,
+                type: typeEl.value,
+                compagnon: compagnonEl.value || null,
+                startDate: startDateEl.value,
+                endDate: endDateEl.value,
+                description: descriptionEl.value,
+                electricityStart: electricityStartEl.value || null,
+                electricityEnd: electricityEndEl.value || null,
+                waterStart: waterStartEl.value || null,
+                waterEnd: waterEndEl.value || null,
+                created_by: pb.authStore.model ? pb.authStore.model.id : null
+            };
+
+            if (currentEventId) {
+                await pb.collection("chalet_reservations").update(currentEventId, data);
+            } else {
+                await pb.collection("chalet_reservations").create(data);
+            }
+
+            alert("Réservation enregistrée !");
+            location.reload();
+        } catch (e) {
+            console.error(e);
+            alert("Erreur lors de l'enregistrement de la réservation.");
         }
-
-        alert("Réservation enregistrée !");
-        location.reload();
     }
 
     async function deleteReservation() {
         if (!currentEventId) return;
 
-        if (confirm("Supprimer définitivement cette réservation ?")) {
+        if (!confirm("Supprimer définitivement cette réservation ?")) return;
+
+        try {
             await pb.collection("chalet_reservations").delete(currentEventId);
             alert("Réservation supprimée !");
             location.reload();
+        } catch (e) {
+            console.error(e);
+            alert("Erreur lors de la suppression de la réservation.");
         }
     }
 
     async function loadReservation(id) {
-        const r = await pb.collection("chalet_reservations").getOne(id);
+        try {
+            const r = await pb.collection("chalet_reservations").getOne(id);
+            currentEventId = id;
 
-        currentEventId = id;
+            document.getElementById("status").value = r.status || "Réservation en cours";
+            document.getElementById("type").value = r.type;
+            document.getElementById("compagnon").value = r.compagnon || "";
+            document.getElementById("startDate").value = r.startDate.substring(0, 10);
+            document.getElementById("endDate").value = r.endDate.substring(0, 10);
+            document.getElementById("description").value = r.description || "";
+            document.getElementById("electricityStart").value = r.electricityStart || "";
+            document.getElementById("electricityEnd").value = r.electricityEnd || "";
+            document.getElementById("waterStart").value = r.waterStart || "";
+            document.getElementById("waterEnd").value = r.waterEnd || "";
 
-        status.value = r.status || "Réservation en cours";
-        updateStatusColor();
-
-        type.value = r.type;
-        compagnon.value = r.compagnon || "";
-        startDate.value = r.startDate.substring(0, 10);
-        endDate.value = r.endDate.substring(0, 10);
-        description.value = r.description || "";
-
-        electricityStart.value = r.electricityStart || "";
-        electricityEnd.value = r.electricityEnd || "";
-        waterStart.value = r.waterStart || "";
-        waterEnd.value = r.waterEnd || "";
-
-        deleteBtn.style.display = "inline-block";
+            document.getElementById("deleteBtn").style.display = "inline-block";
+            updateStatusColor();
+        } catch (e) {
+            console.error(e);
+            alert("Erreur lors du chargement de la réservation.");
+        }
     }
 
     function logout() {
@@ -318,7 +336,7 @@
         window.location.href = "admin-login.html";
     }
 
-    document.addEventListener("DOMContentLoaded", async function () {
+    document.addEventListener("DOMContentLoaded", async () => {
         if (!pb.authStore.isValid) {
             window.location.href = "admin-login.html";
             return;
