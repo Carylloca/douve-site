@@ -129,6 +129,14 @@
             text-align: left;
         }
 
+        /* 🔥 Colonne Type compacte */
+        th.type-col, td.type-col {
+            width: 55px;
+            text-align: center;
+            font-size: 22px;
+            padding: 6px 0;
+        }
+
         td {
             padding: 10px;
             border-bottom: 1px solid #ddd;
@@ -204,7 +212,7 @@
             <thead>
                 <tr>
                     <th class="desc-col">Description</th>
-                    <th>Type</th>
+                    <th class="type-col">Type</th>
                     <th>Compagnon</th>
                     <th class="date-col">Début</th>
                     <th class="date-col">Fin</th>
@@ -258,7 +266,7 @@
                         <span class="open-icon" onclick="openRes('${r.id}')">🔍</span>
                         ${shortDesc}
                     </td>
-                    <td>${typeIcons[r.type] || ""} ${r.type}</td>
+                    <td class="type-col">${typeIcons[r.type] || ""}</td>
                     <td>${r.companionName || "-"}</td>
                     <td class="date-col">${formatDate(r.startDate)}</td>
                     <td class="date-col">${formatDate(r.endDate)}</td>
@@ -347,10 +355,20 @@
             }
         }
 
-        /* 🔥 Tri automatique par date de début */
+        /* 🔥 Tri chronologique normal */
         reservationsList.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
         populateTable();
+
+        /* 🔥 Scroll automatique vers la première réservation en cours ou future */
+        const index = reservationsList.findIndex(r => r.startDate >= today);
+
+        if (index !== -1) {
+            const row = document.querySelector(`tr[data-id="${reservationsList[index].id}"]`);
+            if (row) {
+                row.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }
 
         /* CALENDRIER */
         const calendarEl = document.getElementById("calendar");
@@ -374,7 +392,6 @@
         calendar.render();
     });
 </script>
-
 
 </body>
 </html>
