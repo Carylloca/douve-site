@@ -80,6 +80,38 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.25);
         }
 
+        /* Badge "Ma réservation" */
+        .my-badge {
+            background: #7A0010;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 11px;
+            margin-right: 6px;
+        }
+
+        /* Filtre */
+        .filter-box {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-toggle {
+            cursor: pointer;
+            padding: 6px 10px;
+            background: #7A0010;
+            color: white;
+            border-radius: 6px;
+            border: none;
+            font-weight: bold;
+        }
+
+        .filter-toggle.active {
+            background: #32CD32;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -120,6 +152,14 @@
             background: #f0f0f0;
         }
 
+        .status-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
         @media (max-width: 900px) {
             .layout {
                 flex-direction: column;
@@ -145,6 +185,12 @@
     <div id="calendar"></div>
 
     <div class="panel">
+
+        <!-- FILTRE -->
+        <div class="filter-box">
+            <button id="filterBtn" class="filter-toggle">Afficher uniquement mes réservations</button>
+        </div>
+
         <h3>Liste des réservations</h3>
 
         <table id="reservationsTable">
@@ -164,172 +210,168 @@
 </div>
 
 <script>
-    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
-    let reservationsList = [];
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-    /* Couleurs des statuts */
-    const statusColors = {
-        "réservation en cours": "#1E90FF",
-        "confirmée": "#32CD32",
-        "terminée": "#8B4513",
-        "annulée": "#B22222"
-    };
+let currentUser = null;
+let reservationsList = [];
+let filterMineOnly = false;
 
-    /* Icônes par type */
-    const typeIcons = {
-        "Interne 🍷🍽️": "🍷🍽️",
-        "Interne 👤": "👤",
-        "Nettoyage": "🧹",
-        "Frairie": "🧑‍🤝‍🧑",
-        "Externe": "↗️",
-        "Travaux": "🛠️"
-    };
+/* Couleurs des statuts */
+const statusColors = {
+    "réservation en cours": "#1E90FF",
+    "confirmée": "#32CD32",
+    "terminée": "#8B4513",
+    "annulée": "#B22222"
+};
 
-    function formatDate(d) {
-        return d.substring(8,10) + "." + d.substring(5,7) + "." + d.substring(0,4);
+/* Icônes par type */
+const typeIcons = {
+    "Interne 🍷🍽️": "🍷🍽️",
+    "Interne 👤": "👤",
+    "Nettoyage": "🧹",
+    "Frairie": "🧑‍🤝‍🧑",
+    "Externe": "↗️",
+    "Travaux": "🛠️"
+};
+
+function formatDate(d) {
+    return d.substring(8,10) + "." + d.substring(5,7) + "." + d.substring(0,4);
+}
+
+async function init() {
+    currentUser = pb.authStore.model;
+
+    if (!currentUser) {
+        alert("Veuillez vous connecter.");
+        window.location.href = "../login.html";
+        return;
     }
 
-    function populateTable() {
-        const tbody = document.getElementById("reservationsBody");
-        tbody.innerHTML = "";
+    await loadReservations();
+    populateTable();
+    loadCalendar();
 
-        reservationsList.forEach(r => {
-            const shortDesc = r.description
-                ? r.description.substring(0, 80) + (r.description.length > 80 ? "…" : "")
-                : "-";
+    document.getElementById("filterBtn").onclick = toggleFilter;
+}
 
-            tbody.innerHTML += `
-                <tr data-id="${r.id}">
-                    <td class="desc-col">
-                        <span class="status-dot" style="background:${statusColors[r.status]}"></span>
-                        <span class="open-icon" onclick="openRes('${r.id}')">🔍</span>
-                        ${shortDesc}
-                    </td>
-                    <td class="type-col">${typeIcons[r.type] || ""}</td>
-                    <td>${r.companionName || "-"}</td>
-                    <td class="date-col">${formatDate(r.startDate)}</td>
-                    <td class="date-col">${formatDate(r.endDate)}</td>
-                </tr>
-            `;
-        });
-    }
-
-    function openRes(id) {
-        window.location.href = "admin-chalet.html?id=" + id;
-    }
-
-    /* Double‑clic */
-    document.addEventListener("dblclick", e => {
-        const row = e.target.closest("tr[data-id]");
-        if (row) openRes(row.dataset.id);
+async function loadReservations() {
+    const events = await pb.collection("chalet_reservations").getFullList({
+        expand: "compagnon"
     });
 
-    function exportPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
+    reservationsList = events.map(r => ({
+        id: r.id,
+        type: r.type,
+        status: r.status,
+        startDate: r.startDate,
+        endDate: r.endDate,
+        description: r.description,
+        companionId: r.expand?.compagnon?.id,
+        companionName: r.expand?.compagnon
+            ? r.expand.compagnon.nom + " " + r.expand.compagnon.prenom
+            : null
+    }));
 
-        const rows = reservationsList.map(r => [
-            r.description || "-",
-            r.type,
-            r.companionName || "-",
-            formatDate(r.startDate),
-            formatDate(r.endDate)
-        ]);
+    /* Mise à jour automatique des statuts */
+    const today = new Date().toISOString().substring(0, 10);
 
-        doc.text("Liste des réservations du chalet", 14, 15);
-
-        doc.autoTable({
-            head: [["Description", "Type", "Compagnon", "Début", "Fin"]],
-            body: rows,
-            startY: 25
-        });
-
-        doc.save("chalet_reservations.pdf");
+    for (const r of reservationsList) {
+        if (r.endDate < today && r.status !== "annulée" && r.status !== "terminée") {
+            await pb.collection("chalet_reservations").update(r.id, {
+                status: "terminée"
+            });
+            r.status = "terminée";
+        }
     }
 
-    function exportExcel() {
-        const rows = reservationsList.map(r => ({
-            Description: r.description || "-",
-            Type: r.type,
-            Compagnon: r.companionName || "-",
-            Début: formatDate(r.startDate),
-            Fin: formatDate(r.endDate)
-        }));
+    /* Tri chronologique */
+    reservationsList.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+}
 
-        const worksheet = XLSX.utils.json_to_sheet(rows);
-        const workbook = XLSX.utils.book_new();
+function toggleFilter() {
+    filterMineOnly = !filterMineOnly;
 
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Réservations");
+    const btn = document.getElementById("filterBtn");
+    btn.classList.toggle("active");
 
-        XLSX.writeFile(workbook, "chalet_reservations.xlsx");
+    btn.textContent = filterMineOnly
+        ? "Afficher toutes les réservations"
+        : "Afficher uniquement mes réservations";
+
+    populateTable();
+    loadCalendar();
+}
+
+function populateTable() {
+    const tbody = document.getElementById("reservationsBody");
+    tbody.innerHTML = "";
+
+    let list = reservationsList;
+
+    if (filterMineOnly) {
+        list = list.filter(r => r.companionId === currentUser.id);
     }
 
-    document.addEventListener("DOMContentLoaded", async function () {
+    list.forEach(r => {
+        const shortDesc = r.description
+            ? r.description.substring(0, 80) + (r.description.length > 80 ? "…" : "")
+            : "-";
 
-        const events = await pb.collection("chalet_reservations").getFullList({
-            expand: "compagnon"
-        });
+        const tr = document.createElement("tr");
 
-        reservationsList = events.map(r => ({
+        /* Clic uniquement si c’est sa réservation */
+        if (r.companionId === currentUser.id) {
+            tr.onclick = () => {
+                window.location.href = "compagnon-chalet-edit.html?id=" + r.id;
+            };
+            tr.style.cursor = "pointer";
+        }
+
+        tr.innerHTML = `
+            <td class="desc-col">
+                <span class="status-dot" style="background:${statusColors[r.status]}"></span>
+                ${r.companionId === currentUser.id ? '<span class="my-badge">Ma réservation</span>' : ''}
+                ${shortDesc}
+            </td>
+            <td class="type-col">${typeIcons[r.type] || ""}</td>
+            <td>${r.companionName || "-"}</td>
+            <td class="date-col">${formatDate(r.startDate)}</td>
+            <td class="date-col">${formatDate(r.endDate)}</td>
+        `;
+
+        tbody.appendChild(tr);
+    });
+}
+
+function loadCalendar() {
+    const calendarEl = document.getElementById("calendar");
+
+    let list = reservationsList;
+
+    if (filterMineOnly) {
+        list = list.filter(r => r.companionId === currentUser.id);
+    }
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "dayGridMonth",
+        locale: "fr",
+        height: 450,
+        displayEventTime: false,
+        events: list.map(r => ({
             id: r.id,
-            type: r.type,
-            status: r.status,
-            startDate: r.startDate,
-            endDate: r.endDate,
-            description: r.description,
-            companionName: r.expand?.compagnon
-                ? r.expand.compagnon.nom + " " + r.expand.compagnon.prenom
-                : null
-        }));
-
-        /* 🔥 Mise à jour automatique des statuts */
-        const today = new Date().toISOString().substring(0, 10);
-
-        for (const r of reservationsList) {
-            if (r.endDate < today && r.status !== "annulée" && r.status !== "terminée") {
-                await pb.collection("chalet_reservations").update(r.id, {
-                    status: "terminée"
-                });
-                r.status = "terminée";
-            }
-        }
-
-        /* 🔥 Tri chronologique normal */
-        reservationsList.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
-
-        populateTable();
-
-        /* 🔥 Scroll automatique vers la première réservation en cours ou future */
-        const index = reservationsList.findIndex(r => r.startDate >= today);
-
-        if (index !== -1) {
-            const row = document.querySelector(`tr[data-id="${reservationsList[index].id}"]`);
-            if (row) {
-                row.scrollIntoView({ behavior: "smooth", block: "start" });
-            }
-        }
-
-        /* CALENDRIER */
-        const calendarEl = document.getElementById("calendar");
-
-        const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: "dayGridMonth",
-            locale: "fr",
-            height: 450,
-            displayEventTime: false,
-            events: reservationsList.map(r => ({
-                id: r.id,
-                title: `${typeIcons[r.type] || ""} ` +
-                       r.description.substring(0, 40) +
-                       (r.description.length > 40 ? "…" : ""),
-                start: r.startDate,
-                end: r.endDate,
-                backgroundColor: statusColors[r.status] || "#555"
-            }))
-        });
-
-        calendar.render();
+            title: `${typeIcons[r.type] || ""} ` +
+                   r.description.substring(0, 40) +
+                   (r.description.length > 40 ? "…" : ""),
+            start: r.startDate,
+            end: r.endDate,
+            backgroundColor: statusColors[r.status] || "#555"
+        }))
     });
+
+    calendar.render();
+}
+
+init();
 </script>
 
 </body>
