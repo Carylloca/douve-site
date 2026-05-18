@@ -164,76 +164,172 @@
 </div>
 
 <script>
-const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+    let reservationsList = [];
 
-let currentUser = null;
+    /* Couleurs des statuts */
+    const statusColors = {
+        "réservation en cours": "#1E90FF",
+        "confirmée": "#32CD32",
+        "terminée": "#8B4513",
+        "annulée": "#B22222"
+    };
 
-async function init() {
-    currentUser = pb.authStore.model;
+    /* Icônes par type */
+    const typeIcons = {
+        "Interne 🍷🍽️": "🍷🍽️",
+        "Interne 👤": "👤",
+        "Nettoyage": "🧹",
+        "Frairie": "🧑‍🤝‍🧑",
+        "Externe": "↗️",
+        "Travaux": "🛠️"
+    };
 
-    if (!currentUser) {
-        alert("Veuillez vous connecter.");
-        window.location.href = "../login.html";
-        return;
+    function formatDate(d) {
+        return d.substring(8,10) + "." + d.substring(5,7) + "." + d.substring(0,4);
     }
 
-    loadReservations();
-    loadCalendar();
-}
+    function populateTable() {
+        const tbody = document.getElementById("reservationsBody");
+        tbody.innerHTML = "";
 
-async function loadReservations() {
-    const records = await pb.collection("chalet_reservations").getFullList({
-        expand: "compagnon"
+        reservationsList.forEach(r => {
+            const shortDesc = r.description
+                ? r.description.substring(0, 80) + (r.description.length > 80 ? "…" : "")
+                : "-";
+
+            tbody.innerHTML += `
+                <tr data-id="${r.id}">
+                    <td class="desc-col">
+                        <span class="status-dot" style="background:${statusColors[r.status]}"></span>
+                        <span class="open-icon" onclick="openRes('${r.id}')">🔍</span>
+                        ${shortDesc}
+                    </td>
+                    <td class="type-col">${typeIcons[r.type] || ""}</td>
+                    <td>${r.companionName || "-"}</td>
+                    <td class="date-col">${formatDate(r.startDate)}</td>
+                    <td class="date-col">${formatDate(r.endDate)}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function openRes(id) {
+        window.location.href = "admin-chalet.html?id=" + id;
+    }
+
+    /* Double‑clic */
+    document.addEventListener("dblclick", e => {
+        const row = e.target.closest("tr[data-id]");
+        if (row) openRes(row.dataset.id);
     });
 
-    const tbody = document.getElementById("reservationsBody");
-    tbody.innerHTML = "";
+    function exportPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
 
-    records.forEach(r => {
-        const tr = document.createElement("tr");
+        const rows = reservationsList.map(r => [
+            r.description || "-",
+            r.type,
+            r.companionName || "-",
+            formatDate(r.startDate),
+            formatDate(r.endDate)
+        ]);
 
-        // Clic uniquement si la réservation appartient au compagnon connecté
-        if (r.expand.compagnon.id === currentUser.id) {
-            tr.onclick = () => {
-                window.location.href = "compagnon-chalet-edit.html?id=" + r.id;
-            };
-            tr.style.cursor = "pointer";
-        } else {
-            tr.style.cursor = "default";
+        doc.text("Liste des réservations du chalet", 14, 15);
+
+        doc.autoTable({
+            head: [["Description", "Type", "Compagnon", "Début", "Fin"]],
+            body: rows,
+            startY: 25
+        });
+
+        doc.save("chalet_reservations.pdf");
+    }
+
+    function exportExcel() {
+        const rows = reservationsList.map(r => ({
+            Description: r.description || "-",
+            Type: r.type,
+            Compagnon: r.companionName || "-",
+            Début: formatDate(r.startDate),
+            Fin: formatDate(r.endDate)
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(rows);
+        const workbook = XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Réservations");
+
+        XLSX.writeFile(workbook, "chalet_reservations.xlsx");
+    }
+
+    document.addEventListener("DOMContentLoaded", async function () {
+
+        const events = await pb.collection("chalet_reservations").getFullList({
+            expand: "compagnon"
+        });
+
+        reservationsList = events.map(r => ({
+            id: r.id,
+            type: r.type,
+            status: r.status,
+            startDate: r.startDate,
+            endDate: r.endDate,
+            description: r.description,
+            companionName: r.expand?.compagnon
+                ? r.expand.compagnon.nom + " " + r.expand.compagnon.prenom
+                : null
+        }));
+
+        /* 🔥 Mise à jour automatique des statuts */
+        const today = new Date().toISOString().substring(0, 10);
+
+        for (const r of reservationsList) {
+            if (r.endDate < today && r.status !== "annulée" && r.status !== "terminée") {
+                await pb.collection("chalet_reservations").update(r.id, {
+                    status: "terminée"
+                });
+                r.status = "terminée";
+            }
         }
 
-        tr.innerHTML = `
-            <td class="desc-col">${r.description}</td>
-            <td class="type-col">${r.type}</td>
-            <td>${r.expand.compagnon.prenom} ${r.expand.compagnon.nom}</td>
-            <td>${r.startDate}</td>
-            <td>${r.endDate}</td>
-        `;
+        /* 🔥 Tri chronologique normal */
+        reservationsList.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
-        tbody.appendChild(tr);
-    });
-}
+        populateTable();
 
-function loadCalendar() {
-    const calendarEl = document.getElementById("calendar");
+        /* 🔥 Scroll automatique vers la première réservation en cours ou future */
+        const index = reservationsList.findIndex(r => r.startDate >= today);
 
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: "dayGridMonth",
-        locale: "fr",
-        events: async (info, success) => {
-            const records = await pb.collection("chalet_reservations").getFullList();
-            success(records.map(r => ({
-                title: r.description,
+        if (index !== -1) {
+            const row = document.querySelector(`tr[data-id="${reservationsList[index].id}"]`);
+            if (row) {
+                row.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }
+
+        /* CALENDRIER */
+        const calendarEl = document.getElementById("calendar");
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: "dayGridMonth",
+            locale: "fr",
+            height: 450,
+            displayEventTime: false,
+            events: reservationsList.map(r => ({
+                id: r.id,
+                title: `${typeIcons[r.type] || ""} ` +
+                       r.description.substring(0, 40) +
+                       (r.description.length > 40 ? "…" : ""),
                 start: r.startDate,
-                end: r.endDate
-            })));
-        }
+                end: r.endDate,
+                backgroundColor: statusColors[r.status] || "#555"
+            }))
+        });
+
+        calendar.render();
     });
-
-    calendar.render();
-}
-
-init();
 </script>
 
 </body>
