@@ -231,10 +231,10 @@
         const statusValue = document.getElementById("status").value;
 
         const colors = {
-            "Réservation en cours": "#1E90FF",
-            "Confirmée": "#32CD32",
-            "Terminée": "#8B4513",
-            "Annulée": "#B22222"
+            "réservation en cours": "#1E90FF",
+            "confirmée": "#32CD32",
+            "terminée": "#8B4513",
+            "annulée": "#B22222"
         };
 
         panel.style.borderLeftColor = colors[statusValue] || "transparent";
@@ -281,7 +281,7 @@
             }
 
             alert("Réservation enregistrée !");
-            location.reload();
+            window.location.href = "admin-chalet-liste.html";
 
         } catch (e) {
             console.error(e);
@@ -296,10 +296,10 @@
 
         await pb.collection("chalet_reservations").delete(currentEventId);
         alert("Réservation supprimée !");
-        location.reload();
+        window.location.href = "admin-chalet-liste.html";
     }
 
-    /* CHARGER UNE RÉSERVATION */
+    /* CHARGER UNE RÉSERVATION EXISTANTE */
     async function loadReservation(id) {
         const r = await pb.collection("chalet_reservations").getOne(id);
 
@@ -326,7 +326,9 @@
         window.location.href = "admin-login.html";
     }
 
+    /* 🔥 INITIALISATION + LECTURE DE L’ID DANS L’URL */
     document.addEventListener("DOMContentLoaded", async () => {
+
         if (!pb.authStore.isValid) {
             window.location.href = "admin-login.html";
             return;
@@ -334,6 +336,15 @@
 
         await loadCompagnons();
         updateStatusColor();
+
+        // 🔥 Récupérer l’ID dans l’URL
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+
+        // 🔥 Si un ID est présent → on charge la réservation
+        if (id) {
+            await loadReservation(id);
+        }
     });
 </script>
 
