@@ -15,7 +15,6 @@
             background-size: cover;
         }
 
-        /* --- Barre supérieure --- */
         header {
             background: rgba(0, 0, 0, 0.85);
             color: white;
@@ -52,14 +51,12 @@
             text-shadow: 0 0 10px black;
         }
 
-        /* Overlay sombre */
         .overlay {
             background: rgba(0, 0, 0, 0.55);
             min-height: 100vh;
             padding: 30px 0;
         }
 
-        /* Bloc premium */
         .panel {
             width: 600px;
             margin: 20px auto;
@@ -71,7 +68,6 @@
             border-left: 10px solid transparent;
         }
 
-        /* Deux colonnes */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -134,7 +130,7 @@
 <header>
     <a href="compagnon-chalet.html" class="btn">⬅ Retour</a>
     <h2>Modifier ma réservation</h2>
-    <div></div>
+    <button class="btn" onclick="logout()">⏻ Déconnexion</button>
 </header>
 
 <div class="overlay">
@@ -145,13 +141,11 @@
 
         <div class="form-grid">
 
-            <!-- STATUS (readonly) -->
             <div class="full">
                 <label>Status</label>
                 <input id="status" readonly>
             </div>
 
-            <!-- TYPE + COMPAGNON (readonly) -->
             <div>
                 <label>Type</label>
                 <input id="type" readonly>
@@ -162,13 +156,11 @@
                 <input id="compagnon" readonly>
             </div>
 
-            <!-- DESCRIPTION -->
             <div class="full">
                 <label>Description</label>
                 <textarea id="description" readonly></textarea>
             </div>
 
-            <!-- DATES -->
             <div>
                 <label>Date début</label>
                 <input type="date" id="startDate" readonly>
@@ -179,7 +171,6 @@
                 <input type="date" id="endDate" readonly>
             </div>
 
-            <!-- RELEVÉS (modifiables) -->
             <div>
                 <label>Électricité – début</label>
                 <input type="number" id="electricityStart">
@@ -200,7 +191,6 @@
                 <input type="number" id="waterEnd">
             </div>
 
-            <!-- BOUTON -->
             <div class="full" style="text-align:center;">
                 <button class="save-btn" onclick="save()">Enregistrer</button>
             </div>
@@ -216,13 +206,17 @@ const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 let currentUser = null;
 let reservation = null;
 
-/* Couleurs des statuts */
 const statusColors = {
     "réservation en cours": "#1E90FF",
     "confirmée": "#32CD32",
     "terminée": "#8B4513",
     "annulée": "#B22222"
 };
+
+function logout() {
+    pb.authStore.clear();
+    window.location.href = "../index.html";
+}
 
 async function init() {
     currentUser = pb.authStore.model;
@@ -244,13 +238,12 @@ async function init() {
         expand: "compagnon"
     });
 
-    if (reservation.expand.compagnon.id !== currentUser.id) {
+    if (!reservation.expand?.compagnon || reservation.expand.compagnon.id !== currentUser.id) {
         alert("Vous ne pouvez modifier que vos propres réservations.");
         window.location.href = "compagnon-chalet.html";
         return;
     }
 
-    // Remplir les champs
     document.getElementById("status").value = reservation.status;
     document.getElementById("type").value = reservation.type;
     document.getElementById("description").value = reservation.description;
@@ -264,7 +257,6 @@ async function init() {
     document.getElementById("waterStart").value = reservation.waterStart || "";
     document.getElementById("waterEnd").value = reservation.waterEnd || "";
 
-    // Couleur du panneau
     document.getElementById("panel").style.borderLeftColor =
         statusColors[reservation.status] || "#1E90FF";
 }
