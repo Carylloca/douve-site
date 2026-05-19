@@ -45,9 +45,8 @@ function logout() {
     pb.authStore.clear();
     document.cookie = "";
 
-    // ⭐ Redirection universelle vers l'accueil
-    // Fonctionne depuis /admin/, /compagnon/, /, etc.
-    window.location.href = "index.html";
+    // ⭐ Redirection universelle (fonctionne depuis /admin/, /compagnon/, /)
+    window.location.href = "../index.html";
 }
 
 // ===============================
