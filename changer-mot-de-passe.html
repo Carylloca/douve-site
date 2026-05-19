@@ -74,8 +74,8 @@
     <h2>Modifier le mot de passe</h2>
 
     <label>Ancien mot de passe :</label>
-    <input type="password" id="oldPassword">
-    <span class="toggle" onclick="togglePwd('oldPassword')">Afficher</span>
+    <input type="password" id="currentPassword">
+    <span class="toggle" onclick="togglePwd('currentPassword')">Afficher</span>
 
     <label>Nouveau mot de passe :</label>
     <input type="password" id="newPassword">
@@ -108,13 +108,13 @@
 
     document.getElementById("changeBtn").addEventListener("click", async () => {
 
-        const oldPassword = document.getElementById("oldPassword").value.trim();
+        const currentPassword = document.getElementById("currentPassword").value.trim();
         const newPassword = document.getElementById("newPassword").value.trim();
         const newPasswordConfirm = document.getElementById("newPasswordConfirm").value.trim();
 
         msg.style.color = "#ffdddd";
 
-        if (!oldPassword || !newPassword || !newPasswordConfirm) {
+        if (!currentPassword || !newPassword || !newPasswordConfirm) {
             msg.textContent = "Veuillez remplir tous les champs.";
             return;
         }
@@ -135,13 +135,13 @@
             // 1️⃣ Ré-authentifier
             await pb.collection("companions").authWithPassword(
                 user.email,
-                oldPassword
+                currentPassword
             );
 
             // 2️⃣ Charger le record complet
             const full = await pb.collection("companions").getOne(user.id);
 
-            // 3️⃣ Mise à jour SANS renvoyer tout le record
+            // 3️⃣ Mise à jour SANS oldPassword
             await pb.collection("companions").update(user.id, {
                 email: full.email,
                 nom: full.nom,
@@ -160,9 +160,11 @@
             }, 1500);
 
         } catch (err) {
-    console.log("ERREUR DATA TEXTE BRUTE :");
-    console.log(JSON.stringify(err, null, 2));
-}
+            console.error("Erreur PocketBase :", err);
+            console.error("Détails :", err.data);
+            msg.style.color = "#ffdddd";
+            msg.textContent = "Erreur : vérifiez l'ancien mot de passe ou les champs requis.";
+        }
     });
 </script>
 
