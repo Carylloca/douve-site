@@ -66,7 +66,7 @@ function isLoggedIn() {
 
 function requireLogin() {
     if (!pb.authStore.isValid) {
-        window.location.href = "/douve-site/login.html";
+        window.location.href = "login.html";
     }
 }
 
@@ -75,13 +75,13 @@ function requireLogin() {
 // ===============================
 function requireComite() {
     if (!pb.authStore.isValid) {
-        window.location.href = "/douve-site/login.html";
+        window.location.href = "login.html";
         return;
     }
 
     if (pb.authStore.model.collectionName !== "users") {
         alert("Accès réservé au comité.");
-        window.location.href = "/douve-site/index.html";
+        window.location.href = "index.html";
     }
 }
 
@@ -90,7 +90,7 @@ function requireComite() {
 // ===============================
 function requireCompanion() {
     if (!pb.authStore.isValid) {
-        window.location.href = "/douve-site/login.html";
+        window.location.href = "login.html";
         return;
     }
 
@@ -103,7 +103,7 @@ function requireCompanion() {
     if (user.collectionName === "users") return;
 
     // Autre cas improbable
-    window.location.href = "/douve-site/login.html";
+    window.location.href = "login.html";
 }
 
 // ===============================
