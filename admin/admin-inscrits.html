@@ -23,7 +23,6 @@
             font-family: "DM Sans", sans-serif;
         }
 
-        /* HEADER FIXE */
         .header {
             position: fixed;
             top: 0;
@@ -73,7 +72,6 @@
             margin-bottom: 15px;
         }
 
-        /* BOUTONS */
         .btn {
             padding: 8px 12px;
             border-radius: 6px;
@@ -98,7 +96,6 @@
             background: #9b0000 !important;
         }
 
-        /* TABLEAU */
         table {
             width: 100%;
             max-width: 900px;
@@ -133,7 +130,12 @@
 <div class="header">
     <div class="header-left">
         <a href="../index.html" class="btn">🏠 Menu</a>
-        <a href="admin-manifestations.html" class="btn">📋 Liste des manifestations</a>
+
+        <!-- ⭐ Nouveau bouton demandé -->
+        <a href="admin-menu.html" class="btn">📋 Menu admin</a>
+
+        <!-- ⭐ Renommage du bouton existant -->
+        <a href="admin-manifestations.html" class="btn">↩ Retour à Gestion</a>
     </div>
 
     <div class="header-title">Liste des inscrits</div>
@@ -323,11 +325,6 @@
         XLSX.utils.book_append_sheet(wb, ws, "Inscrits");
 
         XLSX.writeFile(wb, formatFileName() + ".xlsx");
-    }
-
-    function logout() {
-        pb.authStore.clear();
-        window.location.href = "../index.html";
     }
 
     loadInscrits();
