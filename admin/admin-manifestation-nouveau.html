@@ -18,7 +18,6 @@
             font-family: "DM Sans", sans-serif;
         }
 
-        /* HEADER FIXE */
         .header {
             position: fixed;
             top: 0;
@@ -50,12 +49,11 @@
             background: #ffe6ea;
         }
 
-        /* 🔥 IMPORTANT : on remet EXACTEMENT le padding d’origine */
         .overlay {
             background: rgba(0, 0, 0, 0.55);
             min-height: 100vh;
-            padding: 20px 10px; /* comme AVANT */
-            padding-top: 100px; /* juste pour compenser le header */
+            padding: 20px 10px;
+            padding-top: 100px;
         }
 
         h1 {
@@ -149,7 +147,6 @@
 
 <body>
 
-<!-- HEADER FIXE -->
 <div class="header">
 
     <div style="display:flex; gap:10px; align-items:center;">
@@ -166,8 +163,6 @@
 <div class="overlay">
 
     <h1>Créer une nouvelle manifestation</h1>
-
-    <!-- ❌ Aucun bouton ici (pour éviter les doublons) -->
 
     <form id="manifestForm">
 
@@ -209,7 +204,10 @@
     </form>
 </div>
 
+<!-- PocketBase -->
 <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+<!-- Auth (pb + logout + requireComite) -->
 <script src="../js/auth.js"></script>
 
 <script>
