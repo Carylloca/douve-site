@@ -139,11 +139,9 @@
         }, 1500);
 
       } catch (err) {
-        console.error("Erreur PocketBase :", err);
-        console.error("Détails :", err.data);
-        msg.style.color = "#ffdddd";
-        msg.textContent = "Erreur : vérifiez l'ancien mot de passe ou les champs requis.";
-      }
+    msg.style.color = "yellow";
+    msg.textContent = "ERREUR BRUTE : " + JSON.stringify(err.data, null, 2);
+}
     });
   </script>
 </body>
