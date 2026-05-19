@@ -160,6 +160,13 @@
             flex: 1;
         }
 
+        .legend-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 10px;
+            font-size: 12px;
+        }
+
     </style>
 </head>
 
@@ -176,6 +183,7 @@
     <div class="header-right">
         <button class="btn" onclick="exportPDF()">PDF</button>
         <button class="btn" onclick="exportExcel()">Excel</button>
+        <button class="btn" onclick="logout()">⏻ Déconnexion</button>
     </div>
 </header>
 
@@ -191,22 +199,30 @@
         <!-- Légendes côte à côte -->
         <div class="legend-container">
 
+            <!-- Statuts -->
             <div class="legend-box">
-                <strong>Statuts :</strong><br>
-                <span class="status-dot" style="background:#1E90FF;"></span> En cours<br>
-                <span class="status-dot" style="background:#32CD32;"></span> Confirmée<br>
-                <span class="status-dot" style="background:#8B4513;"></span> Terminée<br>
-                <span class="status-dot" style="background:#B22222;"></span> Annulée
+                <strong>Statuts :</strong><br><br>
+
+                <div class="legend-grid">
+                    <div><span class="status-dot" style="background:#1E90FF;"></span> En cours</div>
+                    <div><span class="status-dot" style="background:#32CD32;"></span> Confirmée</div>
+                    <div><span class="status-dot" style="background:#8B4513;"></span> Terminée</div>
+                    <div><span class="status-dot" style="background:#B22222;"></span> Annulée</div>
+                </div>
             </div>
 
+            <!-- Types -->
             <div class="legend-box">
-                <strong>Types :</strong><br>
-                🍷🍽️ Interne (repas)<br>
-                👤 Interne (simple)<br>
-                🧹 Nettoyage<br>
-                🧑‍🤝‍🧑 Frairie<br>
-                ↗️ Externe<br>
-                🛠️ Travaux
+                <strong>Types :</strong><br><br>
+
+                <div class="legend-grid">
+                    <div>🍷🍽️ Repas</div>
+                    <div>👤 Interne</div>
+                    <div>🧹 Nettoyage</div>
+                    <div>🧑‍🤝‍🧑 Frairie</div>
+                    <div>↗️ Externe</div>
+                    <div>🛠️ Travaux</div>
+                </div>
             </div>
 
         </div>
@@ -246,6 +262,11 @@
         "Externe": "↗️",
         "Travaux": "🛠️"
     };
+
+    function logout() {
+        pb.authStore.clear();
+        window.location.href = "../index.html";
+    }
 
     function formatDate(d) {
         return d.substring(8,10) + "." + d.substring(5,7) + "." + d.substring(0,4);
