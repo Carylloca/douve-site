@@ -47,7 +47,7 @@ function logout() {
 
     // ⭐ Redirection universelle vers l'accueil
     // Fonctionne depuis /admin/, /compagnon/, /, etc.
-    window.location.href = "/douve-site/index.html";
+    window.location.href = "index.html";
 }
 
 // ===============================
