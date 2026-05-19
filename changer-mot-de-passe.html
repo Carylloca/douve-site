@@ -3,10 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Modifier le mot de passe</title>
-
-  <!-- Favicon identique à l'index -->
   <link rel="icon" type="image/png" href="favicon.png">
-
   <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
   <style>
@@ -23,7 +20,6 @@
       align-items: center;
       color: white;
     }
-
     .container {
       background: rgba(0, 0, 0, 0.55);
       padding: 30px;
@@ -31,7 +27,6 @@
       width: 330px;
       text-align: center;
     }
-
     input, button {
       width: 100%;
       padding: 10px;
@@ -40,22 +35,18 @@
       border: none;
       font-size: 16px;
     }
-
     button {
       background: rgba(139, 0, 0, 0.7);
       color: white;
       cursor: pointer;
     }
-
     button:hover {
       background: rgba(179, 0, 0, 0.9);
     }
-
     #message {
       margin-top: 10px;
       font-size: 14px;
     }
-
     .toggle {
       cursor: pointer;
       font-size: 12px;
@@ -126,25 +117,25 @@
 
       try {
         const user = pb.authStore.model;
+        const collectionName = user.collectionName; // "users" ou "companions"
 
-        // 🔍 Détection automatique : admin ou companion ?
-        if (user.collectionName === "users") {
-          // 🔐 ADMIN (collection système)
-          await pb.admins.authWithPassword(user.email, currentPassword);
+        // Ré-authentifier
+        await pb.collection(collectionName).authWithPassword(user.email, currentPassword);
 
-          await pb.admins.update(user.id, {
-            password: newPassword,
-            passwordConfirm: newPasswordConfirm
-          });
+        // Charger le record complet
+        const full = await pb.collection(collectionName).getOne(user.id);
 
-        } else {
-          // 👤 COMPANION (collection Auth personnalisée)
-          await pb.collection("companions").update(user.id, {
-            oldPassword: currentPassword,
-            password: newPassword,
-            passwordConfirm: newPasswordConfirm
-          });
-        }
+        // Mise à jour avec tous les champs requis
+        await pb.collection(collectionName).update(user.id, {
+          email: full.email,
+          nom: full.nom,
+          prenom: full.prenom,
+          role: full.role,
+          tokenKey: full.tokenKey,
+          password: newPassword,
+          passwordConfirm: newPasswordConfirm,
+          oldPassword: currentPassword
+        });
 
         msg.style.color = "#aaffaa";
         msg.textContent = "Mot de passe modifié avec succès. Redirection...";
