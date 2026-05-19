@@ -24,7 +24,6 @@
             font-family: "DM Sans", sans-serif;
         }
 
-        /* HEADER FIXE */
         .header {
             position: fixed;
             top: 0;
@@ -69,7 +68,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        /* TITRE À GAUCHE, CHAMP À DROITE */
         .row {
             display: flex;
             align-items: center;
@@ -97,7 +95,6 @@
             height: 80px;
         }
 
-        /* DATE + HEURE SUR UNE LIGNE */
         .row-inline {
             display: flex;
             align-items: center;
@@ -105,7 +102,6 @@
             width: 78%;
         }
 
-        /* RESPONSABLES EN 2 COLONNES (comme NOUVEAU) */
         #responsables {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -156,6 +152,9 @@
     <div class="header-left">
         <a href="../index.html" class="btn">🏠 Menu</a>
         <a href="admin-menu.html" class="btn">📋 Accueil admin</a>
+
+        <!-- ⭐ NOUVEAU BOUTON DEMANDÉ -->
+        <a href="admin-manifestations.html" class="btn">↩ Retour à Gestion</a>
     </div>
 
     <div class="header-title">Modifier la manifestation</div>
@@ -206,7 +205,10 @@
     </form>
 </div>
 
+<!-- PocketBase -->
 <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+<!-- Auth (pb + logout + requireComite) -->
 <script src="../js/auth.js"></script>
 
 <script>
@@ -251,12 +253,10 @@
         document.getElementById("title").value = m.title;
         document.getElementById("description").value = m.description || "";
 
-        // Séparation date + heure
         const d = new Date(m.date);
         document.getElementById("date").value = d.toISOString().split("T")[0];
         document.getElementById("heure").value = d.toTimeString().slice(0,5);
 
-        // Date limite
         if (m.date_limite) {
             const dl = new Date(m.date_limite);
             document.getElementById("date_limite").value = dl.toISOString().split("T")[0];
@@ -294,11 +294,6 @@
         alert("Modifications enregistrées !");
         window.location.href = "admin-manifestations.html";
     });
-
-    function logout() {
-        pb.authStore.clear();
-        window.location.href = "../index.html";
-    }
 </script>
 
 </body>
