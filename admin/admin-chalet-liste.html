@@ -28,7 +28,6 @@
             background-size: cover;
         }
 
-        /* HEADER PREMIUM */
         header {
             background: rgba(0, 0, 0, 0.85);
             color: white;
@@ -66,7 +65,6 @@
             background: #5a000c;
         }
 
-        /* Layout */
         .layout {
             display: flex;
             justify-content: center;
@@ -124,16 +122,8 @@
             text-align: center;
         }
 
-        th.desc-col {
-            text-align: left;
-        }
-
-        th.type-col, td.type-col {
-            width: 80px;
-            text-align: center;
-            font-size: 18px;
-            padding: 6px 0;
-        }
+        th.desc-col { text-align: left; }
+        th.type-col, td.type-col { width: 80px; text-align: center; font-size: 18px; padding: 6px 0; }
 
         td {
             padding: 10px;
@@ -141,36 +131,38 @@
             text-align: center;
         }
 
-        td.desc-col {
-            text-align: left;
-            width: 40%;
-        }
+        td.desc-col { text-align: left; width: 40%; }
+        td.date-col { width: 90px; }
 
-        td.date-col {
-            width: 90px;
-        }
-
-        tr:hover {
-            background: #f0f0f0;
-            cursor: pointer;
-        }
+        tr:hover { background: #f0f0f0; cursor: pointer; }
 
         .status-dot {
             display: inline-block;
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             margin-right: 6px;
         }
 
+        /* Légendes côte à côte */
+        .legend-container {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+        }
+
+        .legend-box {
+            background: #f7f7f7;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            flex: 1;
+        }
+
         @media (max-width: 900px) {
-            .layout {
-                flex-direction: column;
-                align-items: center;
-            }
-            #calendar, .panel {
-                width: 90%;
-            }
+            .layout { flex-direction: column; align-items: center; }
+            #calendar, .panel { width: 90%; }
+            .legend-container { flex-direction: column; }
         }
     </style>
 </head>
@@ -201,24 +193,27 @@
 
         <h3>Liste complète des réservations</h3>
 
-        <!-- Légende des statuts -->
-        <div style="margin:15px 0; padding:10px; background:#f7f7f7; border-radius:8px; border:1px solid #ddd;">
-            <strong>Code couleur des statuts :</strong><br><br>
-            <span class="status-dot" style="background:#1E90FF;"></span> Réservation en cours<br>
-            <span class="status-dot" style="background:#32CD32;"></span> Confirmée<br>
-            <span class="status-dot" style="background:#8B4513;"></span> Terminée<br>
-            <span class="status-dot" style="background:#B22222;"></span> Annulée
-        </div>
+        <!-- Légendes côte à côte -->
+        <div class="legend-container">
 
-        <!-- Légende des types -->
-        <div style="margin:15px 0; padding:10px; background:#f7f7f7; border-radius:8px; border:1px solid #ddd;">
-            <strong>Icônes des types :</strong><br><br>
-            🍷🍽️ Interne (repas)<br>
-            👤 Interne (simple)<br>
-            🧹 Nettoyage<br>
-            🧑‍🤝‍🧑 Frairie<br>
-            ↗️ Externe<br>
-            🛠️ Travaux
+            <div class="legend-box">
+                <strong>Statuts :</strong><br><br>
+                <span class="status-dot" style="background:#1E90FF;"></span> En cours<br>
+                <span class="status-dot" style="background:#32CD32;"></span> Confirmée<br>
+                <span class="status-dot" style="background:#8B4513;"></span> Terminée<br>
+                <span class="status-dot" style="background:#B22222;"></span> Annulée
+            </div>
+
+            <div class="legend-box">
+                <strong>Types :</strong><br><br>
+                🍷🍽️ Interne (repas)<br>
+                👤 Interne (simple)<br>
+                🧹 Nettoyage<br>
+                🧑‍🤝‍🧑 Frairie<br>
+                ↗️ Externe<br>
+                🛠️ Travaux
+            </div>
+
         </div>
 
         <table id="reservationsTable">
