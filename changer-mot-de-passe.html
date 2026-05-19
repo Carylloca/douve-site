@@ -1,76 +1,72 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Modifier le mot de passe</title>
+  <meta charset="UTF-8">
+  <title>Modifier le mot de passe</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
-    <link rel="icon" type="image/png" href="favicon.png">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-image: url('index.png');
+      background-size: cover;
+      background-position: center;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
 
-    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+    .container {
+      background: rgba(0, 0, 0, 0.55);
+      padding: 30px;
+      border-radius: 12px;
+      width: 330px;
+      text-align: center;
+    }
 
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background-image: url('index.png');
-            background-size: cover;
-            background-position: center;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-        }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      border: none;
+      font-size: 16px;
+    }
 
-        .container {
-            background: rgba(0, 0, 0, 0.55);
-            padding: 30px;
-            border-radius: 12px;
-            width: 330px;
-            text-align: center;
-        }
+    button {
+      background: rgba(139, 0, 0, 0.7);
+      color: white;
+      cursor: pointer;
+    }
 
-        input, button {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 6px;
-            border: none;
-            font-size: 16px;
-        }
+    button:hover {
+      background: rgba(179, 0, 0, 0.9);
+    }
 
-        button {
-            background: rgba(139, 0, 0, 0.7);
-            color: white;
-            cursor: pointer;
-        }
+    #message {
+      margin-top: 10px;
+      font-size: 14px;
+    }
 
-        button:hover {
-            background: rgba(179, 0, 0, 0.9);
-        }
-
-        #message {
-            margin-top: 10px;
-            font-size: 14px;
-        }
-
-        .toggle {
-            cursor: pointer;
-            font-size: 12px;
-            color: #ffdddd;
-            margin-top: -10px;
-            margin-bottom: 10px;
-            display: block;
-            text-align: right;
-        }
-    </style>
+    .toggle {
+      cursor: pointer;
+      font-size: 12px;
+      color: #ffdddd;
+      margin-top: -10px;
+      margin-bottom: 10px;
+      display: block;
+      text-align: right;
+    }
+  </style>
 </head>
 
 <body>
-
-<div class="container">
-
+  <div class="container">
     <h2>Modifier le mot de passe</h2>
 
     <label>Ancien mot de passe :</label>
@@ -86,87 +82,69 @@
     <span class="toggle" onclick="togglePwd('newPasswordConfirm')">Afficher</span>
 
     <button id="changeBtn">Modifier</button>
-
     <p id="message"></p>
-
     <a href="index.html" style="color:#ffdddd;">← Retour</a>
+  </div>
 
-</div>
-
-<script>
+  <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
     const msg = document.getElementById("message");
 
     if (!pb.authStore.isValid || !pb.authStore.model) {
-        window.location.href = "login.html";
+      window.location.href = "login.html";
     }
 
     function togglePwd(id) {
-        const input = document.getElementById(id);
-        input.type = input.type === "password" ? "text" : "password";
+      const input = document.getElementById(id);
+      input.type = input.type === "password" ? "text" : "password";
     }
 
     document.getElementById("changeBtn").addEventListener("click", async () => {
+      const currentPassword = document.getElementById("currentPassword").value.trim();
+      const newPassword = document.getElementById("newPassword").value.trim();
+      const newPasswordConfirm = document.getElementById("newPasswordConfirm").value.trim();
 
-        const currentPassword = document.getElementById("currentPassword").value.trim();
-        const newPassword = document.getElementById("newPassword").value.trim();
-        const newPasswordConfirm = document.getElementById("newPasswordConfirm").value.trim();
+      msg.style.color = "#ffdddd";
 
+      if (!currentPassword || !newPassword || !newPasswordConfirm) {
+        msg.textContent = "Veuillez remplir tous les champs.";
+        return;
+      }
+
+      if (newPassword.length < 8) {
+        msg.textContent = "Le mot de passe doit contenir au moins 8 caractères.";
+        return;
+      }
+
+      if (newPassword !== newPasswordConfirm) {
+        msg.textContent = "Les nouveaux mots de passe ne correspondent pas.";
+        return;
+      }
+
+      try {
+        const user = pb.authStore.model;
+
+        // 🔐 Mise à jour du mot de passe pour une collection Auth
+        await pb.collection("companions").update(user.id, {
+          oldPassword: currentPassword,
+          password: newPassword,
+          passwordConfirm: newPasswordConfirm
+        });
+
+        msg.style.color = "#aaffaa";
+        msg.textContent = "Mot de passe modifié avec succès. Redirection...";
+
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 1500);
+
+      } catch (err) {
+        console.error("Erreur PocketBase :", err);
+        console.error("Détails :", err.data);
         msg.style.color = "#ffdddd";
-
-        if (!currentPassword || !newPassword || !newPasswordConfirm) {
-            msg.textContent = "Veuillez remplir tous les champs.";
-            return;
-        }
-
-        if (newPassword.length < 8) {
-            msg.textContent = "Le mot de passe doit contenir au moins 8 caractères.";
-            return;
-        }
-
-        if (newPassword !== newPasswordConfirm) {
-            msg.textContent = "Les nouveaux mots de passe ne correspondent pas.";
-            return;
-        }
-
-        try {
-            const user = pb.authStore.model;
-
-            // 1️⃣ Ré-authentifier
-            await pb.collection("companions").authWithPassword(
-                user.email,
-                currentPassword
-            );
-
-            // 2️⃣ Charger le record complet
-            const full = await pb.collection("companions").getOne(user.id);
-
-            // 3️⃣ Mise à jour SANS oldPassword
-            await pb.collection("companions").update(user.id, {
-                email: full.email,
-                nom: full.nom,
-                prenom: full.prenom,
-                role: full.role,
-                tokenKey: full.tokenKey,   // obligatoire
-                password: newPassword,
-                passwordConfirm: newPasswordConfirm
-            });
-
-            msg.style.color = "#aaffaa";
-            msg.textContent = "Mot de passe modifié avec succès. Redirection...";
-
-            setTimeout(() => {
-                window.location.href = "index.html";
-            }, 1500);
-
-        } catch (err) {
-            console.error("Erreur PocketBase :", err);
-            console.error("Détails :", err.data);
-            msg.style.color = "#ffdddd";
-            msg.textContent = "Erreur : vérifiez l'ancien mot de passe ou les champs requis.";
-        }
+        msg.textContent = "Erreur : vérifiez l'ancien mot de passe ou les champs requis.";
+      }
     });
-</script>
-
+  </script>
 </body>
 </html>
