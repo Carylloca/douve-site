@@ -127,12 +127,24 @@
       try {
         const user = pb.authStore.model;
 
-        // 🔐 Mise à jour du mot de passe pour une collection Auth
-        await pb.collection("companions").update(user.id, {
-          oldPassword: currentPassword,
-          password: newPassword,
-          passwordConfirm: newPasswordConfirm
-        });
+        // 🔍 Détection automatique : admin ou companion ?
+        if (user.collectionName === "users") {
+          // 🔐 ADMIN (collection système)
+          await pb.admins.authWithPassword(user.email, currentPassword);
+
+          await pb.admins.update(user.id, {
+            password: newPassword,
+            passwordConfirm: newPasswordConfirm
+          });
+
+        } else {
+          // 👤 COMPANION (collection Auth personnalisée)
+          await pb.collection("companions").update(user.id, {
+            oldPassword: currentPassword,
+            password: newPassword,
+            passwordConfirm: newPasswordConfirm
+          });
+        }
 
         msg.style.color = "#aaffaa";
         msg.textContent = "Mot de passe modifié avec succès. Redirection...";
