@@ -166,11 +166,11 @@
             }, 1500);
 
         } catch (err) {
-            console.error("Erreur PocketBase :", err);
-            console.error("Détails :", err.data);
-            msg.style.color = "#ffdddd";
-            msg.textContent = "Erreur : vérifiez l'ancien mot de passe ou les champs requis.";
-        }
+    console.error("ERREUR PB :", err);
+    console.error("ERREUR DATA :", err.data);   // ← C’EST CECI QUI NOUS INTÉRESSE
+    msg.style.color = "#ffdddd";
+    msg.textContent = "Erreur PocketBase : voir console.";
+}
     });
 </script>
 
