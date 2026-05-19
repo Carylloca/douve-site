@@ -141,29 +141,25 @@
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            margin-right: 6px;
+            margin-right: 4px;
         }
 
         /* Légendes côte à côte */
         .legend-container {
             display: flex;
-            gap: 20px;
-            font-size: 13px;
+            gap: 15px;
+            font-size: 12px;
+            margin-top: 10px;
         }
 
         .legend-box {
             background: #f7f7f7;
-            padding: 10px;
+            padding: 8px;
             border-radius: 8px;
             border: 1px solid #ddd;
             flex: 1;
         }
 
-        @media (max-width: 900px) {
-            .layout { flex-direction: column; align-items: center; }
-            #calendar, .panel { width: 90%; }
-            .legend-container { flex-direction: column; }
-        }
     </style>
 </head>
 
@@ -171,8 +167,8 @@
 
 <header>
     <div class="header-left">
-        <a class="btn" href="../index.html">🏠 Menu</a>
-        <a class="btn" href="admin-menu.html">📋 Menu admin</a>
+        <a class="btn" href="../index.html">Menu</a>
+        <a class="btn" href="admin-menu.html">Menu admin</a>
     </div>
 
     <h1>Liste des Réservations – Chalet Le Bon Laron</h1>
@@ -180,7 +176,6 @@
     <div class="header-right">
         <button class="btn" onclick="exportPDF()">PDF</button>
         <button class="btn" onclick="exportExcel()">Excel</button>
-        <button class="btn" onclick="logout()">⏻ Déconnexion</button>
     </div>
 </header>
 
@@ -197,7 +192,7 @@
         <div class="legend-container">
 
             <div class="legend-box">
-                <strong>Statuts :</strong><br><br>
+                <strong>Statuts :</strong><br>
                 <span class="status-dot" style="background:#1E90FF;"></span> En cours<br>
                 <span class="status-dot" style="background:#32CD32;"></span> Confirmée<br>
                 <span class="status-dot" style="background:#8B4513;"></span> Terminée<br>
@@ -205,7 +200,7 @@
             </div>
 
             <div class="legend-box">
-                <strong>Types :</strong><br><br>
+                <strong>Types :</strong><br>
                 🍷🍽️ Interne (repas)<br>
                 👤 Interne (simple)<br>
                 🧹 Nettoyage<br>
@@ -232,12 +227,7 @@
 
 </div>
 
-<!-- Auth -->
-<script src="../js/auth.js"></script>
-
 <script>
-    requireComite();
-
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
     let reservationsList = [];
 
@@ -256,11 +246,6 @@
         "Externe": "↗️",
         "Travaux": "🛠️"
     };
-
-    function logout() {
-        pb.authStore.clear();
-        window.location.href = "../index.html";
-    }
 
     function formatDate(d) {
         return d.substring(8,10) + "." + d.substring(5,7) + "." + d.substring(0,4);
