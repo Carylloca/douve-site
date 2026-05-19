@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -7,8 +6,10 @@
 
     <link rel="icon" type="image/png" href="favicon.png">
 
+    <!-- PocketBase -->
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
-    <script src="js/auth.js"></script>
+    <!-- Tu peux garder auth.js si tu veux, mais ce fichier est autonome -->
+    <!-- <script src="js/auth.js"></script> -->
 
     <style>
         body {
@@ -96,7 +97,11 @@
 </div>
 
 <script>
-    if (!pb.authStore.isValid) {
+    // 1️⃣ Création explicite du client PocketBase
+    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+    // 2️⃣ Vérifier qu’un utilisateur est connecté
+    if (!pb.authStore.isValid || !pb.authStore.model) {
         window.location.href = "login.html";
     }
 
@@ -130,20 +135,19 @@
         }
 
         try {
-            // 1️⃣ Ré-authentifier
-            const auth = await pb.collection("companions").authWithPassword(
-                pb.authStore.model.email,
+            const user = pb.authStore.model;
+
+            // 1️⃣ Ré-authentifier dans la collection companions
+            await pb.collection("companions").authWithPassword(
+                user.email,
                 oldPassword
             );
 
-            // 2️⃣ Mise à jour du token + modèle
-            pb.authStore.save(auth.token, auth.record);
+            // 2️⃣ Charger le record complet (pour champs required)
+            const full = await pb.collection("companions").getOne(user.id);
 
-            // 3️⃣ Charger le record complet (pour récupérer les champs REQUIRED)
-            const full = await pb.collection("companions").getOne(pb.authStore.model.id);
-
-            // 4️⃣ Mise à jour avec TOUS les champs required + password
-            await pb.collection("companions").update(pb.authStore.model.id, {
+            // 3️⃣ Mise à jour du mot de passe + champs requis
+            await pb.collection("companions").update(user.id, {
                 email: full.email,
                 nom: full.nom,
                 prenom: full.prenom,
@@ -161,7 +165,7 @@
 
         } catch (err) {
             msg.style.color = "#ffdddd";
-            msg.textContent = "Impossible de modifier le mot de passe.";
+            msg.textContent = "Ancien mot de passe incorrect ou erreur de connexion.";
             console.error(err);
         }
     });
