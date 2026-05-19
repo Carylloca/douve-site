@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Modifier le mot de passe</title>
+
+  <!-- Favicon identique à l'index -->
   <link rel="icon" type="image/png" href="favicon.png">
+
   <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
   <style>
@@ -139,12 +142,11 @@
         }, 1500);
 
       } catch (err) {
-    console.error("Erreur PocketBase :", err);
-    console.error("Détails :", err.data);
-    msg.style.color = "#ffdddd";
-    msg.textContent = "Erreur : vérifiez l'ancien mot de passe ou les champs requis.";
-}
-
+        console.error("Erreur PocketBase :", err);
+        console.error("Détails :", err.data);
+        msg.style.color = "#ffdddd";
+        msg.textContent = "Erreur : vérifiez l'ancien mot de passe ou les champs requis.";
+      }
     });
   </script>
 </body>
