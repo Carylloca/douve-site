@@ -16,7 +16,6 @@
             font-family: Arial, sans-serif;
         }
 
-        /* --- Barre supérieure --- */
         header {
             background: rgba(0, 0, 0, 0.85);
             color: white;
@@ -58,12 +57,6 @@
             color: white;
         }
 
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-            text-shadow: 0 0 10px black;
-        }
-
         .card {
             width: 40%;
             margin: 0 auto;
@@ -75,17 +68,14 @@
             position: relative;
         }
 
-        /* --- PHOTO responsive --- */
         .photo-block {
             position: absolute;
             top: 15px;
             right: 15px;
-
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 10px;
-
             width: 30%;
             min-width: 150px;
             max-width: 280px;
@@ -146,23 +136,16 @@
         .line {
             display: flex;
             gap: 6px;
-            justify-content: flex-start;
             margin-bottom: 10px;
-        }
-
-        .line > div {
-            flex: 0 0 auto;
         }
 
         .full {
             width: 55%;
         }
 
-        /* --- Responsive mobile --- */
         @media (max-width: 900px) {
             .photo-block {
                 position: relative;
-                right: 0;
                 margin: 0 auto 20px auto;
                 width: 50%;
                 max-width: 250px;
@@ -189,230 +172,225 @@
 
 <body>
 
-    <!-- BARRE SUPÉRIEURE -->
-    <header>
-        <div class="left-buttons">
-            <a href="../index.html" class="btn">🏠 Menu</a>
-            <a href="admin-menu.html" class="btn">📋 Accueil admin</a>
-        </div>
-        <h2>Modifier un compagnon</h2>
-        <button class="btn" onclick="logout()">⏻ Déconnexion</button>
-    </header>
-
-    <div class="overlay">
-
-        <div class="card">
-
-            <!-- PHOTO -->
-            <div class="photo-block">
-                <div class="photo-frame">
-                    <img id="photoPreview" class="photo-preview">
-                    <span id="photoPlaceholder">Aucune image</span>
-                </div>
-
-                <input type="file" id="photoInput" accept="image/*" style="display:none;">
-                <button class="photo-upload-btn" onclick="document.getElementById('photoInput').click()">📷 Charger une image</button>
-            </div>
-
-            <!-- FORMULAIRE -->
-            <div class="line">
-                <div>
-                    <label>Nom :</label>
-                    <input type="text" id="nom">
-                </div>
-                <div>
-                    <label>Prénom :</label>
-                    <input type="text" id="prenom">
-                </div>
-            </div>
-
-            <div class="line">
-                <div>
-                    <label>Initiales :</label>
-                    <input type="text" id="initiales">
-                </div>
-                <div>
-                    <label>Fonction :</label>
-                    <input type="text" id="fonction">
-                </div>
-            </div>
-
-            <label>Adresse :</label>
-            <input type="text" id="adresse" class="full">
-
-            <div class="line">
-                <div>
-                    <label>N° postal :</label>
-                    <input type="text" id="npa">
-                </div>
-                <div>
-                    <label>Lieu :</label>
-                    <input type="text" id="lieu">
-                </div>
-            </div>
-
-            <div class="line">
-                <div>
-                    <label>Email :</label>
-                    <input type="email" id="email_public">
-                </div>
-                <div>
-                    <label>Téléphone :</label>
-                    <input type="text" id="telephone">
-                </div>
-            </div>
-
-            <div class="line">
-                <div>
-                    <label>Email professionnel :</label>
-                    <input type="email" id="email_prof">
-                </div>
-                <div>
-                    <label>Téléphone professionnel :</label>
-                    <input type="text" id="telephone_prof">
-                </div>
-            </div>
-
-            <div class="line">
-                <div>
-                    <label>Date de naissance :</label>
-                    <input type="date" id="date_naissance">
-                </div>
-
-                <div>
-                    <label>Rôle :</label>
-                    <select id="role">
-                        <option value="compagnon">Compagnon</option>
-                        <option value="comite">Comité</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="line">
-                <div>
-                    <label>Conjoint - nom :</label>
-                    <input type="text" id="conjoint_nom">
-                </div>
-                <div>
-                    <label>Conjoint - prénom :</label>
-                    <input type="text" id="conjoint_prenom">
-                </div>
-            </div>
-
-            <div style="text-align:center; margin-top:20px;">
-                <button class="btn" onclick="sauvegarder()">💾 Enregistrer</button>
-                <a href="admin-compagnons.html" class="btn">Annuler</a>
-            </div>
-
-        </div>
+<header>
+    <div class="left-buttons">
+        <a href="../index.html" class="btn">🏠 Menu</a>
+        <a href="admin-menu.html" class="btn">📋 Accueil admin</a>
     </div>
+    <h2>Modifier un compagnon</h2>
+    <button class="btn" onclick="logout()">⏻ Déconnexion</button>
+</header>
 
-    <!-- PocketBase -->
-    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+<div class="overlay">
 
-    <script>
-        const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+    <div class="card">
 
-        if (!pb.authStore.isValid) {
-            window.location.href = "../login.html";
+        <!-- PHOTO -->
+        <div class="photo-block">
+            <div class="photo-frame">
+                <img id="photoPreview" class="photo-preview">
+                <span id="photoPlaceholder">Aucune image</span>
+            </div>
+
+            <input type="file" id="photoInput" accept="image/*" style="display:none;">
+            <button class="photo-upload-btn" onclick="document.getElementById('photoInput').click()">📷 Charger une image</button>
+        </div>
+
+        <!-- FORMULAIRE -->
+        <div class="line">
+            <div>
+                <label>Nom :</label>
+                <input type="text" id="nom">
+            </div>
+            <div>
+                <label>Prénom :</label>
+                <input type="text" id="prenom">
+            </div>
+        </div>
+
+        <div class="line">
+            <div>
+                <label>Initiales :</label>
+                <input type="text" id="initiales">
+            </div>
+            <div>
+                <label>Fonction :</label>
+                <input type="text" id="fonction">
+            </div>
+        </div>
+
+        <label>Adresse :</label>
+        <input type="text" id="adresse" class="full">
+
+        <div class="line">
+            <div>
+                <label>N° postal :</label>
+                <input type="text" id="npa">
+            </div>
+            <div>
+                <label>Lieu :</label>
+                <input type="text" id="lieu">
+            </div>
+        </div>
+
+        <div class="line">
+            <div>
+                <label>Email :</label>
+                <input type="email" id="email_public">
+            </div>
+            <div>
+                <label>Téléphone :</label>
+                <input type="text" id="telephone">
+            </div>
+        </div>
+
+        <div class="line">
+            <div>
+                <label>Email professionnel :</label>
+                <input type="email" id="email_prof">
+            </div>
+            <div>
+                <label>Téléphone professionnel :</label>
+                <input type="text" id="telephone_prof">
+            </div>
+        </div>
+
+        <div class="line">
+            <div>
+                <label>Date de naissance :</label>
+                <input type="date" id="date_naissance">
+            </div>
+
+            <div>
+                <label>Rôle :</label>
+                <select id="role">
+                    <option value="compagnon">Compagnon</option>
+                    <option value="comite">Comité</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="line">
+            <div>
+                <label>Conjoint - nom :</label>
+                <input type="text" id="conjoint_nom">
+            </div>
+            <div>
+                <label>Conjoint - prénom :</label>
+                <input type="text" id="conjoint_prenom">
+            </div>
+        </div>
+
+        <div style="text-align:center; margin-top:20px;">
+            <button class="btn" onclick="sauvegarder()">💾 Enregistrer</button>
+            <a href="admin-compagnons.html" class="btn">Annuler</a>
+        </div>
+
+    </div>
+</div>
+
+<!-- PocketBase -->
+<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+<!-- Auth -->
+<script src="../js/auth.js"></script>
+
+<script>
+    requireComite();
+
+    const url = new URL(window.location.href);
+    const id = url.searchParams.get("id");
+
+    if (!id) {
+        alert("Aucun compagnon sélectionné.");
+        window.location.href = "admin-compagnons.html";
+    }
+
+    document.getElementById("photoInput").addEventListener("change", function () {
+        const file = this.files[0];
+        if (file) {
+            const preview = document.getElementById("photoPreview");
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = "block";
+            document.getElementById("photoPlaceholder").style.display = "none";
         }
+    });
 
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get("id");
+    async function chargerCompagnon() {
+        try {
+            const c = await pb.collection("companions").getOne(id);
 
-        async function charger() {
-            try {
-                const c = await pb.collection("companions").getOne(id);
+            document.getElementById("nom").value = c.nom;
+            document.getElementById("prenom").value = c.prenom;
+            document.getElementById("initiales").value = c.initiales || "";
+            document.getElementById("fonction").value = c.fonction || "";
+            document.getElementById("adresse").value = c.adresse || "";
+            document.getElementById("npa").value = c.npa || "";
+            document.getElementById("lieu").value = c.lieu || "";
+            document.getElementById("email_public").value = c.email_public || "";
+            document.getElementById("telephone").value = c.telephone || "";
+            document.getElementById("email_prof").value = c.email_prof || "";
+            document.getElementById("telephone_prof").value = c.telephone_prof || "";
+            document.getElementById("conjoint_nom").value = c.conjoint_nom || "";
+            document.getElementById("conjoint_prenom").value = c.conjoint_prenom || "";
+            document.getElementById("role").value = c.role || "compagnon";
 
-                document.getElementById("nom").value = c.nom;
-                document.getElementById("prenom").value = c.prenom;
-                document.getElementById("initiales").value = c.initiales || "";
-                document.getElementById("fonction").value = c.fonction || "";
-                document.getElementById("adresse").value = c.adresse || "";
-                document.getElementById("npa").value = c.npa || "";
-                document.getElementById("lieu").value = c.lieu || "";
-                document.getElementById("email_public").value = c.email_public || "";
-                document.getElementById("telephone").value = c.telephone || "";
-                document.getElementById("telephone_prof").value = c.telephone_prof || "";
-                document.getElementById("email_prof").value = c.email_prof || "";
-
-                if (c.date_naissance) {
-                    document.getElementById("date_naissance").value = c.date_naissance.split(" ")[0];
-                }
-
-                document.getElementById("conjoint_prenom").value = c.conjoint_prenom || "";
-                document.getElementById("conjoint_nom").value = c.conjoint_nom || "";
-
-                document.getElementById("role").value = c.role || "compagnon";
-
-                if (c.photo) {
-                    const url = pb.files.getUrl(c, c.photo);
-                    const preview = document.getElementById("photoPreview");
-                    preview.src = url;
-                    preview.style.display = "block";
-
-                    const placeholder = document.getElementById("photoPlaceholder");
-                    if (placeholder) placeholder.style.display = "none";
-                }
-
-            } catch (err) {
-                console.error(err);
-                alert("Erreur lors du chargement.");
+            if (c.date_naissance) {
+                document.getElementById("date_naissance").value = c.date_naissance.split(" ")[0];
             }
-        }
 
-        charger();
-
-        document.getElementById("photoInput").addEventListener("change", function () {
-            const file = this.files[0];
-            if (file) {
+            if (c.photo) {
+                const url = pb.files.getUrl(c, c.photo);
                 const preview = document.getElementById("photoPreview");
-                preview.src = URL.createObjectURL(file);
+                preview.src = url;
                 preview.style.display = "block";
-
-                const placeholder = document.getElementById("photoPlaceholder");
-                if (placeholder) placeholder.style.display = "none";
-            }
-        });
-
-        async function sauvegarder() {
-            const formData = new FormData();
-
-            formData.append("nom", document.getElementById("nom").value);
-            formData.append("prenom", document.getElementById("prenom").value);
-            formData.append("initiales", document.getElementById("initiales").value);
-            formData.append("fonction", document.getElementById("fonction").value);
-            formData.append("adresse", document.getElementById("adresse").value);
-            formData.append("npa", document.getElementById("npa").value);
-            formData.append("lieu", document.getElementById("lieu").value);
-            formData.append("email_public", document.getElementById("email_public").value);
-            formData.append("telephone", document.getElementById("telephone").value);
-
-            const dn = document.getElementById("date_naissance").value;
-            if (dn) formData.append("date_naissance", dn + " 23:30:00");
-
-            formData.append("conjoint_prenom", document.getElementById("conjoint_prenom").value);
-            formData.append("conjoint_nom", document.getElementById("conjoint_nom").value);
-            formData.append("telephone_prof", document.getElementById("telephone_prof").value);
-            formData.append("email_prof", document.getElementById("email_prof").value);
-
-            formData.append("role", document.getElementById("role").value);
-
-            const fileInput = document.getElementById("photoInput");
-            if (fileInput.files.length > 0) {
-                formData.append("photo", fileInput.files[0]);
+                document.getElementById("photoPlaceholder").style.display = "none";
             }
 
-            try {
-                await pb.collection("companions").update(id, formData);
-                alert("Modifications enregistrées !");
-                window.location.href = "../compagnon-details.html?id=" + id;
-            } catch (err) {
-                console.error(err);
-                alert("Erreur lors de la sauvegarde.");
-            }
+        } catch (err) {
+            console.error(err);
+            alert("Erreur lors du chargement du compagnon.");
         }
-    </script>
+    }
+
+    async function sauvegarder() {
+        const formData = new FormData();
+
+        formData.append("nom", document.getElementById("nom").value);
+        formData.append("prenom", document.getElementById("prenom").value);
+        formData.append("initiales", document.getElementById("initiales").value);
+        formData.append("fonction", document.getElementById("fonction").value);
+        formData.append("adresse", document.getElementById("adresse").value);
+        formData.append("npa", document.getElementById("npa").value);
+        formData.append("lieu", document.getElementById("lieu").value);
+        formData.append("email_public", document.getElementById("email_public").value);
+        formData.append("telephone", document.getElementById("telephone").value);
+        formData.append("email_prof", document.getElementById("email_prof").value);
+        formData.append("telephone_prof", document.getElementById("telephone_prof").value);
+        formData.append("conjoint_nom", document.getElementById("conjoint_nom").value);
+        formData.append("conjoint_prenom", document.getElementById("conjoint_prenom").value);
+        formData.append("role", document.getElementById("role").value);
+
+        const dn = document.getElementById("date_naissance").value;
+        if (dn) formData.append("date_naissance", dn + " 23:30:00");
+
+        const fileInput = document.getElementById("photoInput");
+        if (fileInput.files.length > 0) {
+            formData.append("photo", fileInput.files[0]);
+        }
+
+        try {
+            await pb.collection("companions").update(id, formData);
+            alert("Modifications enregistrées !");
+            window.location.href = "admin-compagnons.html";
+        } catch (err) {
+            console.error(err);
+            alert("Erreur lors de l'enregistrement.");
+        }
+    }
+
+    chargerCompagnon();
+</script>
 
 </body>
 </html>
