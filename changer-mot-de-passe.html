@@ -6,7 +6,6 @@
 
     <link rel="icon" type="image/png" href="favicon.png">
 
-    <!-- PocketBase -->
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
@@ -96,10 +95,8 @@
 
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
-
     const msg = document.getElementById("message");
 
-    // Vérifier connexion
     if (!pb.authStore.isValid || !pb.authStore.model) {
         window.location.href = "login.html";
     }
@@ -110,7 +107,6 @@
     }
 
     document.getElementById("changeBtn").addEventListener("click", async () => {
-
         const oldPassword = document.getElementById("oldPassword").value.trim();
         const newPassword = document.getElementById("newPassword").value.trim();
         const newPasswordConfirm = document.getElementById("newPasswordConfirm").value.trim();
@@ -151,9 +147,13 @@
             delete full.collectionId;
             delete full.collectionName;
 
-            // 4️⃣ Mise à jour complète
+            // 4️⃣ Mise à jour complète avec tokenKey
             await pb.collection("companions").update(user.id, {
-                ...full,
+                email: full.email,
+                nom: full.nom,
+                prenom: full.prenom,
+                role: full.role,
+                tokenKey: full.tokenKey, // champ obligatoire
                 password: newPassword,
                 passwordConfirm: newPasswordConfirm
             });
@@ -166,9 +166,10 @@
             }, 1500);
 
         } catch (err) {
-            console.error(err);
+            console.error("Erreur PocketBase :", err);
+            console.error("Détails :", err.data);
             msg.style.color = "#ffdddd";
-            msg.textContent = "Ancien mot de passe incorrect ou erreur de mise à jour.";
+            msg.textContent = "Erreur : vérifiez l'ancien mot de passe ou les champs requis.";
         }
     });
 </script>
