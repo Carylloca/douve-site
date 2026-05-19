@@ -15,7 +15,6 @@
             background-size: cover;
         }
 
-        /* --- Barre supérieure --- */
         header {
             background: rgba(0, 0, 0, 0.85);
             color: white;
@@ -57,14 +56,12 @@
             text-shadow: 0 0 10px black;
         }
 
-        /* Overlay sombre */
         .overlay {
             background: rgba(0, 0, 0, 0.55);
             min-height: 100vh;
             padding: 30px 0;
         }
 
-        /* Bloc premium */
         .panel {
             width: 600px;
             margin: 20px auto;
@@ -76,7 +73,6 @@
             border-left: 10px solid transparent;
         }
 
-        /* Deux colonnes */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -144,7 +140,6 @@
 
         <div class="form-grid">
 
-            <!-- STATUS -->
             <div class="full">
                 <label>Status</label>
                 <select id="status" onchange="updateStatusColor()">
@@ -155,7 +150,6 @@
                 </select>
             </div>
 
-            <!-- TYPE + COMPAGNON -->
             <div>
                 <label>Type</label>
                 <select id="type">
@@ -173,13 +167,11 @@
                 <select id="compagnon"></select>
             </div>
 
-            <!-- DESCRIPTION OBLIGATOIRE -->
             <div class="full">
                 <label>Description (obligatoire)</label>
                 <textarea id="description"></textarea>
             </div>
 
-            <!-- DATES -->
             <div>
                 <label>Date début</label>
                 <input type="date" id="startDate">
@@ -190,7 +182,6 @@
                 <input type="date" id="endDate">
             </div>
 
-            <!-- RELEVÉS -->
             <div>
                 <label>Électricité – début</label>
                 <input type="number" id="electricityStart">
@@ -211,7 +202,6 @@
                 <input type="number" id="waterEnd">
             </div>
 
-            <!-- BOUTONS -->
             <div class="full" style="text-align:center; margin-top:10px;">
                 <button class="action" type="button" onclick="saveReservation()">Enregistrer</button>
                 <button class="action" type="button" id="deleteBtn" onclick="deleteReservation()" style="display:none;">Supprimer</button>
@@ -222,11 +212,14 @@
 
 </div>
 
+<!-- Auth -->
+<script src="../js/auth.js"></script>
+
 <script>
-    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+    requireComite();
+
     let currentEventId = null;
 
-    /* CODE COULEUR */
     function updateStatusColor() {
         const panel = document.getElementById("panel");
         const statusValue = document.getElementById("status").value;
@@ -241,7 +234,6 @@
         panel.style.borderLeftColor = colors[statusValue] || "transparent";
     }
 
-    /* CHARGER COMPAGNONS */
     async function loadCompagnons() {
         const list = await pb.collection("companions").getFullList();
         const select = document.getElementById("compagnon");
@@ -252,7 +244,6 @@
         });
     }
 
-    /* ENREGISTRER */
     async function saveReservation() {
         const description = document.getElementById("description").value.trim();
         if (!description) {
@@ -290,7 +281,6 @@
         }
     }
 
-    /* SUPPRIMER */
     async function deleteReservation() {
         if (!currentEventId) return;
         if (!confirm("Supprimer définitivement cette réservation ?")) return;
@@ -300,7 +290,6 @@
         window.location.href = "admin-chalet-liste.html";
     }
 
-    /* CHARGER UNE RÉSERVATION EXISTANTE */
     async function loadReservation(id) {
         const r = await pb.collection("chalet_reservations").getOne(id);
 
@@ -324,25 +313,17 @@
 
     function logout() {
         pb.authStore.clear();
-        window.location.href = "admin-login.html";
+        window.location.href = "../index.html";
     }
 
-    /* 🔥 INITIALISATION + LECTURE DE L’ID DANS L’URL */
     document.addEventListener("DOMContentLoaded", async () => {
-
-        if (!pb.authStore.isValid) {
-            window.location.href = "admin-login.html";
-            return;
-        }
 
         await loadCompagnons();
         updateStatusColor();
 
-        // 🔥 Récupérer l’ID dans l’URL
         const params = new URLSearchParams(window.location.search);
         const id = params.get("id");
 
-        // 🔥 Si un ID est présent → on charge la réservation
         if (id) {
             await loadReservation(id);
         }
