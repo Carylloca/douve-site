@@ -28,7 +28,6 @@
             color: white;
         }
 
-        /* Overlay sombre */
         .overlay {
             background: rgba(0, 0, 0, 0.55);
             position: absolute;
@@ -38,7 +37,6 @@
             bottom: 0;
         }
 
-        /* Header avec bouton Menu */
         .header {
             position: absolute;
             top: 20px;
@@ -120,12 +118,10 @@
             text-align: center;
         }
 
-        .links a {
+        .links p {
             color: #ffdddd;
-            text-decoration: underline;
-            display: block;
-            margin-bottom: 8px;
             font-size: 14px;
+            margin-bottom: 8px;
         }
     </style>
 </head>
@@ -134,7 +130,6 @@
 
 <div class="overlay"></div>
 
-<!-- ⭐ Bouton Menu principal -->
 <div class="header">
     <a href="index.html" class="btn-menu">← Menu principal</a>
 </div>
@@ -156,8 +151,18 @@
     <p id="message"></p>
 
     <div class="links">
-        <a href="password-reset.html">Mot de passe perdu</a>
-        <a href="changer-mot-de-passe.html">Modifier mon mot de passe</a>
+
+        <!-- Ancien lien "Mot de passe perdu" (désactivé mais conservé) -->
+        <!-- <a href="password-reset.html">Mot de passe perdu</a> -->
+
+        <p>
+            En cas de perte du mot de passe, contactez l’administrateur.<br>
+            Il vous répondra dans ses meilleurs délais.
+        </p>
+
+        <!-- Ancien lien "Modifier mon mot de passe" (supprimé volontairement) -->
+        <!-- <a href="changer-mot-de-passe.html">Modifier mon mot de passe</a> -->
+
     </div>
 
 </div>
