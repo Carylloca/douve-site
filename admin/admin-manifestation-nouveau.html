@@ -256,8 +256,10 @@
             document.querySelectorAll("#responsables input[type='checkbox']:checked")
         ).map(cb => cb.value);
 
-        // ❗ IMPORTANT : ne pas ajouter user.id (car user ∉ companions)
-        // Si aucun responsable → responsables = []
+        // 🔥 Vérifier que c’est bien un tableau
+        if (!Array.isArray(responsables)) {
+            responsables = [];
+        }
 
         const date = document.getElementById("date").value;
         const heure = document.getElementById("heure").value;
@@ -273,7 +275,7 @@
             date_limite: document.getElementById("date_limite").value || null,
             places_max: places,
             created_by: user.id,       // user = admin/comité
-            responsables: responsables // companions
+            responsables: responsables // companions (tableau d’IDs)
         };
 
         try {
