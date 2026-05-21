@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Modification – Inscrits (Responsable)</title>
+    <title>Gestion des inscrits – Responsable</title>
 
     <link rel="icon" type="image/png" href="favicon.png">
 
@@ -154,7 +154,17 @@
     <div style="text-align:center; margin-bottom:10px;">
         <button class="btn" onclick="exportPDF()">Export PDF</button>
         <button class="btn" onclick="exportExcel()">Export Excel</button>
-        <button id="btnInscrire" class="btn" style="display:none;" onclick="inscrire()">📝 Je m'inscris</button>
+    </div>
+
+    <!-- FORMULAIRE AJOUT INSCRIPTION -->
+    <div id="addForm" style="text-align:center; margin-bottom:20px;">
+        <button class="btn" onclick="toggleAddForm()">➕ Ajouter une inscription</button>
+
+        <div id="addZone" style="display:none; margin-top:15px;">
+            <select id="selectCompanion" class="btn"></select>
+            <input type="number" id="nbPersonnesAdd" min="1" value="1" class="btn" style="width:80px;">
+            <button class="btn" onclick="ajouterInscription()">Valider</button>
+        </div>
     </div>
 
     <table>
@@ -228,12 +238,7 @@
 
             updateTotal();
             displayTable();
-
-            // Vérifier si l'utilisateur est inscrit
-            const dejaInscrit = inscrits.some(i => i.companion === user.id);
-            if (!dejaInscrit) {
-                document.getElementById("btnInscrire").style.display = "inline-block";
-            }
+            loadCompanionsNotInscribed();
 
         } catch (err) {
             console.error(err);
@@ -256,24 +261,20 @@
         filtered.forEach(i => {
             const c = i.expand?.companion;
 
-            const estMoi = c?.id === user.id;
-
             const row = document.createElement("tr");
             row.innerHTML = `
                 <td>${c?.nom || "-"}</td>
                 <td>${c?.prenom || "-"}</td>
                 <td>${c?.email || "-"}</td>
                 <td>
-                    ${estMoi ? `
-                        <div class="inline-controls">
-                            <button class="btn small-btn" onclick="modifierNb('${i.id}', -1)">–</button>
-                            <strong>${i.nb_personnes || 1}</strong>
-                            <button class="btn small-btn" onclick="modifierNb('${i.id}', 1)">+</button>
-                        </div>
-                    ` : `${i.nb_personnes || 1}`}
+                    <div class="inline-controls">
+                        <button class="btn small-btn" onclick="modifierNb('${i.id}', -1)">–</button>
+                        <strong>${i.nb_personnes || 1}</strong>
+                        <button class="btn small-btn" onclick="modifierNb('${i.id}', 1)">+</button>
+                    </div>
                 </td>
                 <td>
-                    ${estMoi ? `<button class="btn-delete small-btn" onclick="deleteInscrit('${i.id}')">🗑</button>` : ""}
+                    <button class="btn-delete small-btn" onclick="deleteInscrit('${i.id}')">🗑</button>
                 </td>
             `;
             tbody.appendChild(row);
@@ -314,7 +315,7 @@
     }
 
     async function deleteInscrit(id) {
-        if (!confirm("Voulez-vous vraiment vous désinscrire ?")) return;
+        if (!confirm("Voulez-vous vraiment supprimer cette inscription ?")) return;
 
         try {
             await pb.collection("inscriptions").delete(id);
@@ -325,16 +326,51 @@
         }
     }
 
-    async function inscrire() {
+    function toggleAddForm() {
+        const zone = document.getElementById("addZone");
+        zone.style.display = zone.style.display === "none" ? "block" : "none";
+    }
+
+    async function loadCompanionsNotInscribed() {
+        const allCompanions = await pb.collection("companions").getFullList();
+        const inscritsIds = inscrits.map(i => i.companion);
+
+        const notInscribed = allCompanions.filter(c => !inscritsIds.includes(c.id));
+
+        const select = document.getElementById("selectCompanion");
+        select.innerHTML = "";
+
+        notInscribed
+            .sort((a,b) => a.nom.localeCompare(b.nom))
+            .forEach(c => {
+                const opt = document.createElement("option");
+                opt.value = c.id;
+                opt.textContent = `${c.nom} ${c.prenom}`;
+                select.appendChild(opt);
+            });
+    }
+
+    async function ajouterInscription() {
+        const compId = document.getElementById("selectCompanion").value;
+        const nb = parseInt(document.getElementById("nbPersonnesAdd").value);
+
+        if (!compId) {
+            alert("Veuillez choisir un compagnon.");
+            return;
+        }
+
         try {
             await pb.collection("inscriptions").create({
                 manifestation: manifestationId,
-                companion: user.id,
-                nb_personnes: 1
+                companion: compId,
+                nb_personnes: nb
             });
+
             loadInscrits();
+            toggleAddForm();
+
         } catch (err) {
-            alert("Erreur lors de l'inscription.");
+            alert("Erreur lors de l'ajout.");
             console.error(err);
         }
     }
