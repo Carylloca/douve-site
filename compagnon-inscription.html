@@ -95,7 +95,6 @@
             background: #9c1a33;
         }
 
-        /* 🔥 Bloc d’avertissement */
         .warning-block {
             display: flex;
             background: #fff3cd;
@@ -119,7 +118,6 @@
             flex: 1;
         }
 
-        /* 🔵 Description sous le titre */
         #desc {
             display: block;
             margin: 10px 0 20px 0;
@@ -148,7 +146,6 @@
         <div class="card">
             <h2 id="title">Chargement...</h2>
 
-            <!-- 🔵 Description sous le titre -->
             <span id="desc"></span>
 
             <div id="limite" style="margin-bottom:10px;"></div>
@@ -156,7 +153,6 @@
             <label>Nombre de personnes :</label>
             <input type="number" id="nb" min="1" value="1">
 
-            <!-- 🔥 Bloc d’avertissement percutant -->
             <div class="warning-block">
                 <div class="warning-icon">⚠️</div>
                 <div class="warning-text">
@@ -164,7 +160,7 @@
                 </div>
             </div>
 
-            <button class="btn-action" onclick="save()">Enregistrer</button>
+            <button id="btnSave" class="btn-action" onclick="save()">Enregistrer</button>
         </div>
     </div>
 
@@ -178,6 +174,8 @@
 
     document.getElementById("btnInscrits").href =
         "liste-inscrits-compagnon.html?id=" + manifestId;
+
+    let isClosed = false;
 
     async function load() {
         try {
@@ -217,8 +215,6 @@
             }
 
             const user = pb.authStore.model;
-
-            // 🔥 Prénom avant nom
             const nomCompagnon = `${user.prenom || ""} ${user.nom || ""}`.trim();
 
             let html = `${m.title}<br>`;
@@ -228,13 +224,18 @@
             html += `<span style="font-size:16px;color:#444;">📌 Organisateur : ${organisateur}</span>`;
 
             document.getElementById("title").innerHTML = html;
-
-            // 🔵 Description sous le titre
             document.getElementById("desc").textContent = m.description || "Aucune description.";
 
+            // 🔥 Vérification délai dépassé
             if (limiteDate && new Date() > limiteDate) {
+                isClosed = true;
+
                 document.getElementById("limite").innerHTML =
-                    `<span style="color:red;font-weight:bold;">⛔ Date limite dépassée</span>`;
+                    `<span style="color:red;font-weight:bold;">⛔ Délai dépassé, veuillez contacter l'organisateur</span>`;
+
+                document.getElementById("nb").disabled = true;
+                document.getElementById("btnSave").disabled = true;
+                document.getElementById("btnSave").style.background = "#777";
             }
 
         } catch (err) {
@@ -244,16 +245,21 @@
     }
 
     async function save() {
-        const nb = parseInt(document.getElementById("nb").value, 10);
 
+        // 🔥 Sécurité côté JS
+        const m = await pb.collection("manifestations").getOne(manifestId);
+        if (m.date_limite && new Date() > new Date(m.date_limite)) {
+            alert("Délai dépassé, veuillez contacter l'organisateur.");
+            return;
+        }
+
+        const nb = parseInt(document.getElementById("nb").value, 10);
         if (!nb || nb < 1) {
             alert("Veuillez saisir un nombre de personnes valide.");
             return;
         }
 
         const user = pb.authStore.model;
-        const nom = user.nom || "";
-        const prenom = user.prenom || "";
 
         try {
             const existing = await pb.collection("inscriptions").getFullList({
@@ -266,8 +272,8 @@
 
                 await pb.collection("inscriptions").update(last.id, {
                     nb_personnes: nb,
-                    nom: nom,
-                    prenom: prenom
+                    nom: user.nom || "",
+                    prenom: user.prenom || ""
                 });
 
             } else {
@@ -275,8 +281,8 @@
                     companion: user.id,
                     manifestation: manifestId,
                     nb_personnes: nb,
-                    nom: nom,
-                    prenom: prenom
+                    nom: user.nom || "",
+                    prenom: user.prenom || ""
                 });
             }
 
@@ -284,7 +290,6 @@
             window.location.href = "compagnons.html";
 
         } catch (err) {
-            console.log("Erreur PocketBase :", err.data);
             console.error(err);
             alert("Erreur lors de l'enregistrement.");
         }
