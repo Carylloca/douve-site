@@ -254,9 +254,9 @@
         // 🔥 Récupérer les responsables cochés (companions)
         let responsables = Array.from(
             document.querySelectorAll("#responsables input[type='checkbox']:checked")
-        ).map(cb => cb.value);
+        ).map(cb => String(cb.value)); // 🔥 convertit explicitement en chaîne
 
-        // 🔥 Vérifier que c’est bien un tableau
+        // 🔥 Forcer tableau vide si aucun responsable
         if (!Array.isArray(responsables)) {
             responsables = [];
         }
@@ -275,7 +275,7 @@
             date_limite: document.getElementById("date_limite").value || null,
             places_max: places,
             created_by: user.id,       // user = admin/comité
-            responsables: responsables // companions (tableau d’IDs)
+            responsables: responsables.length > 0 ? responsables : [] // 🔥 force tableau
         };
 
         try {
@@ -285,6 +285,7 @@
 
         } catch (err) {
             alert("Erreur lors de la création : " + (err?.message || "Vérifiez les champs."));
+            console.error(err);
         }
     });
 </script>
