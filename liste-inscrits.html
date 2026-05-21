@@ -98,6 +98,11 @@
 
     <h1>Liste des inscrits</h1>
 
+    <!-- 🔥 Bouton admin (invisible par défaut) -->
+    <div id="adminBtnContainer" style="text-align:center; margin-bottom:20px; display:none;">
+        <a id="adminBtn" class="btn" style="background:#7b0f23;">Gérer les inscrits (admin)</a>
+    </div>
+
     <div class="card">
         <p><strong>Manifestation :</strong> <span id="manifestTitle">Chargement...</span></p>
         <p><strong>Total inscrits :</strong> <span id="totalInscrits">0</span></p>
@@ -137,10 +142,31 @@
 
     async function loadInscrits() {
         try {
-            const manifest = await pb.collection("manifestations").getOne(manifestationId);
+            // 🔥 Charger la manifestation + responsables
+            const manifest = await pb.collection("manifestations").getOne(manifestationId, {
+                expand: "responsables"
+            });
+
             document.getElementById("manifestTitle").textContent = manifest.title;
 
-            const inscrits = await pb.collection("inscrits").getFullList({
+            // 🔥 Vérifier si l'utilisateur connecté est responsable
+            const user = pb.authStore.model;
+            let isResponsable = false;
+
+            if (manifest.expand?.responsables?.length > 0) {
+                isResponsable = manifest.expand.responsables.some(r => r.id === user.id);
+            }
+
+            // 🔥 Si responsable → afficher bouton admin
+            if (isResponsable) {
+                const btn = document.getElementById("adminBtnContainer");
+                const link = document.getElementById("adminBtn");
+                link.href = `../admin/admin-inscrits.html?id=${manifestationId}`;
+                btn.style.display = "block";
+            }
+
+            // 🔥 Charger les inscrits
+            const inscrits = await pb.collection("inscriptions").getFullList({
                 filter: `manifestation = "${manifestationId}"`,
                 expand: "companion"
             });
@@ -173,7 +199,7 @@
                 <tr>
                     <td>${c?.nom || "-"}</td>
                     <td>${c?.prenom || "-"}</td>
-                    <td>${c?.email || "-"}</td>
+                    <td>${c?.email_public || "-"}</td>
                 </tr>
             `;
         });
@@ -219,7 +245,7 @@
         let y = 20;
         inscritsData.forEach(i => {
             const c = i.expand?.companion;
-            doc.text(`${c?.nom} ${c?.prenom} - ${c?.email}`, 10, y);
+            doc.text(`${c?.nom} ${c?.prenom} - ${c?.email_public}`, 10, y);
             y += 8;
         });
 
@@ -233,7 +259,7 @@
             return {
                 Nom: c?.nom,
                 Prénom: c?.prenom,
-                Email: c?.email
+                Email: c?.email_public
             };
         });
 
