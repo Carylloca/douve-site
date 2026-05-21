@@ -156,7 +156,7 @@
             <div class="warning-block">
                 <div class="warning-icon">⚠️</div>
                 <div class="warning-text">
-                    <strong>Date limite dépassée, veuillez contacter l'organisateur.</strong>
+                    <strong>En cas de modification d'inscription après la date limite, veuillez contacter l'organisateur.</strong>
                 </div>
             </div>
 
@@ -236,6 +236,10 @@
                 document.getElementById("nb").disabled = true;
                 document.getElementById("btnSave").disabled = true;
                 document.getElementById("btnSave").style.background = "#777";
+
+                // 🔄 Mise à jour automatique du pavé jaune
+                document.querySelector(".warning-text strong").textContent =
+                    "⛔ Date limite dépassée, veuillez contacter l'organisateur";
             }
 
         } catch (err) {
