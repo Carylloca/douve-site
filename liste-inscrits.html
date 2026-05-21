@@ -47,7 +47,7 @@
             position: relative;
         }
 
-        /* 🔥 Bouton responsable en haut à droite */
+        /* 🔥 Bouton responsable */
         #btnAdminEdit {
             position: absolute;
             top: 15px;
@@ -160,19 +160,21 @@
 
     async function loadInscrits() {
         try {
-            // 🔥 Charger la manifestation + responsables
+            // 🔥 Charger la manifestation + responsables + companions
             const manifest = await pb.collection("manifestations").getOne(manifestationId, {
-                expand: "responsables"
+                expand: "responsables,companion"
             });
 
             document.getElementById("manifestTitle").textContent = manifest.title;
 
-            // 🔥 Vérifier si l'utilisateur connecté est responsable
+            // 🔥 Récupérer le compagnon lié au user connecté
             const user = pb.authStore.model;
+            const companionId = user.companion; // 🔥 clé magique
+
             let isResponsable = false;
 
             if (manifest.expand?.responsables?.length > 0) {
-                isResponsable = manifest.expand.responsables.some(r => r.id === user.id);
+                isResponsable = manifest.expand.responsables.some(r => r.id === companionId);
             }
 
             // 🔥 Si responsable → afficher bouton admin
