@@ -14,7 +14,7 @@
         body {
             margin: 0;
             padding: 0;
-            background-image: url("page-manifestations.jpg");
+            background-image: url("/img/page-manifestations.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -125,13 +125,13 @@
             background: #9c1a33;
         }
 
-        /* BOUTON RETOUR GRIS */
+        /* BOUTON RETOUR (maintenant aussi bordeaux) */
         .btn-retour {
-            background: #444 !important;
+            background: #7b0f23 !important;
         }
 
         .btn-retour:hover {
-            background: #666 !important;
+            background: #9c1a33 !important;
         }
     </style>
 </head>
@@ -223,6 +223,7 @@ async function loadInscrits() {
             });
         }
 
+        /* 🔥 Le bouton n'apparaît QUE si l'utilisateur est responsable */
         if (isResponsable) {
             const btn = document.getElementById("btnAdminEdit");
             btn.href = `modification-responsable-inscrits-details.html?id=${manifestationId}`;
