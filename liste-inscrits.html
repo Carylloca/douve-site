@@ -162,15 +162,19 @@
             document.getElementById("manifestTitle").textContent = manifest.title;
 
             const user = pb.authStore.model;
-            const companionId = user.companion;
 
+            // 1. Admins (collection users)
+            let isAdmin = (user.role === "admin" || user.role === "comite");
+
+            // 2. Responsables (collection companions)
             let isResponsable = false;
 
             if (manifest.expand?.responsables?.length > 0) {
-                isResponsable = manifest.expand.responsables.some(r => r.id === companionId);
+                isResponsable = manifest.expand.responsables.some(r => r.email === user.email);
             }
 
-            if (isResponsable) {
+            // 3. Condition finale
+            if (isAdmin || isResponsable) {
                 const btn = document.getElementById("btnAdminEdit");
                 btn.href = `../admin/admin-inscrits.html?id=${manifestationId}`;
                 btn.style.display = "inline-block";
