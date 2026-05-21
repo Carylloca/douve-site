@@ -44,6 +44,25 @@
             margin: 15px auto;
             max-width: 700px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        /* 🔥 Bouton responsable en haut à droite */
+        #btnAdminEdit {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #7b0f23;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            display: none;
+        }
+
+        #btnAdminEdit:hover {
+            background: #9c1a33;
         }
 
         table {
@@ -98,12 +117,11 @@
 
     <h1>Liste des inscrits</h1>
 
-    <!-- 🔥 Bouton admin (invisible par défaut) -->
-    <div id="adminBtnContainer" style="text-align:center; margin-bottom:20px; display:none;">
-        <a id="adminBtn" class="btn" style="background:#7b0f23;">Gérer les inscrits (admin)</a>
-    </div>
-
     <div class="card">
+
+        <!-- 🔥 Bouton admin visible uniquement pour les responsables -->
+        <a id="btnAdminEdit">Gérer les inscriptions</a>
+
         <p><strong>Manifestation :</strong> <span id="manifestTitle">Chargement...</span></p>
         <p><strong>Total inscrits :</strong> <span id="totalInscrits">0</span></p>
 
@@ -159,10 +177,9 @@
 
             // 🔥 Si responsable → afficher bouton admin
             if (isResponsable) {
-                const btn = document.getElementById("adminBtnContainer");
-                const link = document.getElementById("adminBtn");
-                link.href = `../admin/admin-inscrits.html?id=${manifestationId}`;
-                btn.style.display = "block";
+                const btn = document.getElementById("btnAdminEdit");
+                btn.href = `../admin/admin-inscrits.html?id=${manifestationId}`;
+                btn.style.display = "inline-block";
             }
 
             // 🔥 Charger les inscrits
