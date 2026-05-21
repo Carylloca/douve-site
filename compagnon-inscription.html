@@ -156,7 +156,7 @@
             <div class="warning-block">
                 <div class="warning-icon">⚠️</div>
                 <div class="warning-text">
-                    <strong>En cas de modification d'inscription après la date limite, veuillez contacter l'organisateur.</strong>
+                    <strong>Date limite dépassée, veuillez contacter l'organisateur.</strong>
                 </div>
             </div>
 
@@ -231,7 +231,7 @@
                 isClosed = true;
 
                 document.getElementById("limite").innerHTML =
-                    `<span style="color:red;font-weight:bold;">⛔ Délai dépassé, veuillez contacter l'organisateur</span>`;
+                    `<span style="color:red;font-weight:bold;">⛔ Date limite dépassée, veuillez contacter l'organisateur</span>`;
 
                 document.getElementById("nb").disabled = true;
                 document.getElementById("btnSave").disabled = true;
@@ -249,7 +249,7 @@
         // 🔥 Sécurité côté JS
         const m = await pb.collection("manifestations").getOne(manifestId);
         if (m.date_limite && new Date() > new Date(m.date_limite)) {
-            alert("Délai dépassé, veuillez contacter l'organisateur.");
+            alert("Date limite dépassée, veuillez contacter l'organisateur.");
             return;
         }
 
