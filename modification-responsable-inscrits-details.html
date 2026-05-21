@@ -107,6 +107,19 @@
             background: #9b0000 !important;
         }
 
+        .btn-text-delete {
+            background: transparent;
+            color: #d50000;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-text-delete:hover {
+            color: #9b0000;
+            text-decoration: underline;
+        }
+
         table {
             width: 100%;
             max-width: 900px;
@@ -143,6 +156,16 @@
             padding: 4px 8px;
             font-size: 12px;
         }
+
+        /* SELECT STANDARD */
+        #selectCompanion {
+            background: white;
+            color: black;
+            border: 1px solid #aaa;
+            padding: 6px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
     </style>
 </head>
 
@@ -161,7 +184,8 @@
     </div>
 
     <div class="header-right">
-        <button class="btn" onclick="memoriser()">💾 Mémoriser</button>
+        <button class="btn" onclick="exportPDF()">PDF</button>
+        <button class="btn" onclick="exportExcel()">Excel</button>
     </div>
 
 </div>
@@ -171,17 +195,12 @@
     <h1 id="manifestTitle">Liste des inscrits</h1>
     <div id="totalInscrits"></div>
 
-    <div style="text-align:center; margin-bottom:10px;">
-        <button class="btn" onclick="exportPDF()">Export PDF</button>
-        <button class="btn" onclick="exportExcel()">Export Excel</button>
-    </div>
-
     <!-- FORMULAIRE AJOUT INSCRIPTION -->
     <div id="addForm" style="text-align:center; margin-bottom:20px;">
         <button class="btn" onclick="toggleAddForm()">➕ Ajouter une inscription</button>
 
         <div id="addZone" style="display:none; margin-top:15px;">
-            <select id="selectCompanion" class="btn"></select>
+            <select id="selectCompanion"></select>
             <input type="number" id="nbPersonnesAdd" min="1" value="1" class="btn" style="width:80px;">
             <button class="btn" onclick="ajouterInscription()">Valider</button>
         </div>
@@ -220,11 +239,6 @@
     let inscrits = [];
     let filtered = [];
     let sortDirection = 1;
-
-    /* MÉMORISER */
-    function memoriser() {
-        alert("Les modifications sont déjà enregistrées automatiquement !");
-    }
 
     async function loadInscrits() {
         const tbody = document.getElementById("inscritsBody");
@@ -299,7 +313,7 @@
                     </div>
                 </td>
                 <td>
-                    <button class="btn-delete small-btn" onclick="deleteInscrit('${i.id}')">🗑</button>
+                    <button class="btn-text-delete" onclick="deleteInscrit('${i.id}')">Supprimer</button>
                 </td>
             `;
             tbody.appendChild(row);
