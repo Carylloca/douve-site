@@ -23,6 +23,7 @@
             font-family: "DM Sans", sans-serif;
         }
 
+        /* HEADER */
         .header {
             position: fixed;
             top: 0;
@@ -35,13 +36,17 @@
             align-items: center;
             padding: 0 20px;
             z-index: 1000;
-            justify-content: space-between;
         }
 
         .header-left {
             display: flex;
             gap: 10px;
             align-items: center;
+        }
+
+        .header-center {
+            flex: 1;
+            text-align: center;
         }
 
         .header-title {
@@ -51,6 +56,13 @@
             text-shadow: 0 0 10px black;
         }
 
+        .header-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* PAGE */
         .overlay {
             background: rgba(0, 0, 0, 0.55);
             min-height: 100vh;
@@ -138,12 +150,20 @@
 
 <!-- HEADER -->
 <div class="header">
+
     <div class="header-left">
         <a href="index.html" class="btn">🏠 Menu</a>
         <a href="compagnons.html" class="btn">📋 Liste des manifestations</a>
     </div>
 
-    <div class="header-title">Gestion des inscrits</div>
+    <div class="header-center">
+        <div class="header-title">Gestion des inscrits</div>
+    </div>
+
+    <div class="header-right">
+        <button class="btn" onclick="memoriser()">💾 Mémoriser</button>
+    </div>
+
 </div>
 
 <div class="overlay">
@@ -200,6 +220,11 @@
     let inscrits = [];
     let filtered = [];
     let sortDirection = 1;
+
+    /* MÉMORISER */
+    function memoriser() {
+        alert("Les modifications sont déjà enregistrées automatiquement !");
+    }
 
     async function loadInscrits() {
         const tbody = document.getElementById("inscritsBody");
