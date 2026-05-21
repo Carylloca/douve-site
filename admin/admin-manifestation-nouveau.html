@@ -213,6 +213,7 @@
 <script>
     requireComite();
 
+    // 🔥 Charger les compagnons (responsables = companions)
     async function loadResponsables() {
         const container = document.getElementById("responsables");
         container.innerHTML = "<p>Chargement...</p>";
@@ -244,18 +245,19 @@
 
     loadResponsables();
 
+    // 🔥 Création de la manifestation
     document.getElementById("manifestForm").addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const user = pb.authStore.model;
 
+        // 🔥 Récupérer les responsables cochés (companions)
         let responsables = Array.from(
             document.querySelectorAll("#responsables input[type='checkbox']:checked")
         ).map(cb => cb.value);
 
-        if (responsables.length === 0) {
-            responsables = [user.id];
-        }
+        // ❗ IMPORTANT : ne pas ajouter user.id (car user ∉ companions)
+        // Si aucun responsable → responsables = []
 
         const date = document.getElementById("date").value;
         const heure = document.getElementById("heure").value;
@@ -270,8 +272,8 @@
             date: dateFinale,
             date_limite: document.getElementById("date_limite").value || null,
             places_max: places,
-            created_by: user.id,
-            responsables: responsables
+            created_by: user.id,       // user = admin/comité
+            responsables: responsables // companions
         };
 
         try {
