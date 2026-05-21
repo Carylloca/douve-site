@@ -103,8 +103,10 @@
             margin: 20px 0;
             border-radius: 6px;
             color: #664d03;
-            font-size: 15px;
+            font-size: 17px;      /* 🔥 plus grand */
             gap: 15px;
+            text-align: center;   /* 🔥 centré */
+            font-weight: 600;     /* 🔥 plus lisible */
         }
 
         .warning-icon {
@@ -116,6 +118,9 @@
 
         .warning-text {
             flex: 1;
+            text-align: center;   /* 🔥 centré */
+            font-size: 17px;      /* 🔥 plus grand */
+            font-weight: 600;
         }
 
         #desc {
@@ -148,6 +153,7 @@
 
             <span id="desc"></span>
 
+            <!-- 🔥 Ce bloc reste vide, plus de message rouge -->
             <div id="limite" style="margin-bottom:10px;"></div>
 
             <label>Nombre de personnes :</label>
@@ -230,9 +236,10 @@
             if (limiteDate && new Date() > limiteDate) {
                 isClosed = true;
 
-                document.getElementById("limite").innerHTML =
-                    `<span style="color:red;font-weight:bold;">⛔ Date limite dépassée, veuillez contacter l'organisateur</span>`;
+                // ❌ On ne met plus rien ici
+                document.getElementById("limite").innerHTML = "";
 
+                // Désactivation du formulaire
                 document.getElementById("nb").disabled = true;
                 document.getElementById("btnSave").disabled = true;
                 document.getElementById("btnSave").style.background = "#777";
