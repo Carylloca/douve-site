@@ -191,7 +191,10 @@ async function loadInscrits() {
 
         if (isResponsable) {
             const btn = document.getElementById("btnAdminEdit");
-            btn.href = `../admin/admin-inscrits.html?id=${manifestationId}`;
+
+            // 🔥🔥🔥 NOUVEAU LIEN 🔥🔥🔥
+            btn.href = `modification-responsable-inscrits-details.html?id=${manifestationId}`;
+
             btn.style.display = "inline-block";
         }
 
