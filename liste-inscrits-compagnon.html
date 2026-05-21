@@ -125,7 +125,7 @@
             background: #9c1a33;
         }
 
-        /* BOUTON RETOUR (maintenant aussi bordeaux) */
+        /* BOUTON RETOUR */
         .btn-retour {
             background: #7b0f23 !important;
         }
@@ -206,28 +206,21 @@ async function loadInscrits() {
 
         const user = pb.authStore.model;
 
-// 🔥 Rôle comité = accès admin
-const isComite = (user.role === "comite" && user.collectionName === "users");
+        /* 🔥 Rôle comité = accès admin */
+        const isComite = (user.role === "comite" && user.collectionName === "users");
 
-// 🔥 Par défaut : pas responsable
-let isResponsable = false;
+        /* 🔥 Par défaut : pas responsable */
+        let isResponsable = false;
 
-// 🔥 Vérifie si l'utilisateur est dans la liste des responsables de CETTE manifestation
-if (manifest.expand?.responsables?.length > 0) {
-    isResponsable = manifest.expand.responsables.some(r => r.id === user.id);
-}
+        /* 🔥 Vérifie si l'utilisateur est responsable de CETTE manifestation */
+        if (manifest.expand?.responsables?.length > 0) {
+            isResponsable = manifest.expand.responsables.some(r => r.id === user.id);
+        }
 
-// 🔥 Le bouton n'apparaît QUE si :
-// - l'utilisateur est comité
-// - OU il est responsable de cette manifestation
-if (isComite || isResponsable) {
-    const btn = document.getElementById("btnAdminEdit");
-    btn.href = `modification-responsable-inscrits-details.html?id=${manifestationId}`;
-    btn.style.display = "inline-block";
-}
-
-        /* 🔥 Le bouton n'apparaît QUE si l'utilisateur est responsable */
-        if (isResponsable) {
+        /* 🔥 Le bouton n'apparaît QUE si :
+           - l'utilisateur est comité
+           - OU il est responsable de cette manifestation */
+        if (isComite || isResponsable) {
             const btn = document.getElementById("btnAdminEdit");
             btn.href = `modification-responsable-inscrits-details.html?id=${manifestationId}`;
             btn.style.display = "inline-block";
