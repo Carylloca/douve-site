@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modification – Inscrits (Responsable)</title>
+
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- SheetJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("img/page-manifestations.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: "DM Sans", sans-serif;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .header-title {
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+            text-shadow: 0 0 10px black;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 120px 20px 40px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px black;
+        }
+
+        #totalInscrits {
+            text-align: center;
+            color: #fff7c2;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border-radius: 6px;
+            background: #7b0f23;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #9c1a33;
+        }
+
+        .btn-delete {
+            background: #d50000 !important;
+        }
+
+        .btn-delete:hover {
+            background: #9b0000 !important;
+        }
+
+        table {
+            width: 100%;
+            max-width: 900px;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: rgba(255,255,255,0.95);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #7b0f23;
+            color: white;
+            cursor: pointer;
+        }
+
+        tr:hover {
+            background: #f2f2f2;
+        }
+
+        .inline-controls {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .small-btn {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <div class="header-left">
+        <a href="index.html" class="btn">🏠 Menu</a>
+        <a href="compagnons.html" class="btn">📋 Liste des manifestations</a>
+    </div>
+
+    <div class="header-title">Gestion des inscrits</div>
+</div>
+
+<div class="overlay">
+
+    <h1 id="manifestTitle">Liste des inscrits</h1>
+    <div id="totalInscrits"></div>
+
+    <div style="text-align:center; margin-bottom:10px;">
+        <button class="btn" onclick="exportPDF()">Export PDF</button>
+        <button class="btn" onclick="exportExcel()">Export Excel</button>
+        <button id="btnInscrire" class="btn" style="display:none;" onclick="inscrire()">📝 Je m'inscris</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th onclick="sortTable('nom')">Nom</th>
+                <th onclick="sortTable('prenom')">Prénom</th>
+                <th onclick="sortTable('email')">Email</th>
+                <th onclick="sortTable('nb_personnes')">Nb pers.</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="inscritsBody"></tbody>
+    </table>
+</div>
+
+<!-- PocketBase -->
+<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+<script src="js/auth.js"></script>
+
+<script>
+    const url = new URL(window.location.href);
+    const manifestationId = url.searchParams.get("id");
+
+    const user = pb.authStore.model;
+
+    if (!user) {
+        alert("Veuillez vous connecter.");
+        window.location.href = "index.html";
+    }
+
+    let manifestation = null;
+    let inscrits = [];
+    let filtered = [];
+    let sortDirection = 1;
+
+    async function loadInscrits() {
+        const tbody = document.getElementById("inscritsBody");
+        tbody.innerHTML = "<tr><td colspan='5'>Chargement...</td></tr>";
+
+        try {
+            manifestation = await pb.collection("manifestations").getOne(manifestationId, {
+                expand: "responsables"
+            });
+
+            // Vérification responsable
+            const responsables = manifestation.expand?.responsables || [];
+            const estResponsable = responsables.some(r => r.id === user.id);
+
+            if (!estResponsable) {
+                alert("Accès refusé : vous n'êtes pas responsable de cette manifestation.");
+                window.location.href = "compagnons.html";
+                return;
+            }
+
+            // Titre
+            const d = new Date(manifestation.date);
+            const dateAff = d.toLocaleDateString("fr-CH");
+            const heureAff = manifestation.date.split(" ")[1].slice(0,5);
+
+            document.getElementById("manifestTitle").textContent =
+                `Inscrits – ${manifestation.title} le ${dateAff} à ${heureAff}`;
+
+            // Charger les inscrits
+            inscrits = await pb.collection("inscriptions").getFullList({
+                filter: `manifestation = "${manifestationId}"`,
+                expand: "companion"
+            });
+
+            filtered = inscrits;
+
+            updateTotal();
+            displayTable();
+
+            // Vérifier si l'utilisateur est inscrit
+            const dejaInscrit = inscrits.some(i => i.companion === user.id);
+            if (!dejaInscrit) {
+                document.getElementById("btnInscrire").style.display = "inline-block";
+            }
+
+        } catch (err) {
+            console.error(err);
+            tbody.innerHTML = "<tr><td colspan='5'>Erreur de chargement</td></tr>";
+        }
+    }
+
+    function updateTotal() {
+        const totalPersonnes = filtered.reduce((sum, i) => sum + (i.nb_personnes || 1), 0);
+
+        document.getElementById("totalInscrits").innerHTML =
+            `Total inscrits : ${filtered.length}<br>
+             Total personnes : <strong>${totalPersonnes}</strong>`;
+    }
+
+    function displayTable() {
+        const tbody = document.getElementById("inscritsBody");
+        tbody.innerHTML = "";
+
+        filtered.forEach(i => {
+            const c = i.expand?.companion;
+
+            const estMoi = c?.id === user.id;
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${c?.nom || "-"}</td>
+                <td>${c?.prenom || "-"}</td>
+                <td>${c?.email || "-"}</td>
+                <td>
+                    ${estMoi ? `
+                        <div class="inline-controls">
+                            <button class="btn small-btn" onclick="modifierNb('${i.id}', -1)">–</button>
+                            <strong>${i.nb_personnes || 1}</strong>
+                            <button class="btn small-btn" onclick="modifierNb('${i.id}', 1)">+</button>
+                        </div>
+                    ` : `${i.nb_personnes || 1}`}
+                </td>
+                <td>
+                    ${estMoi ? `<button class="btn-delete small-btn" onclick="deleteInscrit('${i.id}')">🗑</button>` : ""}
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function sortTable(field) {
+        sortDirection *= -1;
+
+        filtered.sort((a, b) => {
+            const ca = a.expand?.companion;
+            const cb = b.expand?.companion;
+
+            if (field === "nb_personnes") {
+                return ((a.nb_personnes || 1) - (b.nb_personnes || 1)) * sortDirection;
+            }
+
+            return (ca?.[field] || "").localeCompare(cb?.[field] || "") * sortDirection;
+        });
+
+        displayTable();
+    }
+
+    async function modifierNb(id, delta) {
+        const inscription = inscrits.find(i => i.id === id);
+        let nb = inscription.nb_personnes || 1;
+
+        nb += delta;
+        if (nb < 1) nb = 1;
+
+        try {
+            await pb.collection("inscriptions").update(id, { nb_personnes: nb });
+            loadInscrits();
+        } catch (err) {
+            alert("Erreur lors de la modification.");
+            console.error(err);
+        }
+    }
+
+    async function deleteInscrit(id) {
+        if (!confirm("Voulez-vous vraiment vous désinscrire ?")) return;
+
+        try {
+            await pb.collection("inscriptions").delete(id);
+            loadInscrits();
+        } catch (err) {
+            alert("Erreur lors de la suppression.");
+            console.error(err);
+        }
+    }
+
+    async function inscrire() {
+        try {
+            await pb.collection("inscriptions").create({
+                manifestation: manifestationId,
+                companion: user.id,
+                nb_personnes: 1
+            });
+            loadInscrits();
+        } catch (err) {
+            alert("Erreur lors de l'inscription.");
+            console.error(err);
+        }
+    }
+
+    function formatFileName() {
+        const cleanTitle = manifestation.title
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-zA-Z0-9]/g, "_");
+
+        return `${cleanTitle}_${manifestation.date}`;
+    }
+
+    function exportPDF() {
+        if (filtered.length === 0) return;
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let y = 10;
+
+        doc.text(`Manifestation : ${manifestation.title}`, 10, y); y += 8;
+        doc.text(`Date : ${manifestation.date}`, 10, y); y += 12;
+
+        filtered.forEach(i => {
+            const c = i.expand?.companion;
+            doc.text(
+                `${c?.nom || "-"} ${c?.prenom || "-"} – ${c?.email || "-"} – ${i.nb_personnes || 1} pers.`,
+                10,
+                y
+            );
+            y += 8;
+        });
+
+        doc.save(formatFileName() + ".pdf");
+    }
+
+    function exportExcel() {
+        if (filtered.length === 0) return;
+
+        const data = filtered.map(i => {
+            const c = i.expand?.companion;
+            return {
+                Nom: c?.nom || "-",
+                Prénom: c?.prenom || "-",
+                Email: c?.email || "-",
+                "Nb personnes": i.nb_personnes || 1
+            };
+        });
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Inscrits");
+
+        XLSX.writeFile(wb, formatFileName() + ".xlsx");
+    }
+
+    loadInscrits();
+</script>
+
+</body>
+</html>
