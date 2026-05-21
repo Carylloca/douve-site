@@ -163,18 +163,27 @@
 
             const user = pb.authStore.model;
 
-            // 1. Admins (collection users)
-            let isAdmin = (user.role === "admin" || user.role === "comite");
+            // Normalisation email
+            const userEmail = (user.email || "").trim().toLowerCase();
 
-            // 2. Responsables (collection companions)
+            // Vérification responsable
             let isResponsable = false;
 
             if (manifest.expand?.responsables?.length > 0) {
-                isResponsable = manifest.expand.responsables.some(r => r.email === user.email);
+                isResponsable = manifest.expand.responsables.some(r => {
+                    const rEmail = (
+                        r.email ||
+                        r.email_public ||
+                        r.email_prof ||
+                        ""
+                    ).trim().toLowerCase();
+
+                    return rEmail === userEmail;
+                });
             }
 
-            // 3. Condition finale
-            if (isAdmin || isResponsable) {
+            // Affichage du bouton
+            if (isResponsable) {
                 const btn = document.getElementById("btnAdminEdit");
                 btn.href = `../admin/admin-inscrits.html?id=${manifestationId}`;
                 btn.style.display = "inline-block";
