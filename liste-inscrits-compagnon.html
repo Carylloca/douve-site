@@ -21,17 +21,45 @@
             font-family: Arial, sans-serif;
         }
 
+        /* HEADER */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+
+        .header-left {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-center {
+            flex: 1;
+            text-align: center;
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+            text-shadow: 0 0 10px black;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* PAGE */
         .overlay {
             background: rgba(0, 0, 0, 0.55);
             min-height: 100vh;
-            padding: 40px 20px;
-        }
-
-        h1 {
-            text-align: center;
-            color: white;
-            margin-bottom: 20px;
-            text-shadow: 0 0 10px black;
+            padding: 120px 20px 40px 20px;
         }
 
         .card {
@@ -76,7 +104,6 @@
         th {
             background: #7b0f23;
             color: white;
-            cursor: pointer;
         }
 
         .btn {
@@ -93,12 +120,6 @@
             background: #005fcc;
         }
 
-        .btn-export {
-            background: #7b0f23;
-            margin-right: 10px;
-        }
-
-        /* NOUVELLE COULEUR DU BOUTON RETOUR */
         .btn-retour {
             background: #444 !important;
         }
@@ -106,21 +127,28 @@
         .btn-retour:hover {
             background: #666 !important;
         }
-
-        #search {
-            width: 100%;
-            padding: 8px;
-            margin-top: 10px;
-            border-radius: 6px;
-            border: 1px solid #aaa;
-        }
     </style>
 </head>
 
 <body>
-<div class="overlay">
 
-    <h1>Liste des inscrits</h1>
+<!-- HEADER -->
+<div class="header">
+    <div class="header-left">
+        <a href="compagnons.html" class="btn btn-retour">← Menu</a>
+    </div>
+
+    <div class="header-center">
+        Liste des inscrits
+    </div>
+
+    <div class="header-right">
+        <button class="btn" onclick="exportPDF()">PDF</button>
+        <button class="btn" onclick="exportExcel()">Excel</button>
+    </div>
+</div>
+
+<div class="overlay">
 
     <div class="card">
 
@@ -129,25 +157,21 @@
         <p><strong>Manifestation :</strong> <span id="manifestTitle">Chargement...</span></p>
         <p><strong>Total inscrits :</strong> <span id="totalInscrits">0</span></p>
 
-        <input type="text" id="search" placeholder="Rechercher un nom ou prénom...">
-
-        <button class="btn btn-export" onclick="exportPDF()">Export PDF</button>
-        <button class="btn btn-export" onclick="exportExcel()">Export Excel</button>
-
         <table>
             <thead>
                 <tr>
-                    <th onclick="sortTable(0)">Nom ▲▼</th>
-                    <th onclick="sortTable(1)">Prénom ▲▼</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Téléphone</th>
                     <th>Email</th>
+                    <th>Nb pers.</th>
                 </tr>
             </thead>
             <tbody id="tableInscrits">
-                <tr><td colspan="3">Chargement...</td></tr>
+                <tr><td colspan="5">Chargement...</td></tr>
             </tbody>
         </table>
 
-        <!-- 🔥 BOUTON RETOUR MODIFIÉ 🔥 -->
         <a href="compagnons.html" class="btn btn-retour">← Retour</a>
 
     </div>
@@ -167,21 +191,15 @@ const manifestationId = urlParams.get("id");
 let inscritsData = [];
 
 async function loadInscrits() {
-    console.log("loadInscrits() démarre");
-
     try {
         const manifest = await pb.collection("manifestations").getOne(manifestationId, {
             expand: "responsables"
         });
 
-        console.log("Manifest chargé :", manifest);
-
         document.getElementById("manifestTitle").textContent = manifest.title;
 
         const user = pb.authStore.model;
         const userEmail = (user.email || "").trim().toLowerCase();
-
-        console.log("USER EMAIL =", userEmail);
 
         let isResponsable = false;
 
@@ -197,8 +215,6 @@ async function loadInscrits() {
                 return rEmail === userEmail;
             });
         }
-
-        console.log("isResponsable =", isResponsable);
 
         if (isResponsable) {
             const btn = document.getElementById("btnAdminEdit");
@@ -226,7 +242,7 @@ function displayTable(list) {
     tbody.innerHTML = "";
 
     if (list.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='3'>Aucun inscrit.</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='5'>Aucun inscrit.</td></tr>";
         return;
     }
 
@@ -237,38 +253,12 @@ function displayTable(list) {
             <tr>
                 <td>${c?.nom || "-"}</td>
                 <td>${c?.prenom || "-"}</td>
+                <td>${c?.telephone || "-"}</td>
                 <td>${c?.email_public || "-"}</td>
+                <td>${i.nb_personnes || 1}</td>
             </tr>
         `;
     });
-}
-
-document.getElementById("search").addEventListener("input", function () {
-    const q = this.value.toLowerCase();
-
-    const filtered = inscritsData.filter(i => {
-        const c = i.expand?.companion;
-        return (
-            c?.nom?.toLowerCase().includes(q) ||
-            c?.prenom?.toLowerCase().includes(q)
-        );
-    });
-
-    displayTable(filtered);
-});
-
-function sortTable(col) {
-    inscritsData.sort((a, b) => {
-        const ca = a.expand?.companion;
-        const cb = b.expand?.companion;
-
-        const va = col === 0 ? ca?.nom : ca?.prenom;
-        const vb = col === 1 ? cb?.nom : cb?.prenom;
-
-        return va.localeCompare(vb);
-    });
-
-    displayTable(inscritsData);
 }
 
 function exportPDF() {
@@ -280,7 +270,11 @@ function exportPDF() {
     let y = 20;
     inscritsData.forEach(i => {
         const c = i.expand?.companion;
-        doc.text(`${c?.nom} ${c?.prenom} - ${c?.email_public}`, 10, y);
+        doc.text(
+            `${c?.nom} ${c?.prenom} - ${c?.telephone} - ${c?.email_public} - ${i.nb_personnes} pers.`,
+            10,
+            y
+        );
         y += 8;
     });
 
@@ -293,7 +287,9 @@ function exportExcel() {
         return {
             Nom: c?.nom,
             Prénom: c?.prenom,
-            Email: c?.email_public
+            Téléphone: c?.telephone,
+            Email: c?.email_public,
+            "Nb personnes": i.nb_personnes
         };
     });
 
