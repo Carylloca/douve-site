@@ -119,11 +119,6 @@
         .btn-action:hover {
             background: #9c1a33;
         }
-
-        .btn-disabled {
-            background: #aaa !important;
-            cursor: not-allowed;
-        }
     </style>
 </head>
 
@@ -202,6 +197,8 @@
                     ? limite.toLocaleDateString("fr-CH")
                     : "Non définie";
 
+                const limiteDepassee = (!isNaN(limite.getTime()) && now > limite);
+
                 let responsable = "Non défini";
                 if (m.expand?.responsables?.length > 0) {
                     responsable = m.expand.responsables
@@ -224,13 +221,54 @@
                     if (estInscrit) {
                         badge = `<div class="badge">INSCRIT</div>`;
                         status = `<div class="status" style="color:green;">✔ Inscrit (${inscription.nb_personnes} pers.)</div>`;
-                        actionBtn = `
-                            <button class="btn-action" onclick="goTo('${m.id}', '${inscription.id}')">Modifier mon inscription</button>
-                            <button class="btn-action" style="background:#444;" onclick="desinscrire('${inscription.id}')">Se désinscrire</button>
-                        `;
+
+                        if (limiteDepassee) {
+                            actionBtn = `
+                                <div style="
+                                    margin-top:15px;
+                                    padding:12px;
+                                    background:#fff3cd;
+                                    border-left:6px solid #ffca2c;
+                                    border-radius:6px;
+                                    color:#664d03;
+                                    font-weight:bold;
+                                    text-align:center;
+                                    font-size:16px;
+                                ">
+                                    ⛔ Date limite dépassée.<br>
+                                    En cas de modification, veuillez contacter l'organisateur.
+                                </div>
+                            `;
+                        } else {
+                            actionBtn = `
+                                <button class="btn-action" onclick="goTo('${m.id}', '${inscription.id}')">Modifier mon inscription</button>
+                                <button class="btn-action" style="background:#444;" onclick="desinscrire('${inscription.id}')">Se désinscrire</button>
+                            `;
+                        }
+
                     } else {
                         status = `<div class="status" style="color:#7b0f23;">✖ Non inscrit</div>`;
-                        actionBtn = `<button class="btn-action" onclick="goTo('${m.id}', '')">S’inscrire</button>`;
+
+                        if (!limiteDepassee) {
+                            actionBtn = `<button class="btn-action" onclick="goTo('${m.id}', '')">S’inscrire</button>`;
+                        } else {
+                            actionBtn = `
+                                <div style="
+                                    margin-top:15px;
+                                    padding:12px;
+                                    background:#fff3cd;
+                                    border-left:6px solid #ffca2c;
+                                    border-radius:6px;
+                                    color:#664d03;
+                                    font-weight:bold;
+                                    text-align:center;
+                                    font-size:16px;
+                                ">
+                                    ⛔ Date limite dépassée.<br>
+                                    Inscription impossible.
+                                </div>
+                            `;
+                        }
                     }
                 }
 
