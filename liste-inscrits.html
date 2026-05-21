@@ -7,10 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="../favicon.png">
 
-    <!-- jsPDF pour PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-    <!-- SheetJS pour Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
@@ -47,7 +44,6 @@
             position: relative;
         }
 
-        /* 🔥 Bouton responsable */
         #btnAdminEdit {
             position: absolute;
             top: 15px;
@@ -119,7 +115,6 @@
 
     <div class="card">
 
-        <!-- 🔥 Bouton admin visible uniquement pour les responsables -->
         <a id="btnAdminEdit">Gérer les inscriptions</a>
 
         <p><strong>Manifestation :</strong> <span id="manifestTitle">Chargement...</span></p>
@@ -160,16 +155,14 @@
 
     async function loadInscrits() {
         try {
-            // 🔥 Charger la manifestation + responsables + companions
             const manifest = await pb.collection("manifestations").getOne(manifestationId, {
-                expand: "responsables,companion"
+                expand: "responsables"
             });
 
             document.getElementById("manifestTitle").textContent = manifest.title;
 
-            // 🔥 Récupérer le compagnon lié au user connecté
             const user = pb.authStore.model;
-            const companionId = user.companion; // 🔥 clé magique
+            const companionId = user.companion;
 
             let isResponsable = false;
 
@@ -177,14 +170,12 @@
                 isResponsable = manifest.expand.responsables.some(r => r.id === companionId);
             }
 
-            // 🔥 Si responsable → afficher bouton admin
             if (isResponsable) {
                 const btn = document.getElementById("btnAdminEdit");
                 btn.href = `../admin/admin-inscrits.html?id=${manifestationId}`;
                 btn.style.display = "inline-block";
             }
 
-            // 🔥 Charger les inscrits
             const inscrits = await pb.collection("inscriptions").getFullList({
                 filter: `manifestation = "${manifestationId}"`,
                 expand: "companion"
@@ -224,7 +215,6 @@
         });
     }
 
-    /* 🔍 Recherche en direct */
     document.getElementById("search").addEventListener("input", function () {
         const q = this.value.toLowerCase();
 
@@ -239,7 +229,6 @@
         displayTable(filtered);
     });
 
-    /* 🔽 Tri par colonne */
     function sortTable(col) {
         inscritsData.sort((a, b) => {
             const ca = a.expand?.companion;
@@ -254,7 +243,6 @@
         displayTable(inscritsData);
     }
 
-    /* 📄 Export PDF */
     function exportPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
@@ -271,7 +259,6 @@
         doc.save("liste-inscrits.pdf");
     }
 
-    /* 📊 Export Excel */
     function exportExcel() {
         const rows = inscritsData.map(i => {
             const c = i.expand?.companion;
