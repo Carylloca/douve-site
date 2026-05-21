@@ -176,7 +176,7 @@
                 document.getElementById("responsables").textContent = "Non défini";
             }
 
-            // Inscriptions
+            // Inscriptions 🔥 (champ relation = companion)
             const inscrits = await pb.collection("inscriptions").getFullList({
                 filter: `manifestation = "${manifestId}"`,
                 expand: "companion"
@@ -190,7 +190,7 @@
             let totalPers = 0;
 
             inscrits.forEach(i => {
-                const c = i.expand?.companion;
+                const c = i.expand?.companion; // 🔥 champ correct
                 const nb = i.nb_personnes || 1;
                 totalPers += nb;
 
@@ -273,6 +273,3 @@
 
     loadInscrits();
 </script>
-
-</body>
-</html>
