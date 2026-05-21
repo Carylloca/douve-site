@@ -98,6 +98,15 @@
             margin-right: 10px;
         }
 
+        /* NOUVELLE COULEUR DU BOUTON RETOUR */
+        .btn-retour {
+            background: #444 !important;
+        }
+
+        .btn-retour:hover {
+            background: #666 !important;
+        }
+
         #search {
             width: 100%;
             padding: 8px;
@@ -138,7 +147,9 @@
             </tbody>
         </table>
 
-        <a href="admin-manifestations.html" class="btn">← Retour</a>
+        <!-- 🔥 BOUTON RETOUR MODIFIÉ 🔥 -->
+        <a href="compagnons.html" class="btn btn-retour">← Retour</a>
+
     </div>
 
 </div>
@@ -146,7 +157,7 @@
 <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
 <script>
-console.log("JS CHARGÉ");  // TEST OBLIGATOIRE
+console.log("JS CHARGÉ");
 
 const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
@@ -191,10 +202,7 @@ async function loadInscrits() {
 
         if (isResponsable) {
             const btn = document.getElementById("btnAdminEdit");
-
-            // 🔥🔥🔥 NOUVEAU LIEN 🔥🔥🔥
             btn.href = `modification-responsable-inscrits-details.html?id=${manifestationId}`;
-
             btn.style.display = "inline-block";
         }
 
