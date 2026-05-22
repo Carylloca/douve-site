@@ -11,7 +11,7 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            background: url("../img/page-admin-stand-poste-nouveau.jpg") no-repeat center center fixed;
+            background: url("../img/page-admin-evenement-public-poste-nouveau.jpg") no-repeat center center fixed;
             background-size: cover;
         }
 
@@ -98,7 +98,7 @@
 
 <header>
     <div class="left-buttons">
-        <a href="admin-postes.html" class="btn">Retour</a>
+        <a href="admin-evenement-public-postes.html" class="btn">Retour</a>
     </div>
 
     <h2>Nouveau poste</h2>
@@ -116,7 +116,7 @@
     <label>Description :</label>
     <textarea id="description"></textarea>
 
-    <label>Manifestation associée :</label>
+    <label>Événement public associé :</label>
     <select id="manifestation"></select>
 
     <button class="btn" id="btnSave" style="width:100%; margin-top:10px;">Créer le poste</button>
@@ -127,7 +127,7 @@
 <script>
 const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-// Charger les manifestations
+// Charger les événements publics (collection manifestations)
 async function loadManifestations() {
     const list = await pb.collection("manifestations").getFullList({ sort: "date_debut" });
     const sel = document.getElementById("manifestation");
@@ -151,7 +151,7 @@ document.getElementById("btnSave").onclick = async function () {
         });
 
         alert("Poste créé !");
-        window.location.href = "admin-postes.html";
+        window.location.href = "admin-evenement-public-postes.html";
 
     } catch (err) {
         alert("Erreur lors de la création.");
