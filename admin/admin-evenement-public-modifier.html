@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Modifier un événement public – Admin</title>
+    <title>Nouvel événement public – Admin</title>
 
     <link rel="icon" type="image/png" href="../favicon.png">
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
@@ -11,7 +11,7 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            background: url("../img/page-admin-evenement-public-modifier.jpg") no-repeat center center fixed;
+            background: url("../img/page-admin-evenement-public-nouveau.jpg") no-repeat center center fixed;
             background-size: cover;
         }
 
@@ -101,16 +101,14 @@
         <a href="admin-evenement-public.html" class="btn">Retour</a>
     </div>
 
-    <h2>Modifier un événement public</h2>
+    <h2>Nouvel événement public</h2>
 
-    <div class="left-buttons">
-        <button class="btn" id="btnDelete" style="background:#444;">Supprimer</button>
-    </div>
+    <div class="left-buttons"></div>
 </header>
 
 <div class="panel">
 
-    <h3>Informations de l’événement public</h3>
+    <h3>Créer un nouvel événement public</h3>
 
     <label>Nom de l’événement :</label>
     <input type="text" id="nom">
@@ -127,7 +125,7 @@
     <label>Date de fin :</label>
     <input type="date" id="date_fin">
 
-    <button class="btn" id="btnSave" style="width:100%; margin-top:10px;">Enregistrer les modifications</button>
+    <button class="btn" id="btnSave" style="width:100%; margin-top:10px;">Créer l’événement public</button>
 
 </div>
 </div>
@@ -135,17 +133,8 @@
 <script>
 const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-// Récupération de l'ID dans l'URL
-const urlParams = new URLSearchParams(window.location.search);
-const eventId = urlParams.get("id");
-
-if (!eventId) {
-    alert("Aucun événement sélectionné.");
-    window.location.href = "admin-evenement-public.html";
-}
-
 // Charger les responsables (compagnons)
-async function loadResponsables(selectedId = null) {
+async function loadResponsables() {
     const list = await pb.collection("compagnons").getFullList({ sort: "nom" });
     const sel = document.getElementById("responsable");
     sel.innerHTML = "";
@@ -154,33 +143,14 @@ async function loadResponsables(selectedId = null) {
         const opt = document.createElement("option");
         opt.value = c.id;
         opt.textContent = c.nom;
-        if (c.id === selectedId) opt.selected = true;
         sel.appendChild(opt);
     });
 }
 
-// Charger les données de l’événement
-async function loadEvenement() {
-    try {
-        const ev = await pb.collection("manifestations").getOne(eventId);
-
-        document.getElementById("nom").value = ev.nom || "";
-        document.getElementById("description").value = ev.description || "";
-        document.getElementById("date_debut").value = ev.date_debut || "";
-        document.getElementById("date_fin").value = ev.date_fin || "";
-
-        await loadResponsables(ev.responsable);
-
-    } catch (err) {
-        alert("Erreur lors du chargement.");
-        console.error(err);
-    }
-}
-
-// Sauvegarder les modifications
+// Sauvegarder le nouvel événement public
 document.getElementById("btnSave").onclick = async function () {
     try {
-        await pb.collection("manifestations").update(eventId, {
+        await pb.collection("manifestations").create({
             nom: document.getElementById("nom").value,
             description: document.getElementById("description").value,
             responsable: document.getElementById("responsable").value,
@@ -188,31 +158,16 @@ document.getElementById("btnSave").onclick = async function () {
             date_fin: document.getElementById("date_fin").value
         });
 
-        alert("Modifications enregistrées !");
+        alert("Événement public créé !");
         window.location.href = "admin-evenement-public.html";
 
     } catch (err) {
-        alert("Erreur lors de l’enregistrement.");
+        alert("Erreur lors de la création.");
         console.error(err);
     }
 };
 
-// Supprimer l’événement
-document.getElementById("btnDelete").onclick = async function () {
-    if (!confirm("Supprimer cet événement public ?")) return;
-
-    try {
-        await pb.collection("manifestations").delete(eventId);
-        alert("Événement supprimé.");
-        window.location.href = "admin-evenement-public.html";
-
-    } catch (err) {
-        alert("Erreur lors de la suppression.");
-        console.error(err);
-    }
-};
-
-loadEvenement();
+loadResponsables();
 </script>
 
 </body>
