@@ -117,8 +117,8 @@
     <table>
         <thead>
             <tr>
-                <th>Nom</th>
-                <th>Responsable</th>
+                <th>Titre</th>
+                <th>Responsables</th>
                 <th>Date</th>
                 <th>Description</th>
                 <th style="width:150px;">Actions</th>
@@ -135,7 +135,7 @@ const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
 async function loadEvenements() {
     try {
-        const evenements = await pb.collection("manifestations").getFullList({
+        const evenements = await pb.collection("planning_events").getFullList({
             expand: "responsable",
             sort: "date_debut"
         });
@@ -146,12 +146,21 @@ async function loadEvenements() {
         evenements.forEach(ev => {
             const tr = document.createElement("tr");
 
-            const responsable = ev.expand?.responsable?.nom || "—";
-            const date = ev.date_debut ? new Date(ev.date_debut).toLocaleDateString("fr-CH") : "—";
+            // Responsables multiples
+            let responsables = "—";
+            if (Array.isArray(ev.expand?.responsable)) {
+                responsables = ev.expand.responsable
+                    .map(r => r.nom + " " + r.prenom)
+                    .join(", ");
+            }
+
+            const date = ev.date_debut
+                ? new Date(ev.date_debut).toLocaleDateString("fr-CH")
+                : "—";
 
             tr.innerHTML = `
-                <td>${ev.nom}</td>
-                <td>${responsable}</td>
+                <td>${ev.titre}</td>
+                <td>${responsables}</td>
                 <td>${date}</td>
                 <td>${ev.description || ""}</td>
                 <td class="actions">
@@ -177,7 +186,7 @@ async function deleteEvenement(id) {
     if (!confirm("Supprimer cet événement public ?")) return;
 
     try {
-        await pb.collection("manifestations").delete(id);
+        await pb.collection("planning_events").delete(id);
         loadEvenements();
     } catch (err) {
         alert("Erreur lors de la suppression.");
