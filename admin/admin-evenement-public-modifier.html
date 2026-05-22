@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Modifier un stand – Admin</title>
+    <title>Modifier un événement public – Admin</title>
 
     <link rel="icon" type="image/png" href="../favicon.png">
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
@@ -98,10 +98,10 @@
 
 <header>
     <div class="left-buttons">
-        <a href="admin-stands.html" class="btn">Retour</a>
+        <a href="admin-evenement-public.html" class="btn">Retour</a>
     </div>
 
-    <h2>Modifier un stand</h2>
+    <h2>Modifier un événement public</h2>
 
     <div class="left-buttons">
         <button class="btn" id="btnDelete" style="background:#444;">Supprimer</button>
@@ -110,9 +110,9 @@
 
 <div class="panel">
 
-    <h3>Informations du stand</h3>
+    <h3>Informations de l’événement public</h3>
 
-    <label>Nom du stand :</label>
+    <label>Nom de l’événement :</label>
     <input type="text" id="nom">
 
     <label>Responsable :</label>
@@ -121,8 +121,11 @@
     <label>Description :</label>
     <textarea id="description"></textarea>
 
-    <label>Manifestation associée :</label>
-    <select id="manifestation"></select>
+    <label>Date de début :</label>
+    <input type="date" id="date_debut">
+
+    <label>Date de fin :</label>
+    <input type="date" id="date_fin">
 
     <button class="btn" id="btnSave" style="width:100%; margin-top:10px;">Enregistrer les modifications</button>
 
@@ -134,11 +137,11 @@ const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
 // Récupération de l'ID dans l'URL
 const urlParams = new URLSearchParams(window.location.search);
-const standId = urlParams.get("id");
+const eventId = urlParams.get("id");
 
-if (!standId) {
-    alert("Aucun stand sélectionné.");
-    window.location.href = "admin-stands.html";
+if (!eventId) {
+    alert("Aucun événement sélectionné.");
+    window.location.href = "admin-evenement-public.html";
 }
 
 // Charger les responsables (compagnons)
@@ -156,31 +159,17 @@ async function loadResponsables(selectedId = null) {
     });
 }
 
-// Charger les manifestations
-async function loadManifestations(selectedId = null) {
-    const list = await pb.collection("manifestations").getFullList({ sort: "date_debut" });
-    const sel = document.getElementById("manifestation");
-    sel.innerHTML = "";
-
-    list.forEach(m => {
-        const opt = document.createElement("option");
-        opt.value = m.id;
-        opt.textContent = m.nom;
-        if (m.id === selectedId) opt.selected = true;
-        sel.appendChild(opt);
-    });
-}
-
-// Charger les données du stand
-async function loadStand() {
+// Charger les données de l’événement
+async function loadEvenement() {
     try {
-        const s = await pb.collection("stands").getOne(standId);
+        const ev = await pb.collection("manifestations").getOne(eventId);
 
-        document.getElementById("nom").value = s.nom || "";
-        document.getElementById("description").value = s.description || "";
+        document.getElementById("nom").value = ev.nom || "";
+        document.getElementById("description").value = ev.description || "";
+        document.getElementById("date_debut").value = ev.date_debut || "";
+        document.getElementById("date_fin").value = ev.date_fin || "";
 
-        await loadResponsables(s.responsable);
-        await loadManifestations(s.manifestation);
+        await loadResponsables(ev.responsable);
 
     } catch (err) {
         alert("Erreur lors du chargement.");
@@ -191,15 +180,16 @@ async function loadStand() {
 // Sauvegarder les modifications
 document.getElementById("btnSave").onclick = async function () {
     try {
-        await pb.collection("stands").update(standId, {
+        await pb.collection("manifestations").update(eventId, {
             nom: document.getElementById("nom").value,
             description: document.getElementById("description").value,
             responsable: document.getElementById("responsable").value,
-            manifestation: document.getElementById("manifestation").value
+            date_debut: document.getElementById("date_debut").value,
+            date_fin: document.getElementById("date_fin").value
         });
 
         alert("Modifications enregistrées !");
-        window.location.href = "admin-stands.html";
+        window.location.href = "admin-evenement-public.html";
 
     } catch (err) {
         alert("Erreur lors de l’enregistrement.");
@@ -207,14 +197,14 @@ document.getElementById("btnSave").onclick = async function () {
     }
 };
 
-// Supprimer le stand
+// Supprimer l’événement
 document.getElementById("btnDelete").onclick = async function () {
-    if (!confirm("Supprimer ce stand ?")) return;
+    if (!confirm("Supprimer cet événement public ?")) return;
 
     try {
-        await pb.collection("stands").delete(standId);
-        alert("Stand supprimé.");
-        window.location.href = "admin-stands.html";
+        await pb.collection("manifestations").delete(eventId);
+        alert("Événement supprimé.");
+        window.location.href = "admin-evenement-public.html";
 
     } catch (err) {
         alert("Erreur lors de la suppression.");
@@ -222,7 +212,7 @@ document.getElementById("btnDelete").onclick = async function () {
     }
 };
 
-loadStand();
+loadEvenement();
 </script>
 
 </body>
