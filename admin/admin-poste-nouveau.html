@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Nouveau poste – Admin</title>
+
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: url("../img/page-admin-poste-nouveau.jpg") no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        header {
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        }
+
+        .left-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: #7A0010;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #5A000C;
+        }
+
+        h2 {
+            text-align: center;
+            color: white;
+            margin: 0;
+            text-shadow: 0 0 10px black;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 30px 0;
+        }
+
+        .panel {
+            width: 600px;
+            margin: 20px auto;
+            background: rgba(255,255,255,0.92);
+            padding: 25px;
+            border-radius: 12px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="overlay">
+
+<header>
+    <div class="left-buttons">
+        <a href="admin-postes.html" class="btn">Retour</a>
+    </div>
+
+    <h2>Nouveau poste</h2>
+
+    <div class="left-buttons"></div>
+</header>
+
+<div class="panel">
+
+    <h3>Créer un nouveau poste</h3>
+
+    <label>Nom du poste :</label>
+    <input type="text" id="nom">
+
+    <label>Description :</label>
+    <textarea id="description"></textarea>
+
+    <label>Manifestation associée :</label>
+    <select id="manifestation"></select>
+
+    <button class="btn" id="btnSave" style="width:100%; margin-top:10px;">Créer le poste</button>
+
+</div>
+</div>
+
+<script>
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+// Charger les manifestations
+async function loadManifestations() {
+    const list = await pb.collection("manifestations").getFullList({ sort: "date_debut" });
+    const sel = document.getElementById("manifestation");
+    sel.innerHTML = "";
+
+    list.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m.id;
+        opt.textContent = m.nom;
+        sel.appendChild(opt);
+    });
+}
+
+// Sauvegarder le nouveau poste
+document.getElementById("btnSave").onclick = async function () {
+    try {
+        await pb.collection("postes").create({
+            nom: document.getElementById("nom").value,
+            description: document.getElementById("description").value,
+            manifestation: document.getElementById("manifestation").value
+        });
+
+        alert("Poste créé !");
+        window.location.href = "admin-postes.html";
+
+    } catch (err) {
+        alert("Erreur lors de la création.");
+        console.error(err);
+    }
+};
+
+loadManifestations();
+</script>
+
+</body>
+</html>
