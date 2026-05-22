@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Événements publics – Dashboard Admin</title>
+
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: url("../img/page-admin-evenement-public-dashboard.jpg") no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .overlay {
+            background: rgba(0,0,0,0.55);
+            min-height: 100vh;
+            padding: 30px 0;
+        }
+
+        header {
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            margin: 0;
+            text-shadow: 0 0 10px black;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 18px;
+            background: #7A0010;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #5A000C;
+        }
+
+        .panel {
+            width: 95%;
+            max-width: 1200px;
+            margin: 25px auto;
+            background: rgba(255,255,255,0.92);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #7A0010;
+        }
+
+        .event-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .event-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .event-info {
+            color: #444;
+            margin-bottom: 10px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="overlay">
+
+<header>
+    <a href="admin-menu.html" class="btn">Menu admin</a>
+    <h1>Événements publics – Dashboard</h1>
+    <a href="admin-evenement-public-nouveau.html" class="btn">+ Nouvel événement public</a>
+</header>
+
+<div class="panel">
+    <h2>Événements publics à venir</h2>
+    <div id="evenementsAvenir"></div>
+</div>
+
+<div class="panel">
+    <h2>Événements publics passés</h2>
+    <div id="evenementsPasses"></div>
+</div>
+
+</div>
+
+<script>
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+function formatDate(d) {
+    if (!d) return "—";
+    return new Date(d).toLocaleDateString("fr-CH");
+}
+
+async function loadDashboard() {
+    const events = await pb.collection("manifestations").getFullList({
+        sort: "date_debut"
+    });
+
+    const now = new Date().toISOString().split("T")[0];
+
+    const avenir = document.getElementById("evenementsAvenir");
+    const passes = document.getElementById("evenementsPasses");
+
+    avenir.innerHTML = "";
+    passes.innerHTML = "";
+
+    events.forEach(ev => {
+        const card = document.createElement("div");
+        card.className = "event-card";
+
+        card.innerHTML = `
+            <div class="event-title">${ev.nom}</div>
+            <div class="event-info">
+                <strong>Responsable :</strong> ${ev.responsable || "—"}<br>
+                <strong>Du :</strong> ${formatDate(ev.date_debut)}  
+                <strong>au :</strong> ${formatDate(ev.date_fin)}<br>
+                <strong>Description :</strong> ${ev.description || "—"}
+            </div>
+
+            <div class="actions">
+                <a class="btn btn-small" href="admin-evenement-public-modifier.html?id=${ev.id}">Modifier</a>
+                <a class="btn btn-small" href="admin-stand-postes.html?event=${ev.id}">Postes</a>
+                <a class="btn btn-small" href="admin-stand-planning.html?event=${ev.id}">Planning</a>
+            </div>
+        `;
+
+        if (ev.date_fin >= now) {
+            avenir.appendChild(card);
+        } else {
+            passes.appendChild(card);
+        }
+    });
+}
+
+loadDashboard();
+</script>
+
+</body>
+</html>
