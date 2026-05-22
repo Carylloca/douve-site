@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Gestion des stands – Admin</title>
+    <title>Gestion des événements publics – Admin</title>
 
     <link rel="icon" type="image/png" href="../favicon.png">
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
@@ -103,28 +103,28 @@
         <a href="admin-menu.html" class="btn">Menu admin</a>
     </div>
 
-    <h2>Gestion des stands</h2>
+    <h2>Gestion des événements publics</h2>
 
     <div class="left-buttons">
-        <a href="admin-stand-nouveau.html" class="btn">+ Nouveau stand</a>
+        <a href="admin-evenement-public-nouveau.html" class="btn">+ Nouvel événement public</a>
     </div>
 </header>
 
 <div class="panel">
 
-    <h3>Liste des stands</h3>
+    <h3>Liste des événements publics</h3>
 
     <table>
         <thead>
             <tr>
                 <th>Nom</th>
                 <th>Responsable</th>
-                <th>Manifestation</th>
+                <th>Date</th>
                 <th>Description</th>
                 <th style="width:150px;">Actions</th>
             </tr>
         </thead>
-        <tbody id="tableStands"></tbody>
+        <tbody id="tableEvenements"></tbody>
     </table>
 
 </div>
@@ -133,30 +133,30 @@
 <script>
 const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-async function loadStands() {
+async function loadEvenements() {
     try {
-        const stands = await pb.collection("stands").getFullList({
-            expand: "responsable,manifestation",
-            sort: "nom"
+        const evenements = await pb.collection("manifestations").getFullList({
+            expand: "responsable",
+            sort: "date_debut"
         });
 
-        const tbody = document.getElementById("tableStands");
+        const tbody = document.getElementById("tableEvenements");
         tbody.innerHTML = "";
 
-        stands.forEach(s => {
+        evenements.forEach(ev => {
             const tr = document.createElement("tr");
 
-            const responsable = s.expand?.responsable?.nom || "—";
-            const manifestation = s.expand?.manifestation?.nom || "—";
+            const responsable = ev.expand?.responsable?.nom || "—";
+            const date = ev.date_debut ? new Date(ev.date_debut).toLocaleDateString("fr-CH") : "—";
 
             tr.innerHTML = `
-                <td>${s.nom}</td>
+                <td>${ev.nom}</td>
                 <td>${responsable}</td>
-                <td>${manifestation}</td>
-                <td>${s.description || ""}</td>
+                <td>${date}</td>
+                <td>${ev.description || ""}</td>
                 <td class="actions">
-                    <button class="btn" onclick="editStand('${s.id}')">Modifier</button>
-                    <button class="btn" style="background:#b00020;" onclick="deleteStand('${s.id}')">Supprimer</button>
+                    <button class="btn" onclick="editEvenement('${ev.id}')">Modifier</button>
+                    <button class="btn" style="background:#b00020;" onclick="deleteEvenement('${ev.id}')">Supprimer</button>
                 </td>
             `;
 
@@ -164,28 +164,28 @@ async function loadStands() {
         });
 
     } catch (err) {
-        alert("Erreur lors du chargement des stands.");
+        alert("Erreur lors du chargement des événements publics.");
         console.error(err);
     }
 }
 
-function editStand(id) {
-    window.location.href = "admin-stand-modifier.html?id=" + id;
+function editEvenement(id) {
+    window.location.href = "admin-evenement-public-modifier.html?id=" + id;
 }
 
-async function deleteStand(id) {
-    if (!confirm("Supprimer ce stand ?")) return;
+async function deleteEvenement(id) {
+    if (!confirm("Supprimer cet événement public ?")) return;
 
     try {
-        await pb.collection("stands").delete(id);
-        loadStands();
+        await pb.collection("manifestations").delete(id);
+        loadEvenements();
     } catch (err) {
         alert("Erreur lors de la suppression.");
         console.error(err);
     }
 }
 
-loadStands();
+loadEvenements();
 </script>
 
 </body>
