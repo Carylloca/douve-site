@@ -134,9 +134,9 @@ const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
 async function loadPostes() {
     try {
-        const postes = await pb.collection("postes").getFullList({
+        const postes = await pb.collection("planning_postes").getFullList({
             expand: "manifestation",
-            sort: "nom"
+            sort: "titre"
         });
 
         const tbody = document.getElementById("tablePostes");
@@ -145,10 +145,10 @@ async function loadPostes() {
         postes.forEach(p => {
             const tr = document.createElement("tr");
 
-            const manifestation = p.expand?.manifestation?.nom || "—";
+            const manifestation = p.expand?.manifestation?.titre || "—";
 
             tr.innerHTML = `
-                <td>${p.nom}</td>
+                <td>${p.titre}</td>
                 <td>${p.description || ""}</td>
                 <td>${manifestation}</td>
                 <td class="actions">
@@ -174,7 +174,7 @@ async function deletePoste(id) {
     if (!confirm("Supprimer ce poste ?")) return;
 
     try {
-        await pb.collection("postes").delete(id);
+        await pb.collection("planning_postes").delete(id);
         loadPostes();
     } catch (err) {
         alert("Erreur lors de la suppression.");
