@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestion des stands – Admin</title>
+
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: url("../img/page-admin-chalet.jpg") no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        header {
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        }
+
+        .left-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: #7A0010;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #5A000C;
+        }
+
+        h2 {
+            text-align: center;
+            color: white;
+            margin: 0;
+            text-shadow: 0 0 10px black;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 30px 0;
+        }
+
+        .panel {
+            width: 95%;
+            max-width: 1200px;
+            margin: 20px auto;
+            background: rgba(255,255,255,0.92);
+            padding: 25px;
+            border-radius: 12px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        table th, table td {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        table th {
+            background: #eee;
+        }
+
+        .actions button {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="overlay">
+
+<header>
+    <div class="left-buttons">
+        <a href="admin-menu.html" class="btn">Menu admin</a>
+    </div>
+
+    <h2>Gestion des stands</h2>
+
+    <div class="left-buttons">
+        <a href="admin-stand-nouveau.html" class="btn">+ Nouveau stand</a>
+    </div>
+</header>
+
+<div class="panel">
+
+    <h3>Liste des stands</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Responsable</th>
+                <th>Manifestation</th>
+                <th>Description</th>
+                <th style="width:150px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="tableStands"></tbody>
+    </table>
+
+</div>
+</div>
+
+<script>
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+async function loadStands() {
+    try {
+        const stands = await pb.collection("stands").getFullList({
+            expand: "responsable,manifestation",
+            sort: "nom"
+        });
+
+        const tbody = document.getElementById("tableStands");
+        tbody.innerHTML = "";
+
+        stands.forEach(s => {
+            const tr = document.createElement("tr");
+
+            const responsable = s.expand?.responsable?.nom || "—";
+            const manifestation = s.expand?.manifestation?.nom || "—";
+
+            tr.innerHTML = `
+                <td>${s.nom}</td>
+                <td>${responsable}</td>
+                <td>${manifestation}</td>
+                <td>${s.description || ""}</td>
+                <td class="actions">
+                    <button class="btn" onclick="editStand('${s.id}')">Modifier</button>
+                    <button class="btn" style="background:#b00020;" onclick="deleteStand('${s.id}')">Supprimer</button>
+                </td>
+            `;
+
+            tbody.appendChild(tr);
+        });
+
+    } catch (err) {
+        alert("Erreur lors du chargement des stands.");
+        console.error(err);
+    }
+}
+
+function editStand(id) {
+    window.location.href = "admin-stand-modifier.html?id=" + id;
+}
+
+async function deleteStand(id) {
+    if (!confirm("Supprimer ce stand ?")) return;
+
+    try {
+        await pb.collection("stands").delete(id);
+        loadStands();
+    } catch (err) {
+        alert("Erreur lors de la suppression.");
+        console.error(err);
+    }
+}
+
+loadStands();
+</script>
+
+</body>
+</html>
