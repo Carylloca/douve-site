@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Nouveau stand – Admin</title>
+    <title>Nouvel événement public – Admin</title>
 
     <link rel="icon" type="image/png" href="../favicon.png">
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
@@ -98,19 +98,19 @@
 
 <header>
     <div class="left-buttons">
-        <a href="admin-stands.html" class="btn">Retour</a>
+        <a href="admin-evenement-public.html" class="btn">Retour</a>
     </div>
 
-    <h2>Nouveau stand</h2>
+    <h2>Nouvel événement public</h2>
 
     <div class="left-buttons"></div>
 </header>
 
 <div class="panel">
 
-    <h3>Créer un nouveau stand</h3>
+    <h3>Créer un nouvel événement public</h3>
 
-    <label>Nom du stand :</label>
+    <label>Nom de l’événement :</label>
     <input type="text" id="nom">
 
     <label>Responsable :</label>
@@ -119,10 +119,13 @@
     <label>Description :</label>
     <textarea id="description"></textarea>
 
-    <label>Manifestation associée :</label>
-    <select id="manifestation"></select>
+    <label>Date de début :</label>
+    <input type="date" id="date_debut">
 
-    <button class="btn" id="btnSave" style="width:100%; margin-top:10px;">Créer le stand</button>
+    <label>Date de fin :</label>
+    <input type="date" id="date_fin">
+
+    <button class="btn" id="btnSave" style="width:100%; margin-top:10px;">Créer l’événement public</button>
 
 </div>
 </div>
@@ -144,32 +147,19 @@ async function loadResponsables() {
     });
 }
 
-// Charger les manifestations
-async function loadManifestations() {
-    const list = await pb.collection("manifestations").getFullList({ sort: "date_debut" });
-    const sel = document.getElementById("manifestation");
-    sel.innerHTML = "";
-
-    list.forEach(m => {
-        const opt = document.createElement("option");
-        opt.value = m.id;
-        opt.textContent = m.nom;
-        sel.appendChild(opt);
-    });
-}
-
-// Sauvegarder le nouveau stand
+// Sauvegarder le nouvel événement public
 document.getElementById("btnSave").onclick = async function () {
     try {
-        await pb.collection("stands").create({
+        await pb.collection("manifestations").create({
             nom: document.getElementById("nom").value,
             description: document.getElementById("description").value,
             responsable: document.getElementById("responsable").value,
-            manifestation: document.getElementById("manifestation").value
+            date_debut: document.getElementById("date_debut").value,
+            date_fin: document.getElementById("date_fin").value
         });
 
-        alert("Stand créé !");
-        window.location.href = "admin-stands.html";
+        alert("Événement public créé !");
+        window.location.href = "admin-evenement-public.html";
 
     } catch (err) {
         alert("Erreur lors de la création.");
@@ -178,7 +168,6 @@ document.getElementById("btnSave").onclick = async function () {
 };
 
 loadResponsables();
-loadManifestations();
 </script>
 
 </body>
