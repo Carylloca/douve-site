@@ -111,7 +111,7 @@
     <h3>Créer un nouveau poste</h3>
 
     <label>Nom du poste :</label>
-    <input type="text" id="nom">
+    <input type="text" id="titre">
 
     <label>Description :</label>
     <textarea id="description"></textarea>
@@ -127,16 +127,16 @@
 <script>
 const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-// Charger les événements publics (collection manifestations)
+// Charger les événements publics (planning_events)
 async function loadManifestations() {
-    const list = await pb.collection("manifestations").getFullList({ sort: "date_debut" });
+    const list = await pb.collection("planning_events").getFullList({ sort: "date_debut" });
     const sel = document.getElementById("manifestation");
     sel.innerHTML = "";
 
     list.forEach(m => {
         const opt = document.createElement("option");
         opt.value = m.id;
-        opt.textContent = m.nom;
+        opt.textContent = m.titre;
         sel.appendChild(opt);
     });
 }
@@ -144,8 +144,8 @@ async function loadManifestations() {
 // Sauvegarder le nouveau poste
 document.getElementById("btnSave").onclick = async function () {
     try {
-        await pb.collection("postes").create({
-            nom: document.getElementById("nom").value,
+        await pb.collection("planning_postes").create({
+            titre: document.getElementById("titre").value,
             description: document.getElementById("description").value,
             manifestation: document.getElementById("manifestation").value
         });
