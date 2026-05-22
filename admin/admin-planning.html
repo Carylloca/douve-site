@@ -15,8 +15,7 @@
   <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
   <style>
-    /* Ajustements spécifiques à la page admin planning
-       (en s’appuyant sur ton style.css existant) */
+    /* Ajustements spécifiques à la page admin planning */
 
     body {
       background-color: #f5f5f5;
@@ -67,6 +66,9 @@
       background-color: #ffffff;
       color: #7A0010;
       border: 1px solid #7A0010;
+      border-radius: 999px;
+      padding: 8px 16px;
+      cursor: pointer;
     }
 
     .btn-admin-secondary:hover {
@@ -95,14 +97,7 @@
       align-items: center;
     }
 
-    .admin-panel-row label {
-      font-size: 0.9rem;
-      font-weight: 500;
-      margin-right: 4px;
-    }
-
-    .admin-select,
-    .admin-input {
+    .admin-select {
       border-radius: 999px;
       border: 1px solid #ccc;
       padding: 6px 10px;
@@ -173,11 +168,6 @@
       color: #333;
     }
 
-    .side-section {
-      border-top: 1px solid #eee;
-      padding-top: 8px;
-    }
-
     .side-field-label {
       font-size: 0.85rem;
       font-weight: 500;
@@ -212,10 +202,6 @@
       border-bottom: none;
     }
 
-    .side-list-item span {
-      margin-right: 8px;
-    }
-
     .side-list-item button {
       font-size: 0.75rem;
       padding: 4px 8px;
@@ -224,10 +210,6 @@
       background-color: #fff;
       color: #7A0010;
       cursor: pointer;
-    }
-
-    .side-list-item button:hover {
-      background-color: #f7e9ec;
     }
 
     .admin-table-wrapper {
@@ -256,23 +238,7 @@
       white-space: nowrap;
     }
 
-    table.admin-table th {
-      font-weight: 600;
-      color: #7A0010;
-    }
-
-    table.admin-table tr:hover {
-      background-color: #faf5f6;
-    }
-
-    .table-actions {
-      display: flex;
-      gap: 4px;
-    }
-
     .badge-poste {
-      display: inline-flex;
-      align-items: center;
       padding: 2px 8px;
       border-radius: 999px;
       font-size: 0.75rem;
@@ -280,8 +246,6 @@
     }
 
     .badge-compagnon {
-      display: inline-flex;
-      align-items: center;
       padding: 2px 8px;
       border-radius: 999px;
       font-size: 0.75rem;
@@ -290,90 +254,66 @@
     }
 
     .badge-dispo {
-      display: inline-flex;
-      align-items: center;
       padding: 2px 8px;
       border-radius: 999px;
       font-size: 0.75rem;
       background-color: #e8f8ec;
       color: #1b7a3c;
     }
-
-    .small-muted {
-      font-size: 0.75rem;
-      color: #888;
-    }
   </style>
 </head>
+
 <body>
 
 <div class="admin-wrapper">
 
   <!-- HEADER -->
   <header class="admin-header">
-    <div class="admin-header-title">
-      Gestion du planning
-    </div>
+    <div class="admin-header-title">Gestion du planning</div>
     <div class="admin-header-buttons">
-      <button class="btn-admin-secondary" onclick="window.location.href='admin-menu.html'">
-        Menu admin
-      </button>
-      <button class="btn-admin-secondary" onclick="window.location.href='../index.html'">
-        Retour au site
-      </button>
+      <button class="btn-admin-secondary" onclick="window.location.href='admin-menu.html'">Menu admin</button>
+      <button class="btn-admin-secondary" onclick="window.location.href='../index.html'">Retour au site</button>
     </div>
   </header>
 
-  <!-- PANNEAU SUPERIEUR : CHOIX DU PLANNING + ETAT -->
+  <!-- PANNEAU SUPERIEUR -->
   <section class="admin-panel">
     <div class="admin-panel-title">Sélection du planning</div>
+
     <div class="admin-panel-row">
       <div>
-        <label for="selectManifestation">Manifestation :</label>
-        <select id="selectManifestation" class="admin-select">
-          <!-- Options remplies par JS (manifestations) -->
-        </select>
+        <label>Manifestation :</label>
+        <select id="selectManifestation" class="admin-select"></select>
       </div>
 
       <div>
-        <label for="selectPlanningEvent">Planning :</label>
-        <select id="selectPlanningEvent" class="admin-select">
-          <!-- Options remplies par JS (planning_events) -->
-        </select>
+        <label>Planning :</label>
+        <select id="selectPlanningEvent" class="admin-select"></select>
       </div>
 
       <div>
         <span>État :</span>
-        <span id="planningStatusBadge" class="admin-status-badge status-edition">
-          Édition
-        </span>
+        <span id="planningStatusBadge" class="admin-status-badge status-edition">Édition</span>
       </div>
 
       <div>
-        <button id="btnPlanningEdition" class="btn-admin">
-          Repasser en édition
-        </button>
-        <button id="btnPlanningFinalise" class="btn-admin">
-          Finaliser le planning
-        </button>
+        <button id="btnPlanningEdition" class="btn-admin">Repasser en édition</button>
+        <button id="btnPlanningFinalise" class="btn-admin">Finaliser le planning</button>
       </div>
 
       <div>
-        <button id="btnAddJour" class="btn-admin-secondary">
-          + Ajouter un jour
-        </button>
-        <button id="btnAddCreneau" class="btn-admin-secondary">
-          + Ajouter un créneau
-        </button>
+        <button id="btnAddJour" class="btn-admin-secondary">+ Ajouter un jour</button>
+        <button id="btnAddCreneau" class="btn-admin-secondary">+ Ajouter un créneau</button>
       </div>
     </div>
+
     <div class="small-muted" style="margin-top:8px;">
-      Les compagnons peuvent modifier leurs disponibilités tant que le planning est en mode <strong>Édition</strong>. 
+      Les compagnons peuvent modifier leurs disponibilités tant que le planning est en mode <strong>Édition</strong>.
       En mode <strong>Finalisé</strong>, seules les actions du comité sont possibles.
     </div>
   </section>
 
-  <!-- ZONE PRINCIPALE : CALENDRIER + PANNEAU LATERAL -->
+  <!-- ZONE PRINCIPALE -->
   <section class="admin-main-layout">
 
     <!-- CALENDRIER -->
@@ -385,9 +325,9 @@
     <!-- PANNEAU LATERAL -->
     <aside class="side-panel">
 
-      <!-- Infos créneau sélectionné -->
       <div class="side-section">
         <div class="side-section-title">Créneau sélectionné</div>
+
         <div class="side-field-label">Jour :</div>
         <div id="fieldJour" class="side-field-value">—</div>
 
@@ -404,58 +344,35 @@
         <div id="fieldCommentaire" class="side-field-value">—</div>
 
         <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
-          <button id="btnEditCreneau" class="btn-admin-secondary">
-            Modifier le créneau
-          </button>
-          <button id="btnClearCreneau" class="btn-admin-secondary">
-            Libérer le créneau
-          </button>
-          <button id="btnDeleteCreneau" class="btn-admin" style="background-color:#b00020;">
-            Supprimer
-          </button>
+          <button id="btnEditCreneau" class="btn-admin-secondary">Modifier le créneau</button>
+          <button id="btnClearCreneau" class="btn-admin-secondary">Libérer le créneau</button>
+          <button id="btnDeleteCreneau" class="btn-admin" style="background-color:#b00020;">Supprimer</button>
         </div>
       </div>
 
-      <!-- Disponibilités reçues -->
       <div class="side-section">
         <div class="side-section-title">Disponibilités reçues</div>
-        <ul id="listDisponibilites" class="side-list">
-          <!-- Rempli par JS : planning_disponibilites pour ce créneau -->
-        </ul>
-        <div class="small-muted" style="margin-top:4px;">
-          Les compagnons apparaissent ici lorsqu’ils se déclarent disponibles sur ce créneau.
-        </div>
+        <ul id="listDisponibilites" class="side-list"></ul>
       </div>
 
-      <!-- Compagnons disponibles (globaux) -->
       <div class="side-section">
         <div class="side-section-title">Compagnons disponibles (filtrés)</div>
-        <ul id="listCompagnonsDisponibles" class="side-list">
-          <!-- Rempli par JS : compagnons filtrés par manifestation / planning -->
-        </ul>
-        <div class="small-muted" style="margin-top:4px;">
-          Liste filtrée selon la manifestation et le planning sélectionnés.
-        </div>
+        <ul id="listCompagnonsDisponibles" class="side-list"></ul>
       </div>
 
-      <!-- Actions d’assignation -->
       <div class="side-section">
         <div class="side-section-title">Assignation rapide</div>
-        <div class="side-field-label">Assigner un compagnon :</div>
-        <select id="selectCompagnonAssign" class="admin-select" style="width:100%; margin-bottom:8px;">
-          <!-- Rempli par JS -->
-        </select>
-        <button id="btnAssignCompagnon" class="btn-admin" style="width:100%;">
-          Assigner au créneau
-        </button>
+        <select id="selectCompagnonAssign" class="admin-select" style="width:100%; margin-bottom:8px;"></select>
+        <button id="btnAssignCompagnon" class="btn-admin" style="width:100%;">Assigner au créneau</button>
       </div>
 
     </aside>
   </section>
 
-  <!-- TABLEAU RECAPITULATIF -->
+  <!-- TABLEAU RECAP -->
   <section class="admin-table-wrapper">
     <div class="admin-panel-title">Tableau récapitulatif des créneaux</div>
+
     <table class="admin-table" id="tableCreneaux">
       <thead>
         <tr>
@@ -469,29 +386,20 @@
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody>
-        <!-- Rempli par JS -->
-      </tbody>
+      <tbody></tbody>
     </table>
-    <div class="small-muted" style="margin-top:6px;">
-      Ce tableau permet une vue “type Excel” de tous les créneaux du planning sélectionné.
-    </div>
   </section>
 
 </div>
 
-<!-- SCRIPT DE BASE : INITIALISATION + HOOKS
-     La logique détaillée sera dans js/admin-planning.js -->
+<!-- SCRIPT INTERNE -->
 <script>
-  // Initialisation PocketBase (URL à adapter si besoin)
   const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
-
-  // Variables globales de base
   let currentPlanningEvent = null;
   let currentCreneauId = null;
 
   document.addEventListener("DOMContentLoaded", async function () {
-    // 1) Initialiser le calendrier
+
     const calendarEl = document.getElementById("calendar");
     const calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: "timeGridWeek",
@@ -506,94 +414,58 @@
         right: "dayGridMonth,timeGridWeek,timeGridDay"
       },
       eventClick: function (info) {
-        // Clic sur un créneau dans le calendrier
         const creneauId = info.event.extendedProps.creneauId;
         currentCreneauId = creneauId;
-        // Hook : chargement des détails du créneau
-        if (window.adminPlanning && typeof window.adminPlanning.onCreneauSelected === "function") {
+        if (window.adminPlanning?.onCreneauSelected) {
           window.adminPlanning.onCreneauSelected(creneauId);
         }
       }
     });
-    calendar.render();
 
-    // Exposer le calendrier pour le script externe
+    calendar.render();
     window.adminPlanning = window.adminPlanning || {};
     window.adminPlanning.calendar = calendar;
 
-    // 2) Hook : initialisation complète (manifestations, plannings, etc.)
-    if (typeof window.adminPlanning.init === "function") {
+    if (window.adminPlanning.init) {
       window.adminPlanning.init();
     }
 
-    // 3) Boutons principaux
-    document.getElementById("btnPlanningFinalise").addEventListener("click", function () {
-      if (window.adminPlanning && typeof window.adminPlanning.setPlanningFinalise === "function") {
-        window.adminPlanning.setPlanningFinalise();
-      }
-    });
+    document.getElementById("btnPlanningFinalise").onclick = () =>
+      window.adminPlanning.setPlanningFinalise?.();
 
-    document.getElementById("btnPlanningEdition").addEventListener("click", function () {
-      if (window.adminPlanning && typeof window.adminPlanning.setPlanningEdition === "function") {
-        window.adminPlanning.setPlanningEdition();
-      }
-    });
+    document.getElementById("btnPlanningEdition").onclick = () =>
+      window.adminPlanning.setPlanningEdition?.();
 
-    document.getElementById("btnAddJour").addEventListener("click", function () {
-      if (window.adminPlanning && typeof window.adminPlanning.addJour === "function") {
-        window.adminPlanning.addJour();
-      }
-    });
+    document.getElementById("btnAddJour").onclick = () =>
+      window.adminPlanning.addJour?.();
 
-    document.getElementById("btnAddCreneau").addEventListener("click", function () {
-      if (window.adminPlanning && typeof window.adminPlanning.addCreneau === "function") {
-        window.adminPlanning.addCreneau();
-      }
-    });
+    document.getElementById("btnAddCreneau").onclick = () =>
+      window.adminPlanning.addCreneau?.();
 
-    document.getElementById("btnAssignCompagnon").addEventListener("click", function () {
-      if (window.adminPlanning && typeof window.adminPlanning.assignCompagnon === "function") {
-        window.adminPlanning.assignCompagnon();
-      }
-    });
+    document.getElementById("btnAssignCompagnon").onclick = () =>
+      window.adminPlanning.assignCompagnon?.();
 
-    document.getElementById("btnClearCreneau").addEventListener("click", function () {
-      if (window.adminPlanning && typeof window.adminPlanning.clearCreneau === "function") {
-        window.adminPlanning.clearCreneau();
-      }
-    });
+    document.getElementById("btnClearCreneau").onclick = () =>
+      window.adminPlanning.clearCreneau?.();
 
-    document.getElementById("btnDeleteCreneau").addEventListener("click", function () {
-      if (window.adminPlanning && typeof window.adminPlanning.deleteCreneau === "function") {
-        window.adminPlanning.deleteCreneau();
-      }
-    });
+    document.getElementById("btnDeleteCreneau").onclick = () =>
+      window.adminPlanning.deleteCreneau?.();
 
-    document.getElementById("btnEditCreneau").addEventListener("click", function () {
-      if (window.adminPlanning && typeof window.adminPlanning.editCreneau === "function") {
-        window.adminPlanning.editCreneau();
-      }
-    });
+    document.getElementById("btnEditCreneau").onclick = () =>
+      window.adminPlanning.editCreneau?.();
 
-    // Sélecteurs
-    document.getElementById("selectManifestation").addEventListener("change", function () {
-      if (window.adminPlanning && typeof window.adminPlanning.onManifestationChange === "function") {
-        window.adminPlanning.onManifestationChange(this.value);
-      }
-    });
+    document.getElementById("selectManifestation").onchange = function () {
+      window.adminPlanning.onManifestationChange?.(this.value);
+    };
 
-    document.getElementById("selectPlanningEvent").addEventListener("change", function () {
-      if (window.adminPlanning && typeof window.adminPlanning.onPlanningEventChange === "function") {
-        window.adminPlanning.onPlanningEventChange(this.value);
-      }
-    });
+    document.getElementById("selectPlanningEvent").onchange = function () {
+      window.adminPlanning.onPlanningEventChange?.(this.value);
+    };
   });
 </script>
 
-<!-- Script externe (à créer ensuite) : js/admin-planning.js -->
-  <script src="../js/admin-planning.js"></script>
-
-
+<!-- SCRIPT EXTERNE -->
+<script src="../js/admin-planning.js"></script>
 
 </body>
 </html>
