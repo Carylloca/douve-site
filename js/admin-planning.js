@@ -528,7 +528,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // -----------------------------
+        // -----------------------------
     // EXPORT API
     // -----------------------------
     return {
@@ -542,4 +542,11 @@ document.addEventListener("DOMContentLoaded", () => {
       addCreneau,
       assignCompagnon,
       clearCreneau,
-      delete
+      deleteCreneau,
+      editCreneau,
+      calendar,
+    };
+
+  })(); // fin IIFE
+
+}); // fin DOMContentLoaded
