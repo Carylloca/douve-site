@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier un stand – Admin</title>
+
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: url("../img/page-admin-chalet.jpg") no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        header {
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        }
+
+        .left-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: #7A0010;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #5A000C;
+        }
+
+        h2 {
+            text-align: center;
+            color: white;
+            margin: 0;
+            text-shadow: 0 0 10px black;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            min-height: 100vh;
+            padding: 30px 0;
+        }
+
+        .panel {
+            width: 600px;
+            margin: 20px auto;
+            background: rgba(255,255,255,0.92);
+            padding: 25px;
+            border-radius: 12px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="overlay">
+
+<header>
+    <div class="left-buttons">
+        <a href="admin-stands.html" class="btn">Retour</a>
+    </div>
+
+    <h2>Modifier un stand</h2>
+
+    <div class="left-buttons">
+        <button class="btn" id="btnDelete" style="background:#444;">Supprimer</button>
+    </div>
+</header>
+
+<div class="panel">
+
+    <h3>Informations du stand</h3>
+
+    <label>Nom du stand :</label>
+    <input type="text" id="nom">
+
+    <label>Responsable :</label>
+    <select id="responsable"></select>
+
+    <label>Description :</label>
+    <textarea id="description"></textarea>
+
+    <label>Manifestation associée :</label>
+    <select id="manifestation"></select>
+
+    <button class="btn" id="btnSave" style="width:100%; margin-top:10px;">Enregistrer les modifications</button>
+
+</div>
+</div>
+
+<script>
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+// Récupération de l'ID dans l'URL
+const urlParams = new URLSearchParams(window.location.search);
+const standId = urlParams.get("id");
+
+if (!standId) {
+    alert("Aucun stand sélectionné.");
+    window.location.href = "admin-stands.html";
+}
+
+// Charger les responsables (compagnons)
+async function loadResponsables(selectedId = null) {
+    const list = await pb.collection("compagnons").getFullList({ sort: "nom" });
+    const sel = document.getElementById("responsable");
+    sel.innerHTML = "";
+
+    list.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.nom;
+        if (c.id === selectedId) opt.selected = true;
+        sel.appendChild(opt);
+    });
+}
+
+// Charger les manifestations
+async function loadManifestations(selectedId = null) {
+    const list = await pb.collection("manifestations").getFullList({ sort: "date_debut" });
+    const sel = document.getElementById("manifestation");
+    sel.innerHTML = "";
+
+    list.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m.id;
+        opt.textContent = m.nom;
+        if (m.id === selectedId) opt.selected = true;
+        sel.appendChild(opt);
+    });
+}
+
+// Charger les données du stand
+async function loadStand() {
+    try {
+        const s = await pb.collection("stands").getOne(standId);
+
+        document.getElementById("nom").value = s.nom || "";
+        document.getElementById("description").value = s.description || "";
+
+        await loadResponsables(s.responsable);
+        await loadManifestations(s.manifestation);
+
+    } catch (err) {
+        alert("Erreur lors du chargement.");
+        console.error(err);
+    }
+}
+
+// Sauvegarder les modifications
+document.getElementById("btnSave").onclick = async function () {
+    try {
+        await pb.collection("stands").update(standId, {
+            nom: document.getElementById("nom").value,
+            description: document.getElementById("description").value,
+            responsable: document.getElementById("responsable").value,
+            manifestation: document.getElementById("manifestation").value
+        });
+
+        alert("Modifications enregistrées !");
+        window.location.href = "admin-stands.html";
+
+    } catch (err) {
+        alert("Erreur lors de l’enregistrement.");
+        console.error(err);
+    }
+};
+
+// Supprimer le stand
+document.getElementById("btnDelete").onclick = async function () {
+    if (!confirm("Supprimer ce stand ?")) return;
+
+    try {
+        await pb.collection("stands").delete(standId);
+        alert("Stand supprimé.");
+        window.location.href = "admin-stands.html";
+
+    } catch (err) {
+        alert("Erreur lors de la suppression.");
+        console.error(err);
+    }
+};
+
+loadStand();
+</script>
+
+</body>
+</html>
