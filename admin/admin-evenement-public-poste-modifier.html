@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Modifier un événement public – Admin</title>
+    <title>Modifier un poste – Admin</title>
 
     <link rel="icon" type="image/png" href="../favicon.png">
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
@@ -11,7 +11,7 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            background: url("../img/page-admin-evenement-public-modifier.jpg") no-repeat center center fixed;
+            background: url("../img/page-admin-evenement-public-poste-modifier.jpg") no-repeat center center fixed;
             background-size: cover;
         }
 
@@ -98,34 +98,28 @@
 
 <header>
     <div class="left-buttons">
-        <a href="admin-evenement-public.html" class="btn">Retour</a>
+        <a href="admin-evenement-public-postes.html" class="btn">Retour</a>
     </div>
 
-    <h2>Modifier un événement public</h2>
+    <h2>Modifier un poste</h2>
 
     <div class="left-buttons">
-        <button class="btn" id="btnDelete" style="background:#b00020;">Supprimer</button>
+        <button class="btn" id="btnDelete" style="background:#444;">Supprimer</button>
     </div>
 </header>
 
 <div class="panel">
 
-    <h3>Informations de l’événement public</h3>
+    <h3>Informations du poste</h3>
 
-    <label>Titre de l’événement :</label>
-    <input type="text" id="titre">
-
-    <label>Responsables :</label>
-    <select id="responsable" multiple size="5"></select>
+    <label>Nom du poste :</label>
+    <input type="text" id="nom">
 
     <label>Description :</label>
     <textarea id="description"></textarea>
 
-    <label>Date de début :</label>
-    <input type="date" id="date_debut">
-
-    <label>Date de fin :</label>
-    <input type="date" id="date_fin">
+    <label>Événement public associé :</label>
+    <select id="manifestation"></select>
 
     <button class="btn" id="btnSave" style="width:100%; margin-top:10px;">Enregistrer les modifications</button>
 
@@ -137,42 +131,37 @@ const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
 // Récupération de l'ID dans l'URL
 const urlParams = new URLSearchParams(window.location.search);
-const eventId = urlParams.get("id");
+const posteId = urlParams.get("id");
 
-if (!eventId) {
-    alert("Aucun événement sélectionné.");
-    window.location.href = "admin-evenement-public.html";
+if (!posteId) {
+    alert("Aucun poste sélectionné.");
+    window.location.href = "admin-evenement-public-postes.html";
 }
 
-// Charger les responsables (compagnons)
-async function loadResponsables(selectedList = []) {
-    const list = await pb.collection("compagnons").getFullList({ sort: "nom" });
-    const sel = document.getElementById("responsable");
+// Charger les événements publics (collection manifestations)
+async function loadManifestations(selectedId = null) {
+    const list = await pb.collection("manifestations").getFullList({ sort: "date_debut" });
+    const sel = document.getElementById("manifestation");
     sel.innerHTML = "";
 
-    list.forEach(c => {
+    list.forEach(m => {
         const opt = document.createElement("option");
-        opt.value = c.id;
-        opt.textContent = c.nom + " " + c.prenom;
-        if (selectedList.includes(c.id)) opt.selected = true;
+        opt.value = m.id;
+        opt.textContent = m.nom;
+        if (m.id === selectedId) opt.selected = true;
         sel.appendChild(opt);
     });
 }
 
-// Charger les données de l’événement
-async function loadEvenement() {
+// Charger les données du poste
+async function loadPoste() {
     try {
-        const ev = await pb.collection("planning_events").getOne(eventId, {
-            expand: "responsable"
-        });
+        const p = await pb.collection("postes").getOne(posteId);
 
-        document.getElementById("titre").value = ev.titre || "";
-        document.getElementById("description").value = ev.description || "";
-        document.getElementById("date_debut").value = ev.date_debut || "";
-        document.getElementById("date_fin").value = ev.date_fin || "";
+        document.getElementById("nom").value = p.nom || "";
+        document.getElementById("description").value = p.description || "";
 
-        const responsables = Array.isArray(ev.responsable) ? ev.responsable : [];
-        await loadResponsables(responsables);
+        await loadManifestations(p.manifestation);
 
     } catch (err) {
         alert("Erreur lors du chargement.");
@@ -183,18 +172,14 @@ async function loadEvenement() {
 // Sauvegarder les modifications
 document.getElementById("btnSave").onclick = async function () {
     try {
-        await pb.collection("planning_events").update(eventId, {
-            titre: document.getElementById("titre").value,
+        await pb.collection("postes").update(posteId, {
+            nom: document.getElementById("nom").value,
             description: document.getElementById("description").value,
-            responsable: Array.from(
-                document.getElementById("responsable").selectedOptions
-            ).map(opt => opt.value),
-            date_debut: document.getElementById("date_debut").value,
-            date_fin: document.getElementById("date_fin").value
+            manifestation: document.getElementById("manifestation").value
         });
 
         alert("Modifications enregistrées !");
-        window.location.href = "admin-evenement-public.html";
+        window.location.href = "admin-evenement-public-postes.html";
 
     } catch (err) {
         alert("Erreur lors de l’enregistrement.");
@@ -202,14 +187,14 @@ document.getElementById("btnSave").onclick = async function () {
     }
 };
 
-// Supprimer l’événement
+// Supprimer le poste
 document.getElementById("btnDelete").onclick = async function () {
-    if (!confirm("Supprimer cet événement public ?")) return;
+    if (!confirm("Supprimer ce poste ?")) return;
 
     try {
-        await pb.collection("planning_events").delete(eventId);
-        alert("Événement supprimé.");
-        window.location.href = "admin-evenement-public.html";
+        await pb.collection("postes").delete(posteId);
+        alert("Poste supprimé.");
+        window.location.href = "admin-evenement-public-postes.html";
 
     } catch (err) {
         alert("Erreur lors de la suppression.");
@@ -217,7 +202,7 @@ document.getElementById("btnDelete").onclick = async function () {
     }
 };
 
-loadEvenement();
+loadPoste();
 </script>
 
 </body>
