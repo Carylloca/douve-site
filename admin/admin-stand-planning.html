@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Gestion du planning – Admin</title>
+    <title>Gestion du planning – Événement public</title>
 
     <link rel="icon" type="image/png" href="../favicon.png">
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
@@ -15,7 +15,7 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            background: url("../img/page-admin-stand-planning.jpg") no-repeat center center fixed;
+            background: url("../img/page-admin-evenement-public-planning.jpg") no-repeat center center fixed;
             background-size: cover;
         }
 
@@ -119,11 +119,11 @@
 
 <header>
     <div class="left-buttons">
-        <a href="admin-menu.html" class="btn">Menu admin</a>
+        <a href="admin-evenement-public-dashboard.html" class="btn">Dashboard événements</a>
         <a href="../index.html" class="btn">Retour au site</a>
     </div>
 
-    <h2>Gestion du planning</h2>
+    <h2>Gestion du planning – Événement public</h2>
 
     <div class="left-buttons">
         <button class="btn" id="btnExportPDF">Export PDF</button>
@@ -135,8 +135,8 @@
 
     <h3>Sélection du planning</h3>
 
-    <label>Manifestation :</label>
-    <select id="selectManifestation"></select>
+    <label>Événement public :</label>
+    <select id="selectEvenementPublic"></select>
 
     <label>Planning :</label>
     <select id="selectPlanningEvent"></select>
@@ -202,10 +202,9 @@
         <tbody></tbody>
     </table>
 
-</div> <!-- panel -->
-</div> <!-- overlay -->
+</div>
+</div>
 
-<!-- SCRIPT INTERNE -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -272,7 +271,7 @@ document.addEventListener("DOMContentLoaded", function () {
         window.adminPlanning.editCreneau?.();
 
     // Sélecteurs
-    document.getElementById("selectManifestation").onchange = function () {
+    document.getElementById("selectEvenementPublic").onchange = function () {
         window.adminPlanning.onManifestationChange?.(this.value);
     };
 
@@ -308,8 +307,8 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-<!-- SCRIPT EXTERNE -->
-<script src="../js/admin-stand-planning.js"></script>
+<!-- SCRIPT EXTERNE RENOMMÉ -->
+<script src="../js/admin-evenement-public-planning.js"></script>
 
 </body>
 </html>
