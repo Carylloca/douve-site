@@ -76,7 +76,41 @@
             backdrop-filter: blur(4px);
             box-shadow: 0 4px 20px rgba(0,0,0,0.25);
         }
-      </style>
+
+        .side-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .side-list li {
+            padding: 6px 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .side-list li:last-child {
+            border-bottom: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        table th, table td {
+            padding: 8px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        table th {
+            background: #eee;
+        }
+    </style>
 </head>
 
 <body>
@@ -88,20 +122,24 @@
         <a href="admin-menu.html" class="btn">Menu admin</a>
         <a href="../index.html" class="btn">Retour au site</a>
     </div>
+
     <h2>Gestion du planning</h2>
-    <div></div>
+
+    <div class="left-buttons">
+        <button class="btn" id="btnExportPDF">Export PDF</button>
+        <button class="btn" id="btnExportExcel">Export Excel</button>
+    </div>
 </header>
 
 <div class="panel">
 
-    <!-- SÉLECTION DU PLANNING -->
     <h3>Sélection du planning</h3>
 
     <label>Manifestation :</label>
-    <select id="selectManifestation" class="admin-select"></select>
+    <select id="selectManifestation"></select>
 
     <label>Planning :</label>
-    <select id="selectPlanningEvent" class="admin-select"></select>
+    <select id="selectPlanningEvent"></select>
 
     <p>État : <span id="planningStatusBadge" class="status-edition">Édition</span></p>
 
@@ -113,21 +151,13 @@
     <button class="btn" id="btnAddJour">+ Ajouter un jour</button>
     <button class="btn" id="btnAddCreneau">+ Ajouter un créneau</button>
 
-    <p style="margin-top:10px;">
-        Les compagnons peuvent modifier leurs disponibilités tant que le planning est en mode
-        <strong>Édition</strong>.  
-        En mode <strong>Finalisé</strong>, seules les actions du comité sont possibles.
-    </p>
-
     <hr>
 
-    <!-- CALENDRIER -->
     <h3>Calendrier des créneaux</h3>
     <div id="calendar" style="background:white; padding:10px; border-radius:10px;"></div>
 
     <hr>
 
-    <!-- PANNEAU LATÉRAL -->
     <h3>Créneau sélectionné</h3>
 
     <p><strong>Jour :</strong> <span id="fieldJour">—</span></p>
@@ -149,15 +179,14 @@
     <ul id="listCompagnonsDisponibles" class="side-list"></ul>
 
     <h3>Assignation rapide</h3>
-    <select id="selectCompagnonAssign" class="admin-select" style="width:100%;"></select>
+    <select id="selectCompagnonAssign" style="width:100%;"></select>
     <button class="btn" id="btnAssignCompagnon" style="width:100%;">Assigner au créneau</button>
 
     <hr>
 
-    <!-- TABLEAU RÉCAP -->
     <h3>Tableau récapitulatif des créneaux</h3>
 
-    <table id="tableCreneaux" class="admin-table">
+    <table id="tableCreneaux">
         <thead>
             <tr>
                 <th>Jour</th>
@@ -175,7 +204,8 @@
 
 </div> <!-- panel -->
 </div> <!-- overlay -->
-<!-- SCRIPT INTERNE : création du calendrier + hooks -->
+
+<!-- SCRIPT INTERNE -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -184,6 +214,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: "timeGridWeek",
         locale: "fr",
+        buttonText: {
+            today: "Aujourd’hui",
+            month: "Mois",
+            week: "Semaine",
+            day: "Jour"
+        },
         firstDay: 1,
         slotMinTime: "06:00:00",
         slotMaxTime: "24:00:00",
@@ -195,7 +231,7 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         eventClick: function (info) {
             const creneauId = info.event.extendedProps.creneauId;
-            if (window.adminPlanning && typeof window.adminPlanning.onCreneauSelected === "function") {
+            if (window.adminPlanning?.onCreneauSelected) {
                 window.adminPlanning.onCreneauSelected(creneauId);
             }
         }
@@ -243,6 +279,32 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("selectPlanningEvent").onchange = function () {
         window.adminPlanning.onPlanningEventChange?.(this.value);
     };
+
+    // EXPORT PDF
+    document.getElementById("btnExportPDF").onclick = function () {
+        if (window.adminPlanning?.exportPDF) {
+            window.adminPlanning.exportPDF();
+        } else {
+            window.print();
+        }
+    };
+
+    // EXPORT EXCEL
+    document.getElementById("btnExportExcel").onclick = function () {
+        if (window.adminPlanning?.exportExcel) {
+            window.adminPlanning.exportExcel();
+        } else {
+            const table = document.getElementById("tableCreneaux").outerHTML;
+            const blob = new Blob([table], { type: "application/vnd.ms-excel" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "planning.xls";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    };
+
 });
 </script>
 
