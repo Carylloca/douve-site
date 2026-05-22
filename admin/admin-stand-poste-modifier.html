@@ -11,7 +11,7 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            background: url("../img/page-admin-stand-poste-modifier.jpg") no-repeat center center fixed;
+            background: url("../img/page-admin-evenement-public-poste-modifier.jpg") no-repeat center center fixed;
             background-size: cover;
         }
 
@@ -98,7 +98,7 @@
 
 <header>
     <div class="left-buttons">
-        <a href="admin-stand-postes.html" class="btn">Retour</a>
+        <a href="admin-evenement-public-postes.html" class="btn">Retour</a>
     </div>
 
     <h2>Modifier un poste</h2>
@@ -118,7 +118,7 @@
     <label>Description :</label>
     <textarea id="description"></textarea>
 
-    <label>Manifestation associée :</label>
+    <label>Événement public associé :</label>
     <select id="manifestation"></select>
 
     <button class="btn" id="btnSave" style="width:100%; margin-top:10px;">Enregistrer les modifications</button>
@@ -135,10 +135,10 @@ const posteId = urlParams.get("id");
 
 if (!posteId) {
     alert("Aucun poste sélectionné.");
-    window.location.href = "admin-stand-postes.html";
+    window.location.href = "admin-evenement-public-postes.html";
 }
 
-// Charger les manifestations
+// Charger les événements publics (collection manifestations)
 async function loadManifestations(selectedId = null) {
     const list = await pb.collection("manifestations").getFullList({ sort: "date_debut" });
     const sel = document.getElementById("manifestation");
@@ -179,7 +179,7 @@ document.getElementById("btnSave").onclick = async function () {
         });
 
         alert("Modifications enregistrées !");
-        window.location.href = "admin-stand-postes.html";
+        window.location.href = "admin-evenement-public-postes.html";
 
     } catch (err) {
         alert("Erreur lors de l’enregistrement.");
@@ -194,7 +194,7 @@ document.getElementById("btnDelete").onclick = async function () {
     try {
         await pb.collection("postes").delete(posteId);
         alert("Poste supprimé.");
-        window.location.href = "admin-stand-postes.html";
+        window.location.href = "admin-evenement-public-postes.html";
 
     } catch (err) {
         alert("Erreur lors de la suppression.");
