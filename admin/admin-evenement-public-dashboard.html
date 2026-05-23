@@ -129,7 +129,7 @@ function formatDate(d) {
 
 async function loadDashboard() {
     const events = await pb.collection("planning_events").getFullList({
-        expand: "responsables",   // ⭐ correction ici
+        expand: "responsables",   // ⭐ correction
         sort: "date_debut"
     });
 
