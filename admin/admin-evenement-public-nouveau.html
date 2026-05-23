@@ -17,7 +17,6 @@
             background-attachment: fixed;
         }
 
-        /* HEADER */
         header.admin-header {
             background: rgba(44, 62, 80, 0.90);
             padding: 18px 25px;
@@ -51,7 +50,6 @@
             font-weight: 600;
         }
 
-        /* CARTE */
         .card {
             background: rgba(255,255,255,0.95);
             padding: 25px;
@@ -81,7 +79,6 @@
             height: 120px;
         }
 
-        /* DATES côte à côte */
         .dates-row {
             display: flex;
             gap: 20px;
@@ -93,7 +90,6 @@
             font-size: 14px;
         }
 
-        /* RESPONSABLES */
         .responsables-box {
             background: rgba(255,255,255,0.95);
             border: 1px solid #ccc;
@@ -108,20 +104,17 @@
             font-weight: bold;
         }
 
-        /* ⭐ LISTE RESPONSABLES — FERMÉE MAIS FONCTIONNELLE */
         .responsables-list {
-            display: grid;              /* ← active la grille AVANT injection */
-            visibility: hidden;         /* ← invisible au chargement */
-            height: 0;                  /* ← ne prend pas de place */
-            overflow: hidden;
-
+            display: none;
             margin-top: 10px;
             border-top: 1px solid #ccc;
             padding-top: 10px;
 
+            display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 4px 10px;
-            justify-items: start;       /* ← aligne les colonnes à gauche */
+            justify-items: start;   /* alignement à gauche */
+            text-align: left;
         }
 
         .responsables-list label {
@@ -129,6 +122,7 @@
             align-items: center;
             gap: 6px;
             font-size: 14px;
+            font-weight: normal;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -178,7 +172,6 @@
     <label>Nom de l’événement :</label>
     <input type="text" id="titre" required>
 
-    <!-- RESPONSABLES -->
     <label>Responsables :</label>
     <div id="responsablesBox" class="responsables-box">
         <div class="responsables-header">Sélectionner les responsables ▼</div>
@@ -188,7 +181,6 @@
     <label>Description :</label>
     <textarea id="description"></textarea>
 
-    <!-- DATES côte à côte -->
     <div class="dates-row">
         <div>
             <label>Date de début :</label>
@@ -214,16 +206,36 @@
 
     async function loadResponsables() {
         try {
-            const companions = await pb.collection("companions").getFullList({ sort: "nom" });
+            const companions = await pb.collection("companions").getFullList({
+                sort: "nom"
+            });
+
             const list = document.getElementById("responsablesList");
 
             companions.forEach(c => {
-                const item = document.createElement("label");
-                item.innerHTML = `
-                    <input type="checkbox" name="responsables" value="${c.id}">
-                    ${c.nom} ${c.prenom}
-                `;
-                list.appendChild(item);
+                console.log("companion:", c); // pour que tu voies les champs exacts dans la console
+
+                const nom =
+                    c.nom || c.Nom || c.name || "";
+                const prenom =
+                    c.prenom || c.Prenom || c.firstname || c.first_name || "";
+
+                const label = document.createElement("label");
+
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.name = "responsables";
+                checkbox.value = c.id;
+
+                label.appendChild(checkbox);
+
+                const texte = nom || prenom
+                    ? ` ${nom} ${prenom}`.trim()
+                    : ` ${c.id}`;
+
+                label.appendChild(document.createTextNode(texte));
+
+                list.appendChild(label);
             });
 
         } catch (error) {
@@ -233,19 +245,11 @@
 
     loadResponsables();
 
-    /* Ouvrir / fermer sans fermer quand on coche */
     document.getElementById("responsablesBox").addEventListener("click", (e) => {
         if (e.target.tagName === "INPUT") return;
 
         const list = document.getElementById("responsablesList");
-
-        if (list.style.visibility === "visible") {
-            list.style.visibility = "hidden";
-            list.style.height = "0";
-        } else {
-            list.style.visibility = "visible";
-            list.style.height = "auto";
-        }
+        list.style.display = (list.style.display === "grid") ? "none" : "grid";
     });
 
     async function creerEvenement() {
@@ -269,7 +273,6 @@
             await pb.collection("planning_events").create(data);
             feedback.textContent = "Événement public mémorisé !";
             feedback.className = "success";
-
         } catch (error) {
             console.error(error);
             feedback.textContent = "Erreur lors de la mémorisation.";
