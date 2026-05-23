@@ -3,118 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <title>Nouvel événement public – Admin</title>
-
     <link rel="icon" type="image/png" href="../favicon.png">
+
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
-            background: url("../img/page-admin-evenement-public-nouveau.jpg") no-repeat center center fixed;
+            font-family: "DM Sans", sans-serif;
+            background-image: url("../img/page-admin-evenement-public-nouveau.jpg");
             background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            padding: 20px;
         }
 
-        header {
-            background: rgba(0, 0, 0, 0.85);
+        h1 {
             color: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 20px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+            text-shadow: 0 2px 6px rgba(0,0,0,0.6);
         }
 
-        .left-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 14px;
-            background: #7A0010;
-            color: white;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: 0.2s;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn:hover {
-            background: #5A000C;
-        }
-
-        h2 {
-            text-align: center;
-            color: white;
-            margin: 0;
-            text-shadow: 0 0 10px black;
-        }
-
-        .overlay {
-            background: rgba(0, 0, 0, 0.55);
-            min-height: 100vh;
-            padding: 30px 0;
-        }
-
-        .panel {
-            width: 600px;
-            margin: 20px auto;
-            background: rgba(255,255,255,0.92);
+        .card {
+            background: rgba(255,255,255,0.95);
             padding: 25px;
-            border-radius: 12px;
-            backdrop-filter: blur(4px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            border-radius: 10px;
+            max-width: 700px;
+            margin: auto;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }
 
         label {
             font-weight: bold;
+            display: block;
+            margin-top: 15px;
         }
 
-        input, textarea, select {
+        input, textarea {
             width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            margin-bottom: 15px;
+            padding: 10px;
+            margin-top: 6px;
             border-radius: 6px;
             border: 1px solid #ccc;
+            font-size: 15px;
         }
 
         textarea {
-            height: 120px;
             resize: vertical;
+            height: 120px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #8b0000;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 20px;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background: #b30000;
+        }
+
+        /* Bloc RESPONSABLES */
+        .responsables-box {
+            background: rgba(255,255,255,0.9);
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .responsables-header {
+            font-weight: bold;
+        }
+
+        .responsables-list {
+            display: none;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+
+        .responsables-list label {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+            margin-top: 15px;
         }
     </style>
 </head>
 
 <body>
 
-<div class="overlay">
+<h1>Nouvel événement public</h1>
 
-<header>
-    <div class="left-buttons">
-        <a href="admin-evenement-public.html" class="btn">Retour</a>
-    </div>
-
-    <h2>Nouvel événement public</h2>
-
-    <div class="left-buttons"></div>
-</header>
-
-<div class="panel">
-
-    <h3>Créer un nouvel événement public</h3>
+<div class="card">
 
     <label>Nom de l’événement :</label>
-    <input type="text" id="nom">
+    <input type="text" id="titre" required>
 
-    <label>Responsable :</label>
-    <select id="responsable"></select>
+    <!-- ⭐ BLOC RESPONSABLES -->
+    <label>Responsables :</label>
+    <div id="responsablesBox" class="responsables-box">
+        <div class="responsables-header">Sélectionner les responsables ▼</div>
+        <div class="responsables-list" id="responsablesList"></div>
+    </div>
 
     <label>Description :</label>
     <textarea id="description"></textarea>
@@ -125,58 +136,80 @@
     <label>Date de fin :</label>
     <input type="date" id="date_fin">
 
-    <button class="btn" id="btnSave" style="width:100%; margin-top:10px;">Créer l’événement public</button>
+    <button class="btn" onclick="creerEvenement()">Créer l’événement public</button>
 
-</div>
+    <p id="feedback"></p>
 </div>
 
 <script>
-const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-// Charger les responsables (compagnons)
-    
+    // 🔒 Protection d’accès
+    if (!pb.authStore.isValid) {
+        window.location.href = "../login.html";
+    }
+
+    // ⭐ Charger les compagnons pour la liste des responsables
     async function loadResponsables() {
-    try {
-        const responsables = await pb.collection("companions").getFullList({
-            sort: "nom"
-        });
+        try {
+            const companions = await pb.collection("companions").getFullList({
+                sort: "nom"
+            });
 
-        const select = document.getElementById("responsable");
+            const list = document.getElementById("responsablesList");
 
-        responsables.forEach(r => {
-            const option = document.createElement("option");
-            option.value = r.id;
-            option.textContent = r.nom + " " + r.prenom;
-            select.appendChild(option);
-        });
+            companions.forEach(c => {
+                const item = document.createElement("label");
+                item.innerHTML = `
+                    <input type="checkbox" name="responsables" value="${c.id}">
+                    ${c.nom} ${c.prenom}
+                `;
+                list.appendChild(item);
+            });
 
-    } catch (error) {
-        console.error("Erreur chargement responsables :", error);
+        } catch (error) {
+            console.error("Erreur chargement responsables :", error);
+        }
     }
-}
 
+    loadResponsables();
 
-// Sauvegarder le nouvel événement public
-document.getElementById("btnSave").onclick = async function () {
-    try {
-        await pb.collection("manifestations").create({
-            nom: document.getElementById("nom").value,
-            description: document.getElementById("description").value,
-            responsable: document.getElementById("responsable").value,
+    // ⭐ Ouvrir / fermer le bloc
+    document.getElementById("responsablesBox").addEventListener("click", () => {
+        const list = document.getElementById("responsablesList");
+        list.style.display = list.style.display === "block" ? "none" : "block";
+    });
+
+    // ⭐ Création de l’événement
+    async function creerEvenement() {
+        const feedback = document.getElementById("feedback");
+        feedback.textContent = "";
+
+        const responsables = Array.from(
+            document.querySelectorAll("input[name='responsables']:checked")
+        ).map(cb => cb.value);
+
+        const data = {
+            titre: document.getElementById("titre").value,
+            description_longue: document.getElementById("description").value,
             date_debut: document.getElementById("date_debut").value,
-            date_fin: document.getElementById("date_fin").value
-        });
+            date_fin: document.getElementById("date_fin").value,
+            type: "public",
+            responsables: responsables
+        };
 
-        alert("Événement public créé !");
-        window.location.href = "admin-evenement-public.html";
+        try {
+            await pb.collection("planning_events").create(data);
 
-    } catch (err) {
-        alert("Erreur lors de la création.");
-        console.error(err);
+            feedback.textContent = "Événement public créé avec succès !";
+            feedback.className = "success";
+
+        } catch (error) {
+            console.error(error);
+            feedback.textContent = "Erreur lors de la création.";
+            feedback.className = "error";
+        }
     }
-};
-
-loadResponsables();
 </script>
 
 </body>
