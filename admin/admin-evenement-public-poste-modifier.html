@@ -3,206 +3,316 @@
 <head>
     <meta charset="UTF-8">
     <title>Modifier un poste – Admin</title>
-
     <link rel="icon" type="image/png" href="../favicon.png">
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
-            background: url("../img/page-admin-evenement-public-poste-modifier.jpg") no-repeat center center fixed;
+            font-family: "DM Sans", sans-serif;
+            background-image: url("../img/page-admin-evenement-public-nouveau.jpg");
             background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
 
-        header {
-            background: rgba(0, 0, 0, 0.85);
+        header.admin-header {
+            background: rgba(44, 62, 80, 0.90);
+            padding: 18px 25px;
             color: white;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 10px 20px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-        }
-
-        .left-buttons {
-            display: flex;
             gap: 10px;
+            flex-wrap: wrap;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.4);
         }
 
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 14px;
+        .header-btn {
             background: #7A0010;
             color: white;
+            padding: 8px 14px;
             border-radius: 6px;
             text-decoration: none;
-            font-weight: bold;
-            transition: 0.2s;
-            border: none;
-            cursor: pointer;
+            font-size: 15px;
         }
 
-        .btn:hover {
-            background: #5A000C;
-        }
-
-        h2 {
+        header h1 {
+            width: 100%;
             text-align: center;
-            color: white;
-            margin: 0;
-            text-shadow: 0 0 10px black;
+            margin: 10px 0 0 0;
+            font-size: 28px;
+            font-weight: 600;
         }
 
-        .overlay {
-            background: rgba(0, 0, 0, 0.55);
-            min-height: 100vh;
-            padding: 30px 0;
-        }
-
-        .panel {
-            width: 600px;
-            margin: 20px auto;
-            background: rgba(255,255,255,0.92);
+        .card {
+            background: rgba(255,255,255,0.95);
             padding: 25px;
-            border-radius: 12px;
-            backdrop-filter: blur(4px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            border-radius: 10px;
+            max-width: 700px;
+            margin: 30px auto;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }
 
         label {
             font-weight: bold;
+            display: block;
+            margin-top: 15px;
         }
 
         input, textarea, select {
             width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            margin-bottom: 15px;
+            padding: 10px;
+            margin-top: 6px;
             border-radius: 6px;
             border: 1px solid #ccc;
+            font-size: 15px;
         }
 
         textarea {
-            height: 120px;
             resize: vertical;
+            height: 120px;
         }
+
+        .responsables-box {
+            background: rgba(255,255,255,0.95);
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 12px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .responsables-header {
+            font-weight: bold;
+        }
+
+        .responsables-list {
+            display: none;
+            margin-top: 10px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px 10px;
+        }
+
+        .responsables-list label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+
+        .tiers-fields {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            border-left: 4px solid #7A0010;
+            background: rgba(255,255,255,0.8);
+            border-radius: 6px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            background: #8b0000;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+            flex: 1;
+        }
+
+        .btn:hover {
+            background: #b30000;
+        }
+
+        .btn-red {
+            background: #b30000;
+        }
+
+        .btn-red:hover {
+            background: #7A0010;
+        }
+
+        .success { color: green; font-weight: bold; margin-top: 15px; }
+        .error { color: red; font-weight: bold; margin-top: 15px; }
     </style>
 </head>
 
 <body>
 
-<div class="overlay">
-
-<header>
-    <div class="left-buttons">
-        <a href="admin-evenement-public-postes.html" class="btn">Retour</a>
-    </div>
-
-    <h2>Modifier un poste</h2>
-
-    <div class="left-buttons">
-        <button class="btn" id="btnDelete" style="background:#444;">Supprimer</button>
-    </div>
+<header class="admin-header">
+    <a href="../index.html" class="header-btn">Menu</a>
+    <a href="admin-menu.html" class="header-btn">Menu admin</a>
+    <a id="retourEvent" class="header-btn">Retour à l’événement</a>
+    <a id="retourPostes" class="header-btn">Postes de l’événement</a>
+    <h1>Modifier un poste</h1>
 </header>
 
-<div class="panel">
+<div class="card">
 
-    <h3>Informations du poste</h3>
-
-    <label>Nom du poste :</label>
-    <input type="text" id="nom">
+    <label>Titre du poste :</label>
+    <input type="text" id="titre" required>
 
     <label>Description :</label>
     <textarea id="description"></textarea>
 
-    <label>Événement public associé :</label>
-    <select id="manifestation"></select>
+    <label>
+        <input type="checkbox" id="est_tiers"> Poste pour un tiers ?
+    </label>
 
-    <button class="btn" id="btnSave" style="width:100%; margin-top:10px;">Enregistrer les modifications</button>
+    <div id="tiersFields" class="tiers-fields">
+        <label>Nom du tiers :</label>
+        <input type="text" id="nom_tiers">
 
-</div>
+        <label>Prénom du tiers :</label>
+        <input type="text" id="prenom_tiers">
+
+        <label>Poste souhaité par le tiers :</label>
+        <input type="text" id="poste_souhaite_tiers">
+    </div>
+
+    <label>Responsables :</label>
+    <div id="responsablesBox" class="responsables-box">
+        <div class="responsables-header">Sélectionner les responsables ▼</div>
+        <div class="responsables-list" id="responsablesList"></div>
+    </div>
+
+    <div class="btn-row">
+        <button class="btn" onclick="modifierPoste()">Enregistrer</button>
+        <button class="btn" onclick="dupliquerPoste()">Dupliquer</button>
+        <button class="btn btn-red" onclick="supprimerPoste()">Supprimer</button>
+    </div>
+
+    <p id="feedback"></p>
 </div>
 
 <script>
 const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-// Récupération de l'ID dans l'URL
-const urlParams = new URLSearchParams(window.location.search);
-const posteId = urlParams.get("id");
+const posteId = new URLSearchParams(window.location.search).get("id");
+const eventId = new URLSearchParams(window.location.search).get("event");
 
-if (!posteId) {
-    alert("Aucun poste sélectionné.");
-    window.location.href = "admin-evenement-public-postes.html";
-}
+document.getElementById("retourEvent").href =
+    "admin-evenement-public-modifier.html?id=" + eventId;
 
-// Charger les événements publics (collection manifestations)
-async function loadManifestations(selectedId = null) {
-    const list = await pb.collection("manifestations").getFullList({ sort: "date_debut" });
-    const sel = document.getElementById("manifestation");
-    sel.innerHTML = "";
+document.getElementById("retourPostes").href =
+    "admin-evenement-public-postes.html?event=" + eventId;
 
-    list.forEach(m => {
-        const opt = document.createElement("option");
-        opt.value = m.id;
-        opt.textContent = m.nom;
-        if (m.id === selectedId) opt.selected = true;
-        sel.appendChild(opt);
+document.getElementById("responsablesBox").addEventListener("click", (e) => {
+    if (e.target.tagName === "INPUT") return;
+    const list = document.getElementById("responsablesList");
+    list.style.display = (list.style.display === "grid") ? "none" : "grid";
+});
+
+document.getElementById("est_tiers").addEventListener("change", () => {
+    document.getElementById("tiersFields").style.display =
+        document.getElementById("est_tiers").checked ? "block" : "none";
+});
+
+async function loadResponsables() {
+    const companions = await pb.collection("companions").getFullList({ sort: "nom" });
+    const list = document.getElementById("responsablesList");
+
+    companions.forEach(c => {
+        const item = document.createElement("label");
+        item.innerHTML = `
+            <input type="checkbox" value="${c.id}">
+            ${c.nom} ${c.prenom}
+        `;
+        list.appendChild(item);
     });
 }
 
-// Charger les données du poste
 async function loadPoste() {
+    const p = await pb.collection("planning_postes").getOne(posteId, {
+        expand: "responsable"
+    });
+
+    document.getElementById("titre").value = p.titre;
+    document.getElementById("description").value = p.description || "";
+
+    document.getElementById("est_tiers").checked = p.est_tiers;
+    document.getElementById("tiersFields").style.display = p.est_tiers ? "block" : "none";
+
+    document.getElementById("nom_tiers").value = p.nom_tiers || "";
+    document.getElementById("prenom_tiers").value = p.prenom_tiers || "";
+    document.getElementById("poste_souhaite_tiers").value = p.poste_souhaite_tiers || "";
+
+    const responsablesExistants = p.responsable || [];
+
+    document.querySelectorAll("#responsablesList input").forEach(cb => {
+        if (responsablesExistants.includes(cb.value)) cb.checked = true;
+    });
+}
+
+async function modifierPoste() {
+    const feedback = document.getElementById("feedback");
+    feedback.textContent = "";
+
+    const responsables = Array.from(
+        document.querySelectorAll("#responsablesList input:checked")
+    ).map(cb => cb.value);
+
+    const data = {
+        titre: document.getElementById("titre").value,
+        description: document.getElementById("description").value,
+        est_tiers: document.getElementById("est_tiers").checked,
+        nom_tiers: document.getElementById("nom_tiers").value,
+        prenom_tiers: document.getElementById("prenom_tiers").value,
+        poste_souhaite_tiers: document.getElementById("poste_souhaite_tiers").value,
+        responsable: responsables,
+        manifestation: eventId
+    };
+
     try {
-        const p = await pb.collection("postes").getOne(posteId);
-
-        document.getElementById("nom").value = p.nom || "";
-        document.getElementById("description").value = p.description || "";
-
-        await loadManifestations(p.manifestation);
-
-    } catch (err) {
-        alert("Erreur lors du chargement.");
-        console.error(err);
+        await pb.collection("planning_postes").update(posteId, data);
+        feedback.textContent = "Modifications enregistrées !";
+        feedback.className = "success";
+    } catch (error) {
+        console.error(error);
+        feedback.textContent = "Erreur lors de l’enregistrement.";
+        feedback.className = "error";
     }
 }
 
-// Sauvegarder les modifications
-document.getElementById("btnSave").onclick = async function () {
-    try {
-        await pb.collection("postes").update(posteId, {
-            nom: document.getElementById("nom").value,
-            description: document.getElementById("description").value,
-            manifestation: document.getElementById("manifestation").value
-        });
-
-        alert("Modifications enregistrées !");
-        window.location.href = "admin-evenement-public-postes.html";
-
-    } catch (err) {
-        alert("Erreur lors de l’enregistrement.");
-        console.error(err);
-    }
-};
-
-// Supprimer le poste
-document.getElementById("btnDelete").onclick = async function () {
+async function supprimerPoste() {
     if (!confirm("Supprimer ce poste ?")) return;
 
-    try {
-        await pb.collection("postes").delete(posteId);
-        alert("Poste supprimé.");
-        window.location.href = "admin-evenement-public-postes.html";
+    await pb.collection("planning_postes").delete(posteId);
+    window.location.href = "admin-evenement-public-postes.html?event=" + eventId;
+}
 
-    } catch (err) {
-        alert("Erreur lors de la suppression.");
-        console.error(err);
-    }
-};
+async function dupliquerPoste() {
+    const p = await pb.collection("planning_postes").getOne(posteId);
 
-loadPoste();
+    const data = {
+        titre: p.titre + " (copie)",
+        description: p.description,
+        est_tiers: p.est_tiers,
+        nom_tiers: p.nom_tiers,
+        prenom_tiers: p.prenom_tiers,
+        poste_souhaite_tiers: p.poste_souhaite_tiers,
+        responsable: p.responsable,
+        manifestation: eventId
+    };
+
+    const newPoste = await pb.collection("planning_postes").create(data);
+
+    window.location.href =
+        "admin-evenement-public-poste-modifier.html?id=" + newPoste.id + "&event=" + eventId;
+}
+
+(async () => {
+    await loadResponsables();
+    await loadPoste();
+})();
 </script>
 
 </body>
