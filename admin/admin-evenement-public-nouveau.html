@@ -108,14 +108,13 @@
             font-weight: bold;
         }
 
-        /* ⭐ Liste FERMÉE au chargement */
         .responsables-list {
-            display: none; /* ← IMPORTANT */
+            display: none;
             margin-top: 10px;
             border-top: 1px solid #ccc;
             padding-top: 10px;
 
-            /* 3 colonnes alignées */
+            display: grid;
             grid-template-columns: repeat(3, 1fr);
             column-gap: 15px;
             row-gap: 2px;
