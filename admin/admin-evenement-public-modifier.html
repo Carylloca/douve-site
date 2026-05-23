@@ -220,8 +220,8 @@ async function loadEvent() {
 
     document.getElementById("titre").value = ev.titre;
     document.getElementById("description").value = ev.description;
-    document.getElementById("date_debut").value = ev.date_debut;
-    document.getElementById("date_fin").value = ev.date_fin;
+    document.getElementById("date_debut").value = cleanDate(ev.date_debut);
+    document.getElementById("date_fin").value = cleanDate(ev.date_fin);
 
     responsablesExistants = ev.responsable || [];
 
