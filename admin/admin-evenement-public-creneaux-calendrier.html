@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Calendrier des créneaux – Admin</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+
+    <!-- FullCalendar -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "DM Sans", sans-serif;
+            background-image: url("../img/page-admin-evenement-public-nouveau.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        header.admin-header {
+            background: rgba(44, 62, 80, 0.90);
+            padding: 18px 25px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+        }
+
+        .header-btn {
+            background: #7A0010;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 15px;
+        }
+
+        header h1 {
+            width: 100%;
+            text-align: center;
+            margin: 10px 0 0 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        #calendar {
+            max-width: 1100px;
+            margin: 30px auto;
+            background: rgba(255,255,255,0.95);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="admin-header">
+    <a href="../index.html" class="header-btn">Menu</a>
+    <a href="admin-menu.html" class="header-btn">Menu admin</a>
+    <a id="retourEvent" class="header-btn">Retour à l’événement</a>
+    <a id="retourJours" class="header-btn">Retour aux jours</a>
+    <h1>Calendrier des créneaux</h1>
+</header>
+
+<div id="calendar"></div>
+
+<script>
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+const eventId = new URLSearchParams(window.location.search).get("event");
+
+/* 🔐 Sécurité */
+const user = pb.authStore.model;
+
+if (!user) {
+    window.location.href = "../login.html";
+}
+
+if (user.role !== "comite" && user.role !== "responsable") {
+    alert("Accès refusé");
+    window.location.href = "../index.html";
+}
+
+/* Navigation */
+document.getElementById("retourEvent").href =
+    "admin-evenement-public-modifier.html?id=" + eventId;
+
+document.getElementById("retourJours").href =
+    "admin-evenement-public-jours.html?event=" + eventId;
+
+/* Couleurs par poste */
+function colorFromString(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const c = (hash & 0x00FFFFFF)
+        .toString(16)
+        .toUpperCase();
+    return "#" + "00000".substring(0, 6 - c.length) + c;
+}
+
+/* Charger tous les créneaux de l’événement */
+async function loadCreneaux() {
+    const jours = await pb.collection("planning_jours").getFullList({
+        filter: `manifestation = "${eventId}"`,
+        sort: "date"
+    });
+
+    const joursMap = {};
+    jours.forEach(j => joursMap[j.id] = j.date);
+
+    const creneaux = await pb.collection("planning_creneaux").getFullList({
+        filter: `planning_jour != ""`,
+        expand: "poste,compagnon_assigne,planning_jour",
+        sort: "heure_debut"
+    });
+
+    const events = [];
+
+    creneaux.forEach(c => {
+        if (!c.expand?.planning_jour) return;
+
+        const date = c.expand.planning_jour.date;
+        const start = date + "T" + c.heure_debut;
+        const end = date + "T" + c.heure_fin;
+
+        const poste = c.expand?.poste?.titre || "Sans poste";
+        const color = colorFromString(poste);
+
+        const assign = c.expand?.compagnon_assigne
+            ? c.expand.companon_assigne.nom + " " + c.expand.companon_assigne.prenom
+            : "—";
+
+        events.push({
+            id: c.id,
+            title: poste + " (" + assign + ")",
+            start: start,
+            end: end,
+            backgroundColor: color,
+            borderColor: color
+        });
+    });
+
+    return events;
+}
+
+/* Initialisation du calendrier */
+document.addEventListener("DOMContentLoaded", async function () {
+
+    const events = await loadCreneaux();
+
+    const calendarEl = document.getElementById("calendar");
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "timeGridWeek",
+        locale: "fr",
+        slotDuration: "00:15:00",
+        allDaySlot: false,
+        height: "auto",
+        headerToolbar: {
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,timeGridWeek,timeGridDay"
+        },
+        events: events,
+
+        eventClick: function(info) {
+            const id = info.event.id;
+            window.location.href =
+                "admin-evenement-public-creneau-modifier.html?id=" + id + "&event=" + eventId;
+        }
+    });
+
+    calendar.render();
+});
+</script>
+
+</body>
+</html>
