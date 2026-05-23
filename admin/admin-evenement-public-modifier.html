@@ -88,10 +88,6 @@
             flex: 1;
         }
 
-        .dates-row input {
-            width: 140px;
-        }
-
         .responsables-box {
             background: rgba(255,255,255,0.95);
             border: 1px solid #ccc;
@@ -199,6 +195,26 @@ if (!pb.authStore.isValid) {
 
 let responsablesExistants = [];
 
+/* ⭐ Nettoyage des dates PocketBase → input type="date" */
+function cleanDate(d) {
+    if (!d) return "";
+    return d.split("T")[0];
+}
+
+async function loadEvent() {
+    const ev = await pb.collection("planning_events").getOne(eventId, {
+        expand: "responsable"
+    });
+
+    document.getElementById("titre").value = ev.titre;
+    document.getElementById("description").value = ev.description;
+
+    document.getElementById("date_debut").value = cleanDate(ev.date_debut);
+    document.getElementById("date_fin").value = cleanDate(ev.date_fin);
+
+    responsablesExistants = ev.responsable || [];
+}
+
 async function loadResponsables() {
     const companions = await pb.collection("companions").getFullList({ sort: "nom" });
     const list = document.getElementById("responsablesList");
@@ -211,20 +227,8 @@ async function loadResponsables() {
         `;
         list.appendChild(item);
     });
-}
 
-async function loadEvent() {
-    const ev = await pb.collection("planning_events").getOne(eventId, {
-        expand: "responsable"
-    });
-
-    document.getElementById("titre").value = ev.titre;
-    document.getElementById("description").value = ev.description;
-    document.getElementById("date_debut").value = cleanDate(ev.date_debut);
-    document.getElementById("date_fin").value = cleanDate(ev.date_fin);
-
-    responsablesExistants = ev.responsable || [];
-
+    // Cocher les responsables existants
     document.querySelectorAll("#responsablesList input").forEach(cb => {
         if (responsablesExistants.includes(cb.value)) {
             cb.checked = true;
@@ -268,9 +272,10 @@ async function modifierEvenement() {
     }
 }
 
+/* ⭐ Ordre corrigé : on charge l’événement AVANT les responsables */
 (async () => {
-    await loadResponsables();
     await loadEvent();
+    await loadResponsables();
 })();
 </script>
 
