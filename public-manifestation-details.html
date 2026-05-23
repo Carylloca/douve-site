@@ -2,21 +2,23 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Détails de l'événement public</title>
 
+    <link rel="icon" type="image/png" href="favicon.png">
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
             margin: 0;
-            padding: 0;
+            font-family: "DM Sans", sans-serif;
+            background-image: url("img/page-public-manifestation-details.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
 
         header {
-            background: #2c3e50;
+            background: rgba(44, 62, 80, 0.90);
             color: white;
             padding: 20px;
             text-align: center;
@@ -39,13 +41,14 @@
             object-fit: cover;
             border-radius: 10px;
             margin-bottom: 20px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.25);
         }
 
         .card {
-            background: white;
+            background: rgba(255, 255, 255, 0.96);
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
             margin-bottom: 25px;
         }
 
@@ -66,8 +69,9 @@
         .back {
             display: inline-block;
             margin-bottom: 20px;
-            color: #2c3e50;
+            color: #ffffff;
             text-decoration: none;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
         }
 
         .back:hover {
@@ -87,7 +91,7 @@
     <a href="public-manifestations.html" class="back">← Retour aux événements publics</a>
 
     <div id="eventContainer">
-        <p>Chargement...</p>
+        <p style="color:white; text-shadow:0 1px 3px rgba(0,0,0,0.6);">Chargement...</p>
     </div>
 
 </div>
@@ -95,7 +99,6 @@
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-    // Récupération de l'ID dans l'URL
     const urlParams = new URLSearchParams(window.location.search);
     const eventId = urlParams.get("id");
 
@@ -103,7 +106,7 @@
         const container = document.getElementById("eventContainer");
 
         if (!eventId) {
-            container.innerHTML = "<p>Événement introuvable.</p>";
+            container.innerHTML = "<p style='color:white; text-shadow:0 1px 3px rgba(0,0,0,0.6);'>Événement introuvable.</p>";
             return;
         }
 
@@ -135,7 +138,7 @@
 
         } catch (error) {
             console.error(error);
-            container.innerHTML = "<p>Impossible de charger les détails de l'événement.</p>";
+            container.innerHTML = "<p style='color:white; text-shadow:0 1px 3px rgba(0,0,0,0.6);'>Impossible de charger les détails de l'événement.</p>";
         }
     }
 
