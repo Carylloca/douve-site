@@ -65,7 +65,7 @@
             margin-top: 15px;
         }
 
-        input, textarea, select {
+        input, textarea {
             width: 100%;
             padding: 10px;
             margin-top: 6px;
@@ -86,6 +86,10 @@
 
         .dates-row div {
             flex: 1;
+        }
+
+        .dates-row input {
+            width: 140px;
         }
 
         .responsables-box {
@@ -123,7 +127,6 @@
             padding: 2px 0;
         }
 
-        /* --- BOUTONS --- */
         .btn {
             display: inline-block;
             background: #8b0000;
@@ -135,45 +138,53 @@
             cursor: pointer;
             border: none;
             font-size: 16px;
-            width: 100%;
-            text-align: center;
-            flex: 1;
         }
 
         .btn:hover {
-@@ -150,6 +149,19 @@
-            background: #7A0010;
-        }
-
-        /* --- ALIGNEMENT DES BOUTONS --- */
-        .btn-row {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        @media (max-width: 600px) {
-            .btn-row {
-                flex-direction: column;
-            }
+            background: #b30000;
         }
 
         .success { color: green; font-weight: bold; margin-top: 15px; }
         .error { color: red; font-weight: bold; margin-top: 15px; }
     </style>
-@@ -197,129 +209,132 @@
+</head>
+
+<body>
+
+<header class="admin-header">
+    <div class="header-buttons">
+        <a href="../index.html" class="header-btn">Menu</a>
+        <a href="admin-menu.html" class="header-btn">Menu admin</a>
+    </div>
+    <h1>Modifier un événement public</h1>
+</header>
+
+<div class="card">
+
+    <label>Nom de l’événement :</label>
+    <input type="text" id="titre" required>
+
+    <label>Responsables :</label>
+    <div id="responsablesBox" class="responsables-box">
+        <div class="responsables-header">Sélectionner les responsables ▼</div>
+        <div class="responsables-list" id="responsablesList"></div>
+    </div>
+
+    <label>Description :</label>
+    <textarea id="description"></textarea>
+
+    <div class="dates-row">
+        <div>
+            <label>Date de début :</label>
+            <input type="date" id="date_debut">
+        </div>
+        <div>
+            <label>Date de fin :</label>
+            <input type="date" id="date_fin">
         </div>
     </div>
 
     <button class="btn" onclick="modifierEvenement()">Enregistrer les modifications</button>
-    <button class="btn" onclick="dupliquerEvenement()">Dupliquer l’événement</button>
-    <button class="btn btn-red" onclick="supprimerEvenement()">Supprimer l’événement</button>
-    <!-- BOUTONS ALIGNÉS -->
-    <div class="btn-row">
-        <button class="btn" onclick="modifierEvenement()">Enregistrer</button>
-        <button class="btn" onclick="dupliquerEvenement()">Dupliquer</button>
-        <button class="btn btn-red" onclick="supprimerEvenement()">Supprimer</button>
-    </div>
 
     <p id="feedback"></p>
 </div>
@@ -209,7 +220,6 @@ async function loadEvent() {
 
     document.getElementById("titre").value = ev.titre;
     document.getElementById("description").value = ev.description;
-    document.getElementById("etat").value = ev.etat || "edition";
     document.getElementById("date_debut").value = ev.date_debut;
     document.getElementById("date_fin").value = ev.date_fin;
 
@@ -241,7 +251,6 @@ async function modifierEvenement() {
         titre: document.getElementById("titre").value,
         description: document.getElementById("description").value,
         description_longue: document.getElementById("description").value,
-        etat: document.getElementById("etat").value,
         date_debut: document.getElementById("date_debut").value,
         date_fin: document.getElementById("date_fin").value,
         responsable: responsables
@@ -257,36 +266,6 @@ async function modifierEvenement() {
         feedback.textContent = "Erreur lors de l’enregistrement.";
         feedback.className = "error";
     }
-}
-
-async function supprimerEvenement() {
-    if (!confirm("Supprimer définitivement cet événement ?")) return;
-
-    try {
-        await pb.collection("planning_events").delete(eventId);
-        window.location.href = "admin-evenement-public-dashboard.html";
-    } catch (err) {
-        alert("Erreur lors de la suppression.");
-        console.error(err);
-    }
-}
-
-async function dupliquerEvenement() {
-    const ev = await pb.collection("planning_events").getOne(eventId);
-
-    const data = {
-        titre: ev.titre + " (copie)",
-        description: ev.description,
-        description_longue: ev.description_longue,
-        etat: ev.etat,
-        date_debut: ev.date_debut,
-        date_fin: ev.date_fin,
-        responsable: ev.responsable
-    };
-
-    const newEvent = await pb.collection("planning_events").create(data);
-
-    window.location.href = "admin-evenement-public-modifier.html?id=" + newEvent.id;
 }
 
 (async () => {
