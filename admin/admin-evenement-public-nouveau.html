@@ -81,14 +81,16 @@
             height: 120px;
         }
 
-        /* DATES côte à côte */
+        /* DATES côte à côte + réduites */
         .dates-row {
             display: flex;
             gap: 20px;
         }
 
-        .dates-row div {
-            flex: 1;
+        .dates-row input {
+            width: 100%;
+            padding: 6px;
+            font-size: 14px;
         }
 
         /* RESPONSABLES */
@@ -106,13 +108,14 @@
             font-weight: bold;
         }
 
+        /* ⭐ Liste FERMÉE au chargement */
         .responsables-list {
-            display: none;
+            display: none; /* ← IMPORTANT */
             margin-top: 10px;
             border-top: 1px solid #ccc;
             padding-top: 10px;
 
-            display: grid;
+            /* 3 colonnes alignées */
             grid-template-columns: repeat(3, 1fr);
             column-gap: 15px;
             row-gap: 2px;
@@ -195,7 +198,7 @@
         </div>
     </div>
 
-    <button class="btn" onclick="creerEvenement()">Créer l’événement public</button>
+    <button class="btn" onclick="creerEvenement()">Mémoriser</button>
 
     <p id="feedback"></p>
 </div>
@@ -255,12 +258,12 @@
 
         try {
             await pb.collection("planning_events").create(data);
-            feedback.textContent = "Événement public créé avec succès !";
+            feedback.textContent = "Événement public mémorisé !";
             feedback.className = "success";
 
         } catch (error) {
             console.error(error);
-            feedback.textContent = "Erreur lors de la création.";
+            feedback.textContent = "Erreur lors de la mémorisation.";
             feedback.className = "error";
         }
     }
