@@ -2,9 +2,8 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Modifier un événement public – Admin</title>
+    <title>Modifier un poste – Admin</title>
     <link rel="icon" type="image/png" href="../favicon.png">
-
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
@@ -23,13 +22,9 @@
             color: white;
             display: flex;
             align-items: center;
-            gap: 15px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.4);
-        }
-
-        .header-buttons {
-            display: flex;
             gap: 10px;
+            flex-wrap: wrap;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.4);
         }
 
         .header-btn {
@@ -39,13 +34,12 @@
             border-radius: 6px;
             text-decoration: none;
             font-size: 15px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
 
-        header.admin-header h1 {
-            flex: 1;
+        header h1 {
+            width: 100%;
             text-align: center;
-            margin: 0;
+            margin: 10px 0 0 0;
             font-size: 28px;
             font-weight: 600;
         }
@@ -79,15 +73,6 @@
             height: 120px;
         }
 
-        .dates-row {
-            display: flex;
-            gap: 20px;
-        }
-
-        .dates-row div {
-            flex: 1;
-        }
-
         .responsables-box {
             background: rgba(255,255,255,0.95);
             border: 1px solid #ccc;
@@ -115,25 +100,31 @@
             align-items: center;
             gap: 6px;
             font-size: 14px;
-            font-weight: normal;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            line-height: 1.0;
-            padding: 2px 0;
         }
 
-        /* --- BOUTONS --- */
+        .tiers-fields {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            border-left: 4px solid #7A0010;
+            background: rgba(255,255,255,0.8);
+            border-radius: 6px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
         .btn {
             background: #8b0000;
             color: white;
             padding: 12px 18px;
             border-radius: 6px;
-            text-decoration: none;
             cursor: pointer;
             border: none;
             font-size: 16px;
-            text-align: center;
             flex: 1;
         }
 
@@ -149,19 +140,6 @@
             background: #7A0010;
         }
 
-        /* --- ALIGNEMENT DES BOUTONS --- */
-        .btn-row {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        @media (max-width: 600px) {
-            .btn-row {
-                flex-direction: column;
-            }
-        }
-
         .success { color: green; font-weight: bold; margin-top: 15px; }
         .error { color: red; font-weight: bold; margin-top: 15px; }
     </style>
@@ -170,18 +148,35 @@
 <body>
 
 <header class="admin-header">
-    <div class="header-buttons">
-        <a href="../index.html" class="header-btn">Menu</a>
-        <a href="admin-menu.html" class="header-btn">Menu admin</a>
-        <a href="admin-evenement-public-dashboard.html" class="header-btn">Liste événements publics</a>
-    </div>
-    <h1>Modifier un événement public</h1>
+    <a href="../index.html" class="header-btn">Menu</a>
+    <a href="admin-menu.html" class="header-btn">Menu admin</a>
+    <a id="retourEvent" class="header-btn">Retour à l’événement</a>
+    <a id="retourPostes" class="header-btn">Postes de l’événement</a>
+    <h1>Modifier un poste</h1>
 </header>
 
 <div class="card">
 
-    <label>Nom de l’événement :</label>
+    <label>Titre du poste :</label>
     <input type="text" id="titre" required>
+
+    <label>Description :</label>
+    <textarea id="description"></textarea>
+
+    <label>
+        <input type="checkbox" id="est_tiers"> Poste pour un tiers ?
+    </label>
+
+    <div id="tiersFields" class="tiers-fields">
+        <label>Nom du tiers :</label>
+        <input type="text" id="nom_tiers">
+
+        <label>Prénom du tiers :</label>
+        <input type="text" id="prenom_tiers">
+
+        <label>Poste souhaité par le tiers :</label>
+        <input type="text" id="poste_souhaite_tiers">
+    </div>
 
     <label>Responsables :</label>
     <div id="responsablesBox" class="responsables-box">
@@ -189,31 +184,10 @@
         <div class="responsables-list" id="responsablesList"></div>
     </div>
 
-    <label>Description :</label>
-    <textarea id="description"></textarea>
-
-    <label>État :</label>
-    <select id="etat">
-        <option value="edition">En édition</option>
-        <option value="finalise">Finalisé</option>
-    </select>
-
-    <div class="dates-row">
-        <div>
-            <label>Date de début :</label>
-            <input type="date" id="date_debut">
-        </div>
-        <div>
-            <label>Date de fin :</label>
-            <input type="date" id="date_fin">
-        </div>
-    </div>
-
-    <!-- BOUTONS ALIGNÉS -->
     <div class="btn-row">
-        <button class="btn" onclick="modifierEvenement()">Enregistrer</button>
-        <button class="btn" onclick="dupliquerEvenement()">Dupliquer</button>
-        <button class="btn btn-red" onclick="supprimerEvenement()">Supprimer</button>
+        <button class="btn" onclick="modifierPoste()">Enregistrer</button>
+        <button class="btn" onclick="dupliquerPoste()">Dupliquer</button>
+        <button class="btn btn-red" onclick="supprimerPoste()">Supprimer</button>
     </div>
 
     <p id="feedback"></p>
@@ -221,13 +195,26 @@
 
 <script>
 const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
-const eventId = new URLSearchParams(window.location.search).get("id");
 
-if (!pb.authStore.isValid) {
-    window.location.href = "../login.html";
-}
+const posteId = new URLSearchParams(window.location.search).get("id");
+const eventId = new URLSearchParams(window.location.search).get("event");
 
-let responsablesExistants = [];
+document.getElementById("retourEvent").href =
+    "admin-evenement-public-modifier.html?id=" + eventId;
+
+document.getElementById("retourPostes").href =
+    "admin-evenement-public-postes.html?event=" + eventId;
+
+document.getElementById("responsablesBox").addEventListener("click", (e) => {
+    if (e.target.tagName === "INPUT") return;
+    const list = document.getElementById("responsablesList");
+    list.style.display = (list.style.display === "grid") ? "none" : "grid";
+});
+
+document.getElementById("est_tiers").addEventListener("change", () => {
+    document.getElementById("tiersFields").style.display =
+        document.getElementById("est_tiers").checked ? "block" : "none";
+});
 
 async function loadResponsables() {
     const companions = await pb.collection("companions").getFullList({ sort: "nom" });
@@ -243,34 +230,29 @@ async function loadResponsables() {
     });
 }
 
-async function loadEvent() {
-    const ev = await pb.collection("planning_events").getOne(eventId, {
+async function loadPoste() {
+    const p = await pb.collection("planning_postes").getOne(posteId, {
         expand: "responsable"
     });
 
-    document.getElementById("titre").value = ev.titre;
-    document.getElementById("description").value = ev.description;
-    document.getElementById("etat").value = ev.etat || "edition";
-    document.getElementById("date_debut").value = ev.date_debut;
-    document.getElementById("date_fin").value = ev.date_fin;
+    document.getElementById("titre").value = p.titre;
+    document.getElementById("description").value = p.description || "";
 
-    responsablesExistants = ev.responsable || [];
+    document.getElementById("est_tiers").checked = p.est_tiers;
+    document.getElementById("tiersFields").style.display = p.est_tiers ? "block" : "none";
+
+    document.getElementById("nom_tiers").value = p.nom_tiers || "";
+    document.getElementById("prenom_tiers").value = p.prenom_tiers || "";
+    document.getElementById("poste_souhaite_tiers").value = p.poste_souhaite_tiers || "";
+
+    const responsablesExistants = p.responsable || [];
 
     document.querySelectorAll("#responsablesList input").forEach(cb => {
-        if (responsablesExistants.includes(cb.value)) {
-            cb.checked = true;
-        }
+        if (responsablesExistants.includes(cb.value)) cb.checked = true;
     });
 }
 
-document.getElementById("responsablesBox").addEventListener("click", (e) => {
-    if (e.target.tagName === "INPUT") return;
-
-    const list = document.getElementById("responsablesList");
-    list.style.display = (list.style.display === "grid") ? "none" : "grid";
-});
-
-async function modifierEvenement() {
+async function modifierPoste() {
     const feedback = document.getElementById("feedback");
     feedback.textContent = "";
 
@@ -281,18 +263,18 @@ async function modifierEvenement() {
     const data = {
         titre: document.getElementById("titre").value,
         description: document.getElementById("description").value,
-        description_longue: document.getElementById("description").value,
-        etat: document.getElementById("etat").value,
-        date_debut: document.getElementById("date_debut").value,
-        date_fin: document.getElementById("date_fin").value,
-        responsable: responsables
+        est_tiers: document.getElementById("est_tiers").checked,
+        nom_tiers: document.getElementById("nom_tiers").value,
+        prenom_tiers: document.getElementById("prenom_tiers").value,
+        poste_souhaite_tiers: document.getElementById("poste_souhaite_tiers").value,
+        responsable: responsables,
+        manifestation: eventId
     };
 
     try {
-        await pb.collection("planning_events").update(eventId, data);
+        await pb.collection("planning_postes").update(posteId, data);
         feedback.textContent = "Modifications enregistrées !";
         feedback.className = "success";
-
     } catch (error) {
         console.error(error);
         feedback.textContent = "Erreur lors de l’enregistrement.";
@@ -300,39 +282,36 @@ async function modifierEvenement() {
     }
 }
 
-async function supprimerEvenement() {
-    if (!confirm("Supprimer définitivement cet événement ?")) return;
+async function supprimerPoste() {
+    if (!confirm("Supprimer ce poste ?")) return;
 
-    try {
-        await pb.collection("planning_events").delete(eventId);
-        window.location.href = "admin-evenement-public-dashboard.html";
-    } catch (err) {
-        alert("Erreur lors de la suppression.");
-        console.error(err);
-    }
+    await pb.collection("planning_postes").delete(posteId);
+    window.location.href = "admin-evenement-public-postes.html?event=" + eventId;
 }
 
-async function dupliquerEvenement() {
-    const ev = await pb.collection("planning_events").getOne(eventId);
+async function dupliquerPoste() {
+    const p = await pb.collection("planning_postes").getOne(posteId);
 
     const data = {
-        titre: ev.titre + " (copie)",
-        description: ev.description,
-        description_longue: ev.description_longue,
-        etat: ev.etat,
-        date_debut: ev.date_debut,
-        date_fin: ev.date_fin,
-        responsable: ev.responsable
+        titre: p.titre + " (copie)",
+        description: p.description,
+        est_tiers: p.est_tiers,
+        nom_tiers: p.nom_tiers,
+        prenom_tiers: p.prenom_tiers,
+        poste_souhaite_tiers: p.poste_souhaite_tiers,
+        responsable: p.responsable,
+        manifestation: eventId
     };
 
-    const newEvent = await pb.collection("planning_events").create(data);
+    const newPoste = await pb.collection("planning_postes").create(data);
 
-    window.location.href = "admin-evenement-public-modifier.html?id=" + newEvent.id;
+    window.location.href =
+        "admin-evenement-public-poste-modifier.html?id=" + newPoste.id + "&event=" + eventId;
 }
 
 (async () => {
     await loadResponsables();
-    await loadEvent();
+    await loadPoste();
 })();
 </script>
 
