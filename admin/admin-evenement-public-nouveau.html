@@ -15,12 +15,24 @@
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            padding: 20px;
+            padding: 0;
         }
 
-        h1 {
+        /* ⭐ HEADER IDENTIQUE AUX AUTRES PAGES */
+        header.admin-header {
+            background: rgba(44, 62, 80, 0.90);
+            padding: 25px;
+            text-align: center;
             color: white;
-            text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+            border-radius: 0 0 10px 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+        }
+
+        header.admin-header h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 600;
         }
 
         .card {
@@ -69,12 +81,12 @@
             background: #b30000;
         }
 
-        /* Bloc RESPONSABLES */
+        /* ⭐ BLOC RESPONSABLES EN 3 COLONNES */
         .responsables-box {
-            background: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.95);
             border: 1px solid #ccc;
             border-radius: 6px;
-            padding: 10px;
+            padding: 12px;
             cursor: pointer;
             margin-top: 10px;
         }
@@ -86,15 +98,19 @@
         .responsables-list {
             display: none;
             margin-top: 10px;
-            max-height: 200px;
-            overflow-y: auto;
             border-top: 1px solid #ccc;
             padding-top: 10px;
+
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px 20px;
         }
 
         .responsables-list label {
-            display: block;
-            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
         }
 
         .success {
@@ -113,7 +129,10 @@
 
 <body>
 
-<h1>Nouvel événement public</h1>
+<!-- ⭐ HEADER -->
+<header class="admin-header">
+    <h1>Nouvel événement public</h1>
+</header>
 
 <div class="card">
 
@@ -177,7 +196,7 @@
     // ⭐ Ouvrir / fermer le bloc
     document.getElementById("responsablesBox").addEventListener("click", () => {
         const list = document.getElementById("responsablesList");
-        list.style.display = list.style.display === "block" ? "none" : "block";
+        list.style.display = list.style.display === "grid" ? "none" : "grid";
     });
 
     // ⭐ Création de l’événement
