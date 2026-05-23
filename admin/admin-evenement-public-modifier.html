@@ -2,120 +2,214 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Modifier un événement public</title>
-
+    <title>Modifier un événement public – Admin</title>
     <link rel="icon" type="image/png" href="../favicon.png">
+
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: url("../img/page-admin-evenement-public-nouveau.jpg") no-repeat center center fixed;
+            font-family: "DM Sans", sans-serif;
+            background-image: url("../img/page-admin-evenement-public-nouveau.jpg");
             background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
 
-        header {
-            background: rgba(0,0,0,0.85);
+        header.admin-header {
+            background: rgba(44, 62, 80, 0.90);
+            padding: 18px 25px;
             color: white;
-            padding: 12px 20px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+            gap: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.4);
         }
 
-        .btn {
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-btn {
             background: #7A0010;
             color: white;
             padding: 8px 14px;
             border-radius: 6px;
             text-decoration: none;
-            font-weight: bold;
+            font-size: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
 
-        .panel {
-            width: 600px;
-            margin: 30px auto;
-            background: rgba(255,255,255,0.92);
+        header.admin-header h1 {
+            flex: 1;
+            text-align: center;
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.95);
             padding: 25px;
-            border-radius: 12px;
+            border-radius: 10px;
+            max-width: 700px;
+            margin: 30px auto;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }
 
         label {
             font-weight: bold;
+            display: block;
+            margin-top: 15px;
         }
 
         input, textarea {
             width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            margin-bottom: 15px;
+            padding: 10px;
+            margin-top: 6px;
             border-radius: 6px;
             border: 1px solid #ccc;
+            font-size: 15px;
         }
 
         textarea {
+            resize: vertical;
             height: 120px;
         }
 
-        .responsables-list {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 6px;
-            margin-bottom: 15px;
+        .dates-row {
+            display: flex;
+            gap: 20px;
         }
+
+        .dates-row div {
+            flex: 1;
+        }
+
+        .dates-row input {
+            width: 140px;
+        }
+
+        .responsables-box {
+            background: rgba(255,255,255,0.95);
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 12px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .responsables-header {
+            font-weight: bold;
+        }
+
+        .responsables-list {
+            display: none;
+            margin-top: 10px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px 10px;
+        }
+
+        .responsables-list label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: normal;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.0;
+            padding: 2px 0;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #8b0000;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 20px;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background: #b30000;
+        }
+
+        .success { color: green; font-weight: bold; margin-top: 15px; }
+        .error { color: red; font-weight: bold; margin-top: 15px; }
     </style>
 </head>
 
 <body>
 
-<header>
-    <a href="admin-evenement-public-dashboard.html" class="btn">Retour</a>
-    <h2>Modifier un événement public</h2>
-    <div></div>
+<header class="admin-header">
+    <div class="header-buttons">
+        <a href="../index.html" class="header-btn">Menu</a>
+        <a href="admin-menu.html" class="header-btn">Menu admin</a>
+    </div>
+    <h1>Modifier un événement public</h1>
 </header>
 
-<div class="panel">
+<div class="card">
 
     <label>Nom de l’événement :</label>
-    <input type="text" id="titre">
+    <input type="text" id="titre" required>
 
     <label>Responsables :</label>
-    <div id="responsablesList" class="responsables-list"></div>
+    <div id="responsablesBox" class="responsables-box">
+        <div class="responsables-header">Sélectionner les responsables ▼</div>
+        <div class="responsables-list" id="responsablesList"></div>
+    </div>
 
     <label>Description :</label>
     <textarea id="description"></textarea>
 
-    <label>Date de début :</label>
-    <input type="date" id="date_debut">
+    <div class="dates-row">
+        <div>
+            <label>Date de début :</label>
+            <input type="date" id="date_debut">
+        </div>
+        <div>
+            <label>Date de fin :</label>
+            <input type="date" id="date_fin">
+        </div>
+    </div>
 
-    <label>Date de fin :</label>
-    <input type="date" id="date_fin">
-
-    <button class="btn" id="btnSave" style="width:100%; margin-top:10px;">Enregistrer les modifications</button>
+    <button class="btn" onclick="modifierEvenement()">Enregistrer les modifications</button>
 
     <p id="feedback"></p>
-
 </div>
 
 <script>
 const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 const eventId = new URLSearchParams(window.location.search).get("id");
 
+if (!pb.authStore.isValid) {
+    window.location.href = "../login.html";
+}
+
 let responsablesExistants = [];
 
 async function loadResponsables() {
-    const list = await pb.collection("companions").getFullList({ sort: "nom" });
-    const container = document.getElementById("responsablesList");
+    const companions = await pb.collection("companions").getFullList({ sort: "nom" });
+    const list = document.getElementById("responsablesList");
 
-    list.forEach(c => {
-        const div = document.createElement("label");
-        div.innerHTML = `
+    companions.forEach(c => {
+        const item = document.createElement("label");
+        item.innerHTML = `
             <input type="checkbox" value="${c.id}">
             ${c.nom} ${c.prenom}
         `;
-        container.appendChild(div);
+        list.appendChild(item);
     });
 }
 
@@ -138,7 +232,17 @@ async function loadEvent() {
     });
 }
 
-document.getElementById("btnSave").onclick = async function () {
+document.getElementById("responsablesBox").addEventListener("click", (e) => {
+    if (e.target.tagName === "INPUT") return;
+
+    const list = document.getElementById("responsablesList");
+    list.style.display = (list.style.display === "grid") ? "none" : "grid";
+});
+
+async function modifierEvenement() {
+    const feedback = document.getElementById("feedback");
+    feedback.textContent = "";
+
     const responsables = Array.from(
         document.querySelectorAll("#responsablesList input:checked")
     ).map(cb => cb.value);
@@ -154,14 +258,15 @@ document.getElementById("btnSave").onclick = async function () {
 
     try {
         await pb.collection("planning_events").update(eventId, data);
-        document.getElementById("feedback").textContent = "Modifications enregistrées !";
-        document.getElementById("feedback").style.color = "green";
-    } catch (err) {
-        console.error(err);
-        document.getElementById("feedback").textContent = "Erreur lors de l’enregistrement.";
-        document.getElementById("feedback").style.color = "red";
+        feedback.textContent = "Modifications enregistrées !";
+        feedback.className = "success";
+
+    } catch (error) {
+        console.error(error);
+        feedback.textContent = "Erreur lors de l’enregistrement.";
+        feedback.className = "error";
     }
-};
+}
 
 (async () => {
     await loadResponsables();
