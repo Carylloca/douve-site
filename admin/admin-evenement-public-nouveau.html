@@ -174,12 +174,56 @@
     <label>Nom de l’événement :</label>
     <input type="text" id="titre" required>
 
-    <!-- ⭐ BLOC RESPONSABLES -->
-    <label>Responsables :</label>
-    <div id="responsablesBox" class="responsables-box">
-        <div class="responsables-header">Sélectionner les responsables ▼</div>
-        <div class="responsables-list" id="responsablesList"></div>
-    </div>
+    /* ⭐ BLOC RESPONSABLES */
+.responsables-box {
+    background: rgba(255,255,255,0.95);
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 12px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.responsables-header {
+    font-weight: bold;
+}
+
+/* ⭐ Liste fermée au chargement */
+.responsables-list {
+    display: none;
+    margin-top: 10px;
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
+
+    /* ⭐ 3 colonnes parfaitement alignées */
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 20px;
+    row-gap: 4px;
+}
+
+/* ⭐ Chaque ligne = checkbox + nom sur une seule ligne */
+.responsables-list label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    font-size: 14px;
+    font-weight: normal;
+
+    white-space: nowrap;        /* ⭐ empêche le retour à la ligne */
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    line-height: 1.0;           /* ⭐ espace vertical minimal */
+    padding: 0;                 /* ⭐ supprime les marges internes */
+    margin: 0;                  /* ⭐ supprime les marges externes */
+}
+
+.responsables-list input[type="checkbox"] {
+    flex-shrink: 0;             /* ⭐ empêche la checkbox de bouger */
+}
+
 
     <label>Description :</label>
     <textarea id="description"></textarea>
