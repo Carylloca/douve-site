@@ -123,19 +123,18 @@
             padding: 2px 0;
         }
 
+        /* --- BOUTONS --- */
         .btn {
-            display: inline-block;
             background: #8b0000;
             color: white;
             padding: 12px 18px;
             border-radius: 6px;
             text-decoration: none;
-            margin-top: 20px;
             cursor: pointer;
             border: none;
             font-size: 16px;
-            width: 100%;
             text-align: center;
+            flex: 1;
         }
 
         .btn:hover {
@@ -148,6 +147,19 @@
 
         .btn-red:hover {
             background: #7A0010;
+        }
+
+        /* --- ALIGNEMENT DES BOUTONS --- */
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .btn-row {
+                flex-direction: column;
+            }
         }
 
         .success { color: green; font-weight: bold; margin-top: 15px; }
@@ -197,9 +209,12 @@
         </div>
     </div>
 
-    <button class="btn" onclick="modifierEvenement()">Enregistrer les modifications</button>
-    <button class="btn" onclick="dupliquerEvenement()">Dupliquer l’événement</button>
-    <button class="btn btn-red" onclick="supprimerEvenement()">Supprimer l’événement</button>
+    <!-- BOUTONS ALIGNÉS -->
+    <div class="btn-row">
+        <button class="btn" onclick="modifierEvenement()">Enregistrer</button>
+        <button class="btn" onclick="dupliquerEvenement()">Dupliquer</button>
+        <button class="btn btn-red" onclick="supprimerEvenement()">Supprimer</button>
+    </div>
 
     <p id="feedback"></p>
 </div>
