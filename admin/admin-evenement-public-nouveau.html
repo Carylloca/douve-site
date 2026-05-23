@@ -15,32 +15,53 @@
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            padding: 0;
         }
 
-        /* ⭐ HEADER IDENTIQUE AUX AUTRES PAGES */
+        /* ⭐ HEADER PREMIUM */
         header.admin-header {
             background: rgba(44, 62, 80, 0.90);
-            padding: 25px;
-            text-align: center;
+            padding: 18px 25px;
             color: white;
-            border-radius: 0 0 10px 10px;
-            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
             box-shadow: 0 3px 10px rgba(0,0,0,0.4);
         }
 
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-btn {
+            background: #7A0010;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .header-btn:hover {
+            background: #9c0015;
+        }
+
         header.admin-header h1 {
+            flex: 1;
+            text-align: center;
             margin: 0;
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 600;
         }
 
+        /* ⭐ CARTE */
         .card {
             background: rgba(255,255,255,0.95);
             padding: 25px;
             border-radius: 10px;
             max-width: 700px;
-            margin: auto;
+            margin: 30px auto;
             box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }
 
@@ -81,7 +102,7 @@
             background: #b30000;
         }
 
-        /* ⭐ BLOC RESPONSABLES EN 3 COLONNES */
+        /* ⭐ BLOC RESPONSABLES */
         .responsables-box {
             background: rgba(255,255,255,0.95);
             border: 1px solid #ccc;
@@ -96,21 +117,24 @@
         }
 
         .responsables-list {
-            display: none;
+            display: none; /* ⭐ caché au chargement */
             margin-top: 10px;
             border-top: 1px solid #ccc;
             padding-top: 10px;
 
+            /* ⭐ 3 colonnes alignées */
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px 20px;
+            gap: 6px 15px;
         }
 
         .responsables-list label {
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 15px;
+            font-size: 14px;
+            font-weight: normal; /* ⭐ plus de gras */
+            line-height: 1.2; /* ⭐ réduit l’espace vertical */
         }
 
         .success {
@@ -129,9 +153,16 @@
 
 <body>
 
-<!-- ⭐ HEADER -->
+<!-- ⭐ HEADER PREMIUM AVEC BOUTONS -->
 <header class="admin-header">
+
+    <div class="header-buttons">
+        <a href="../index.html" class="header-btn">Menu</a>
+        <a href="admin-menu.html" class="header-btn">Menu admin</a>
+    </div>
+
     <h1>Nouvel événement public</h1>
+
 </header>
 
 <div class="card">
@@ -168,7 +199,7 @@
         window.location.href = "../login.html";
     }
 
-    // ⭐ Charger les compagnons pour la liste des responsables
+    // ⭐ Charger les compagnons
     async function loadResponsables() {
         try {
             const companions = await pb.collection("companions").getFullList({
