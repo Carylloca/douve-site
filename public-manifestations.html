@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Événements publics</title>
+
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 10px;
+        }
+
+        .event-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            gap: 20px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+
+        .event-card img {
+            width: 220px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .event-info {
+            flex: 1;
+        }
+
+        .event-info h2 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        .event-info p {
+            margin: 6px 0;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #2980b9;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #1f6391;
+        }
+
+        .no-events {
+            text-align: center;
+            font-size: 20px;
+            color: #555;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Événements publics</h1>
+</header>
+
+<div class="container" id="eventsContainer">
+    <p class="no-events">Chargement des événements publics...</p>
+</div>
+
+<script>
+    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+    async function loadPublicEvents() {
+        const container = document.getElementById("eventsContainer");
+
+        try {
+            const events = await pb.collection("planning_events").getFullList({
+                sort: "date_debut"
+            });
+
+            const publicEvents = events.filter(ev => ev.type === "public");
+
+            if (publicEvents.length === 0) {
+                container.innerHTML = `<p class="no-events">Aucun événement public pour le moment.</p>`;
+                return;
+            }
+
+            container.innerHTML = "";
+
+            publicEvents.forEach(ev => {
+                const imgUrl = ev.image
+                    ? pb.files.getUrl(ev, ev.image)
+                    : "https://via.placeholder.com/220x150?text=Événement";
+
+                const card = document.createElement("div");
+                card.className = "event-card";
+
+                card.innerHTML = `
+                    <img src="${imgUrl}" alt="Image événement">
+
+                    <div class="event-info">
+                        <h2>${ev.titre}</h2>
+
+                        <p><strong>📅 Du :</strong> ${ev.date_debut}  
+                        <br><strong>📅 Au :</strong> ${ev.date_fin}</p>
+
+                        <p><strong>📍 Lieu :</strong> ${ev.lieu || "Non spécifié"}</p>
+
+                        <p>${ev.description_courte || ""}</p>
+
+                        <a class="btn" href="public-manifestation-details.html?id=${ev.id}">
+                            Voir les détails
+                        </a>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+
+        } catch (error) {
+            console.error("Erreur :", error);
+            container.innerHTML = `<p class="no-events">Impossible de charger les événements publics.</p>`;
+        }
+    }
+
+    loadPublicEvents();
+</script>
+
+</body>
+</html>
