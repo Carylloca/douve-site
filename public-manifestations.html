@@ -24,10 +24,7 @@
             text-align: center;
         }
 
-        h1 {
-            margin: 0;
-            font-size: 28px;
-        }
+        h1 { margin: 0; font-size: 28px; }
 
         .container {
             max-width: 1100px;
@@ -52,18 +49,9 @@
             border-radius: 8px;
         }
 
-        .event-info {
-            flex: 1;
-        }
-
-        .event-info h2 {
-            margin-top: 0;
-            color: #2c3e50;
-        }
-
-        .event-info p {
-            margin: 6px 0;
-        }
+        .event-info { flex: 1; }
+        .event-info h2 { margin-top: 0; color: #2c3e50; }
+        .event-info p { margin: 6px 0; }
 
         .btn {
             display: inline-block;
@@ -75,9 +63,7 @@
             margin-top: 10px;
         }
 
-        .btn:hover {
-            background: #1f6391;
-        }
+        .btn:hover { background: #1f6391; }
 
         .no-events {
             text-align: center;
@@ -102,14 +88,16 @@
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
+    // 🔒 Protection d’accès
+    if (!pb.authStore.isValid) {
+        window.location.href = "login.html";
+    }
+
     async function loadPublicEvents() {
         const container = document.getElementById("eventsContainer");
 
         try {
-            const events = await pb.collection("planning_events").getFullList({
-                sort: "date_debut"
-            });
-
+            const events = await pb.collection("planning_events").getFullList({ sort: "date_debut" });
             const publicEvents = events.filter(ev => ev.type === "public");
 
             if (publicEvents.length === 0) {
@@ -129,17 +117,12 @@
 
                 card.innerHTML = `
                     <img src="${imgUrl}" alt="Image événement">
-
                     <div class="event-info">
                         <h2>${ev.titre}</h2>
-
                         <p><strong>📅 Du :</strong> ${ev.date_debut}<br>
                         <strong>📅 Au :</strong> ${ev.date_fin}</p>
-
                         <p><strong>📍 Lieu :</strong> ${ev.lieu || "Non spécifié"}</p>
-
                         <p>${ev.description_courte || ""}</p>
-
                         <a class="btn" href="public-manifestation-details.html?id=${ev.id}">
                             Voir les détails
                         </a>
