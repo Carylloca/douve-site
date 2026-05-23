@@ -65,7 +65,7 @@
             margin-top: 15px;
         }
 
-        input, textarea {
+        input, textarea, select {
             width: 100%;
             padding: 10px;
             margin-top: 6px;
@@ -86,10 +86,6 @@
 
         .dates-row div {
             flex: 1;
-        }
-
-        .dates-row input {
-            width: 140px;
         }
 
         .responsables-box {
@@ -144,6 +140,14 @@
             background: #b30000;
         }
 
+        .btn-danger {
+            background: #b30000;
+        }
+
+        .btn-secondary {
+            background: #444;
+        }
+
         .success { color: green; font-weight: bold; margin-top: 15px; }
         .error { color: red; font-weight: bold; margin-top: 15px; }
     </style>
@@ -155,6 +159,7 @@
     <div class="header-buttons">
         <a href="../index.html" class="header-btn">Menu</a>
         <a href="admin-menu.html" class="header-btn">Menu admin</a>
+        <a href="admin-evenement-public-dashboard.html" class="header-btn">Liste événements publics</a>
     </div>
     <h1>Modifier un événement public</h1>
 </header>
@@ -173,6 +178,12 @@
     <label>Description :</label>
     <textarea id="description"></textarea>
 
+    <label>État :</label>
+    <select id="etat">
+        <option value="edition">En édition</option>
+        <option value="finalise">Finalisé</option>
+    </select>
+
     <div class="dates-row">
         <div>
             <label>Date de début :</label>
@@ -185,6 +196,8 @@
     </div>
 
     <button class="btn" onclick="modifierEvenement()">Enregistrer les modifications</button>
+    <button class="btn-secondary" onclick="dupliquerEvenement()">Dupliquer l’événement</button>
+    <button class="btn-danger" onclick="supprimerEvenement()">Supprimer l’événement</button>
 
     <p id="feedback"></p>
 </div>
@@ -220,6 +233,7 @@ async function loadEvent() {
 
     document.getElementById("titre").value = ev.titre;
     document.getElementById("description").value = ev.description;
+    document.getElementById("etat").value = ev.etat || "edition";
     document.getElementById("date_debut").value = ev.date_debut;
     document.getElementById("date_fin").value = ev.date_fin;
 
@@ -251,6 +265,7 @@ async function modifierEvenement() {
         titre: document.getElementById("titre").value,
         description: document.getElementById("description").value,
         description_longue: document.getElementById("description").value,
+        etat: document.getElementById("etat").value,
         date_debut: document.getElementById("date_debut").value,
         date_fin: document.getElementById("date_fin").value,
         responsable: responsables
@@ -266,6 +281,36 @@ async function modifierEvenement() {
         feedback.textContent = "Erreur lors de l’enregistrement.";
         feedback.className = "error";
     }
+}
+
+async function supprimerEvenement() {
+    if (!confirm("Supprimer définitivement cet événement ?")) return;
+
+    try {
+        await pb.collection("planning_events").delete(eventId);
+        window.location.href = "admin-evenement-public-dashboard.html";
+    } catch (err) {
+        alert("Erreur lors de la suppression.");
+        console.error(err);
+    }
+}
+
+async function dupliquerEvenement() {
+    const ev = await pb.collection("planning_events").getOne(eventId);
+
+    const data = {
+        titre: ev.titre + " (copie)",
+        description: ev.description,
+        description_longue: ev.description_longue,
+        etat: ev.etat,
+        date_debut: ev.date_debut,
+        date_fin: ev.date_fin,
+        responsable: ev.responsable
+    };
+
+    const newEvent = await pb.collection("planning_events").create(data);
+
+    window.location.href = "admin-evenement-public-modifier.html?id=" + newEvent.id;
 }
 
 (async () => {
