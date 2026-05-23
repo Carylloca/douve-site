@@ -90,6 +90,7 @@
             font-size: 14px;
         }
 
+        /* ⭐ BLOC RESPONSABLES */
         .responsables-box {
             background: rgba(255,255,255,0.95);
             border: 1px solid #ccc;
@@ -97,13 +98,13 @@
             padding: 12px;
             cursor: pointer;
             margin-top: 10px;
-            user-select: none;
         }
 
         .responsables-header {
             font-weight: bold;
         }
 
+        /* ⭐ LISTE RESPONSABLES */
         .responsables-list {
             display: none;
             margin-top: 10px;
@@ -113,8 +114,8 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 4px 10px;
-            justify-items: start;   /* alignement à gauche */
-            text-align: left;
+
+            justify-items: start; /* ⭐ aligne les colonnes à gauche */
         }
 
         .responsables-list label {
@@ -122,13 +123,12 @@
             align-items: center;
             gap: 6px;
             font-size: 14px;
-            font-weight: normal;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             line-height: 1.1;
-            padding: 0;
-            margin: 0;
+
+            width: 100%; /* ⭐ empêche le texte de disparaître */
         }
 
         .responsables-list input[type="checkbox"] {
@@ -213,29 +213,12 @@
             const list = document.getElementById("responsablesList");
 
             companions.forEach(c => {
-                console.log("companion:", c); // pour que tu voies les champs exacts dans la console
-
-                const nom =
-                    c.nom || c.Nom || c.name || "";
-                const prenom =
-                    c.prenom || c.Prenom || c.firstname || c.first_name || "";
-
-                const label = document.createElement("label");
-
-                const checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.name = "responsables";
-                checkbox.value = c.id;
-
-                label.appendChild(checkbox);
-
-                const texte = nom || prenom
-                    ? ` ${nom} ${prenom}`.trim()
-                    : ` ${c.id}`;
-
-                label.appendChild(document.createTextNode(texte));
-
-                list.appendChild(label);
+                const item = document.createElement("label");
+                item.innerHTML = `
+                    <input type="checkbox" name="responsables" value="${c.id}">
+                    ${c.nom} ${c.prenom}
+                `;
+                list.appendChild(item);
             });
 
         } catch (error) {
@@ -273,6 +256,7 @@
             await pb.collection("planning_events").create(data);
             feedback.textContent = "Événement public mémorisé !";
             feedback.className = "success";
+
         } catch (error) {
             console.error(error);
             feedback.textContent = "Erreur lors de la mémorisation.";
