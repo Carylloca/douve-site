@@ -116,18 +116,17 @@
             font-weight: bold;
         }
 
-        /* ⭐ Liste fermée au chargement */
+        /* ⭐ Liste FERMÉE au chargement */
         .responsables-list {
-            display: none;
+            display: none; /* ← IMPORTANT */
             margin-top: 10px;
             border-top: 1px solid #ccc;
             padding-top: 10px;
 
-            /* ⭐ 3 colonnes strictement alignées */
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            column-gap: 20px;
-            row-gap: 2px; /* ⭐ encore plus compact */
+            /* ⭐ 3 colonnes alignées verticalement */
+            grid-template-columns: repeat(3, 1fr);
+            column-gap: 15px;
+            row-gap: 2px;
         }
 
         /* ⭐ Chaque ligne = checkbox + nom sur une seule ligne */
@@ -139,17 +138,17 @@
             font-size: 14px;
             font-weight: normal;
 
-            white-space: nowrap; /* ⭐ jamais de retour à la ligne */
+            white-space: nowrap; /* empêche le retour à la ligne */
             overflow: hidden;
             text-overflow: ellipsis;
 
-            line-height: 1.0; /* ⭐ ultra compact */
+            line-height: 1.0; /* ultra compact */
             padding: 0;
             margin: 0;
         }
 
         .responsables-list input[type="checkbox"] {
-            flex-shrink: 0; /* ⭐ empêche la checkbox de bouger */
+            flex-shrink: 0; /* empêche la checkbox de bouger */
         }
 
         .success {
