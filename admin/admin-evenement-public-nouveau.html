@@ -116,25 +116,29 @@
             font-weight: bold;
         }
 
+        /* ⭐ Liste fermée au chargement */
         .responsables-list {
-            display: none; /* ⭐ caché au chargement */
+            display: none;
             margin-top: 10px;
             border-top: 1px solid #ccc;
             padding-top: 10px;
 
             /* ⭐ 3 colonnes alignées */
-            display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 6px 15px;
+            gap: 4px 10px;
         }
 
+        /* ⭐ Chaque ligne = checkbox + nom sur une seule ligne */
         .responsables-list label {
             display: flex;
             align-items: center;
             gap: 6px;
             font-size: 14px;
-            font-weight: normal; /* ⭐ plus de gras */
-            line-height: 1.2; /* ⭐ réduit l’espace vertical */
+            font-weight: normal;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.1;
         }
 
         .success {
@@ -227,7 +231,12 @@
     // ⭐ Ouvrir / fermer le bloc
     document.getElementById("responsablesBox").addEventListener("click", () => {
         const list = document.getElementById("responsablesList");
-        list.style.display = list.style.display === "grid" ? "none" : "grid";
+
+        if (list.style.display === "grid") {
+            list.style.display = "none";
+        } else {
+            list.style.display = "grid";
+        }
     });
 
     // ⭐ Création de l’événement
