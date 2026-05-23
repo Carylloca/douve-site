@@ -134,18 +134,20 @@
             cursor: pointer;
             border: none;
             font-size: 16px;
+            width: 100%;
+            text-align: center;
         }
 
         .btn:hover {
             background: #b30000;
         }
 
-        .btn-danger {
+        .btn-red {
             background: #b30000;
         }
 
-        .btn-secondary {
-            background: #444;
+        .btn-red:hover {
+            background: #7A0010;
         }
 
         .success { color: green; font-weight: bold; margin-top: 15px; }
@@ -196,8 +198,8 @@
     </div>
 
     <button class="btn" onclick="modifierEvenement()">Enregistrer les modifications</button>
-    <button class="btn-secondary" onclick="dupliquerEvenement()">Dupliquer l’événement</button>
-    <button class="btn-danger" onclick="supprimerEvenement()">Supprimer l’événement</button>
+    <button class="btn" onclick="dupliquerEvenement()">Dupliquer l’événement</button>
+    <button class="btn btn-red" onclick="supprimerEvenement()">Supprimer l’événement</button>
 
     <p id="feedback"></p>
 </div>
