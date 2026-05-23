@@ -108,17 +108,20 @@
             font-weight: bold;
         }
 
+        /* ⭐ LISTE RESPONSABLES — FERMÉE MAIS FONCTIONNELLE */
         .responsables-list {
-            display: none; /* fermée au chargement */
+            display: grid;              /* ← active la grille AVANT injection */
+            visibility: hidden;         /* ← invisible au chargement */
+            height: 0;                  /* ← ne prend pas de place */
+            overflow: hidden;
+
             margin-top: 10px;
             border-top: 1px solid #ccc;
             padding-top: 10px;
 
-            display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 4px 10px;
-
-            justify-items: start; /* ⭐ aligne les colonnes à gauche */
+            justify-items: start;       /* ← aligne les colonnes à gauche */
         }
 
         .responsables-list label {
@@ -126,7 +129,6 @@
             align-items: center;
             gap: 6px;
             font-size: 14px;
-            font-weight: normal;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -212,10 +214,7 @@
 
     async function loadResponsables() {
         try {
-            const companions = await pb.collection("companions").getFullList({
-                sort: "nom"
-            });
-
+            const companions = await pb.collection("companions").getFullList({ sort: "nom" });
             const list = document.getElementById("responsablesList");
 
             companions.forEach(c => {
@@ -234,11 +233,19 @@
 
     loadResponsables();
 
+    /* Ouvrir / fermer sans fermer quand on coche */
     document.getElementById("responsablesBox").addEventListener("click", (e) => {
         if (e.target.tagName === "INPUT") return;
 
         const list = document.getElementById("responsablesList");
-        list.style.display = (list.style.display === "grid") ? "none" : "grid";
+
+        if (list.style.visibility === "visible") {
+            list.style.visibility = "hidden";
+            list.style.height = "0";
+        } else {
+            list.style.visibility = "visible";
+            list.style.height = "auto";
+        }
     });
 
     async function creerEvenement() {
@@ -260,7 +267,6 @@
 
         try {
             await pb.collection("planning_events").create(data);
-
             feedback.textContent = "Événement public mémorisé !";
             feedback.className = "success";
 
