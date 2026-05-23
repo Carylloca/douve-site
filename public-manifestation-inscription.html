@@ -24,10 +24,7 @@
             text-align: center;
         }
 
-        h1 {
-            margin: 0;
-            font-size: 28px;
-        }
+        h1 { margin: 0; font-size: 28px; }
 
         .container {
             max-width: 600px;
@@ -42,11 +39,7 @@
             box-shadow: 0 3px 8px rgba(0,0,0,0.15);
         }
 
-        label {
-            font-weight: bold;
-            display: block;
-            margin-top: 15px;
-        }
+        label { font-weight: bold; display: block; margin-top: 15px; }
 
         input, textarea {
             width: 100%;
@@ -57,10 +50,7 @@
             font-size: 15px;
         }
 
-        textarea {
-            resize: vertical;
-            height: 100px;
-        }
+        textarea { resize: vertical; height: 100px; }
 
         .btn {
             display: inline-block;
@@ -75,9 +65,7 @@
             font-size: 16px;
         }
 
-        .btn:hover {
-            background: #1f6391;
-        }
+        .btn:hover { background: #1f6391; }
 
         .back {
             display: inline-block;
@@ -87,21 +75,10 @@
             text-shadow: 0 1px 3px rgba(0,0,0,0.6);
         }
 
-        .back:hover {
-            text-decoration: underline;
-        }
+        .back:hover { text-decoration: underline; }
 
-        .success {
-            color: green;
-            font-weight: bold;
-            margin-top: 15px;
-        }
-
-        .error {
-            color: red;
-            font-weight: bold;
-            margin-top: 15px;
-        }
+        .success { color: green; font-weight: bold; margin-top: 15px; }
+        .error { color: red; font-weight: bold; margin-top: 15px; }
     </style>
 </head>
 
@@ -144,6 +121,11 @@
 
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+    // 🔒 Protection d’accès
+    if (!pb.authStore.isValid) {
+        window.location.href = "login.html";
+    }
 
     const urlParams = new URLSearchParams(window.location.search);
     const eventId = urlParams.get("id");
