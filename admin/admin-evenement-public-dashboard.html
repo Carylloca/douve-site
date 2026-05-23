@@ -129,7 +129,7 @@ function formatDate(d) {
 
 async function loadDashboard() {
     const events = await pb.collection("planning_events").getFullList({
-        expand: "responsable",
+        expand: "responsables",   // ⭐ correction ici
         sort: "date_debut"
     });
 
@@ -142,8 +142,10 @@ async function loadDashboard() {
     passes.innerHTML = "";
 
     events.forEach(ev => {
-        const responsables = Array.isArray(ev.expand?.responsable)
-            ? ev.expand.responsable.map(r => r.nom + " " + r.prenom).join(", ")
+
+        // ⭐ Correction : lecture du bon champ expand
+        const responsables = Array.isArray(ev.expand?.responsables)
+            ? ev.expand.responsables.map(r => r.nom + " " + r.prenom).join(", ")
             : "—";
 
         const card = document.createElement("div");
@@ -155,7 +157,9 @@ async function loadDashboard() {
                 <strong>Responsables :</strong> ${responsables}<br>
                 <strong>Du :</strong> ${formatDate(ev.date_debut)}  
                 <strong>au :</strong> ${formatDate(ev.date_fin)}<br>
-                <strong>Description :</strong> ${ev.description || "—"}
+
+                <!-- ⭐ Correction : description_longue -->
+                <strong>Description :</strong> ${ev.description_longue || "—"}
             </div>
 
             <div class="actions">
