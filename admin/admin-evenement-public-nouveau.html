@@ -110,6 +110,7 @@
             padding: 12px;
             cursor: pointer;
             margin-top: 10px;
+            user-select: none;
         }
 
         .responsables-header {
@@ -138,17 +139,17 @@
             font-size: 14px;
             font-weight: normal;
 
-            white-space: nowrap; /* empêche le retour à la ligne */
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
 
-            line-height: 1.0; /* ultra compact */
+            line-height: 1.0;
             padding: 0;
             margin: 0;
         }
 
         .responsables-list input[type="checkbox"] {
-            flex-shrink: 0; /* empêche la checkbox de bouger */
+            flex-shrink: 0;
         }
 
         .success {
@@ -238,8 +239,12 @@
 
     loadResponsables();
 
-    // ⭐ Ouvrir / fermer le bloc
-    document.getElementById("responsablesBox").addEventListener("click", () => {
+    // ⭐ Ouvrir / fermer le bloc (sans fermer quand on coche)
+    document.getElementById("responsablesBox").addEventListener("click", (e) => {
+
+        // ❗ Empêche la fermeture quand on clique sur une checkbox
+        if (e.target.tagName === "INPUT") return;
+
         const list = document.getElementById("responsablesList");
 
         if (list.style.display === "grid") {
