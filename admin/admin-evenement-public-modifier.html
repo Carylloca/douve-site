@@ -2,81 +2,51 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Nouvel événement public – Admin</title>
+    <title>Modifier un événement public</title>
 
     <link rel="icon" type="image/png" href="../favicon.png">
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
+            font-family: Arial, sans-serif;
             background: url("../img/page-admin-evenement-public-nouveau.jpg") no-repeat center center fixed;
             background-size: cover;
         }
 
         header {
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0,0,0,0.85);
             color: white;
+            padding: 12px 20px;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            padding: 10px 20px;
+            align-items: center;
             box-shadow: 0 2px 6px rgba(0,0,0,0.5);
         }
 
-        .left-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
         .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 14px;
             background: #7A0010;
             color: white;
+            padding: 8px 14px;
             border-radius: 6px;
             text-decoration: none;
             font-weight: bold;
-            transition: 0.2s;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn:hover {
-            background: #5A000C;
-        }
-
-        h2 {
-            text-align: center;
-            color: white;
-            margin: 0;
-            text-shadow: 0 0 10px black;
-        }
-
-        .overlay {
-            background: rgba(0, 0, 0, 0.55);
-            min-height: 100vh;
-            padding: 30px 0;
         }
 
         .panel {
             width: 600px;
-            margin: 20px auto;
+            margin: 30px auto;
             background: rgba(255,255,255,0.92);
             padding: 25px;
             border-radius: 12px;
-            backdrop-filter: blur(4px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
         }
 
         label {
             font-weight: bold;
         }
 
-        input, textarea, select {
+        input, textarea {
             width: 100%;
             padding: 8px;
             margin-top: 5px;
@@ -87,34 +57,32 @@
 
         textarea {
             height: 120px;
-            resize: vertical;
+        }
+
+        .responsables-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 
 <body>
 
-<div class="overlay">
-
 <header>
-    <div class="left-buttons">
-        <a href="admin-evenement-public.html" class="btn">Retour</a>
-    </div>
-
-    <h2>Nouvel événement public</h2>
-
-    <div class="left-buttons"></div>
+    <a href="admin-evenement-public-dashboard.html" class="btn">Retour</a>
+    <h2>Modifier un événement public</h2>
+    <div></div>
 </header>
 
 <div class="panel">
 
-    <h3>Créer un nouvel événement public</h3>
-
     <label>Nom de l’événement :</label>
-    <input type="text" id="nom">
+    <input type="text" id="titre">
 
-    <label>Responsable :</label>
-    <select id="responsable"></select>
+    <label>Responsables :</label>
+    <div id="responsablesList" class="responsables-list"></div>
 
     <label>Description :</label>
     <textarea id="description"></textarea>
@@ -125,49 +93,80 @@
     <label>Date de fin :</label>
     <input type="date" id="date_fin">
 
-    <button class="btn" id="btnSave" style="width:100%; margin-top:10px;">Créer l’événement public</button>
+    <button class="btn" id="btnSave" style="width:100%; margin-top:10px;">Enregistrer les modifications</button>
 
-</div>
+    <p id="feedback"></p>
+
 </div>
 
 <script>
 const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+const eventId = new URLSearchParams(window.location.search).get("id");
 
-// Charger les responsables (compagnons)
+let responsablesExistants = [];
+
 async function loadResponsables() {
-    const list = await pb.collection("compagnons").getFullList({ sort: "nom" });
-    const sel = document.getElementById("responsable");
-    sel.innerHTML = "";
+    const list = await pb.collection("companions").getFullList({ sort: "nom" });
+    const container = document.getElementById("responsablesList");
 
     list.forEach(c => {
-        const opt = document.createElement("option");
-        opt.value = c.id;
-        opt.textContent = c.nom;
-        sel.appendChild(opt);
+        const div = document.createElement("label");
+        div.innerHTML = `
+            <input type="checkbox" value="${c.id}">
+            ${c.nom} ${c.prenom}
+        `;
+        container.appendChild(div);
     });
 }
 
-// Sauvegarder le nouvel événement public
+async function loadEvent() {
+    const ev = await pb.collection("planning_events").getOne(eventId, {
+        expand: "responsable"
+    });
+
+    document.getElementById("titre").value = ev.titre;
+    document.getElementById("description").value = ev.description;
+    document.getElementById("date_debut").value = ev.date_debut;
+    document.getElementById("date_fin").value = ev.date_fin;
+
+    responsablesExistants = ev.responsable || [];
+
+    document.querySelectorAll("#responsablesList input").forEach(cb => {
+        if (responsablesExistants.includes(cb.value)) {
+            cb.checked = true;
+        }
+    });
+}
+
 document.getElementById("btnSave").onclick = async function () {
+    const responsables = Array.from(
+        document.querySelectorAll("#responsablesList input:checked")
+    ).map(cb => cb.value);
+
+    const data = {
+        titre: document.getElementById("titre").value,
+        description: document.getElementById("description").value,
+        description_longue: document.getElementById("description").value,
+        date_debut: document.getElementById("date_debut").value,
+        date_fin: document.getElementById("date_fin").value,
+        responsable: responsables
+    };
+
     try {
-        await pb.collection("manifestations").create({
-            nom: document.getElementById("nom").value,
-            description: document.getElementById("description").value,
-            responsable: document.getElementById("responsable").value,
-            date_debut: document.getElementById("date_debut").value,
-            date_fin: document.getElementById("date_fin").value
-        });
-
-        alert("Événement public créé !");
-        window.location.href = "admin-evenement-public.html";
-
+        await pb.collection("planning_events").update(eventId, data);
+        document.getElementById("feedback").textContent = "Modifications enregistrées !";
+        document.getElementById("feedback").style.color = "green";
     } catch (err) {
-        alert("Erreur lors de la création.");
         console.error(err);
+        document.getElementById("feedback").textContent = "Erreur lors de l’enregistrement.";
+        document.getElementById("feedback").style.color = "red";
     }
 };
 
-loadResponsables();
+(async () => {
+    await loadResponsables();
+    await loadEvent();
+})();
 </script>
 
 </body>
