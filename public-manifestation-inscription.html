@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Inscription à l'événement public</title>
+
+    <link rel="icon" type="image/png" href="favicon.png">
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "DM Sans", sans-serif;
+            background-image: url("img/page-public-manifestation-inscription.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        header {
+            background: rgba(44, 62, 80, 0.90);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 10px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.96);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 15px;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #2980b9;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 20px;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background: #1f6391;
+        }
+
+        .back {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #ffffff;
+            text-decoration: none;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+        }
+
+        .back:hover {
+            text-decoration: underline;
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Inscription à l'événement public</h1>
+</header>
+
+<div class="container">
+
+    <a href="public-manifestation-details.html" class="back">← Retour</a>
+
+    <div class="card">
+        <h2 id="eventTitle">Chargement...</h2>
+
+        <form id="inscriptionForm">
+            <label>Nom</label>
+            <input type="text" id="nom" required>
+
+            <label>Prénom</label>
+            <input type="text" id="prenom" required>
+
+            <label>Email</label>
+            <input type="email" id="email" required>
+
+            <label>Téléphone</label>
+            <input type="text" id="telephone">
+
+            <label>Message (optionnel)</label>
+            <textarea id="message"></textarea>
+
+            <button class="btn" type="submit">Valider l'inscription</button>
+
+            <p id="feedback"></p>
+        </form>
+    </div>
+
+</div>
+
+<script>
+    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const eventId = urlParams.get("id");
+
+    async function loadEvent() {
+        const title = document.getElementById("eventTitle");
+
+        if (!eventId) {
+            title.textContent = "Événement introuvable";
+            return;
+        }
+
+        try {
+            const ev = await pb.collection("planning_events").getOne(eventId);
+            title.textContent = ev.titre;
+        } catch (err) {
+            title.textContent = "Impossible de charger l'événement";
+        }
+    }
+
+    loadEvent();
+
+    document.getElementById("inscriptionForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const feedback = document.getElementById("feedback");
+        feedback.textContent = "";
+
+        const data = {
+            event: eventId,
+            nom: document.getElementById("nom").value,
+            prenom: document.getElementById("prenom").value,
+            email: document.getElementById("email").value,
+            telephone: document.getElementById("telephone").value,
+            message: document.getElementById("message").value
+        };
+
+        try {
+            await pb.collection("public_event_registrations").create(data);
+
+            feedback.textContent = "Inscription enregistrée avec succès !";
+            feedback.className = "success";
+
+            document.getElementById("inscriptionForm").reset();
+
+        } catch (error) {
+            console.error(error);
+            feedback.textContent = "Erreur lors de l'inscription.";
+            feedback.className = "error";
+        }
+    });
+</script>
+
+</body>
+</html>
