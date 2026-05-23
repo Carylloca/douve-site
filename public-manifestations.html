@@ -2,21 +2,23 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Événements publics</title>
 
+    <link rel="icon" type="image/png" href="favicon.png">
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
             margin: 0;
-            padding: 0;
+            font-family: "DM Sans", sans-serif;
+            background-image: url("img/page-public-manifestations.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
 
         header {
-            background: #2c3e50;
+            background: rgba(44, 62, 80, 0.9);
             color: white;
             padding: 20px;
             text-align: center;
@@ -34,7 +36,7 @@
         }
 
         .event-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 25px;
@@ -80,8 +82,9 @@
         .no-events {
             text-align: center;
             font-size: 20px;
-            color: #555;
+            color: #fff;
             margin-top: 40px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
         }
     </style>
 </head>
@@ -130,8 +133,8 @@
                     <div class="event-info">
                         <h2>${ev.titre}</h2>
 
-                        <p><strong>📅 Du :</strong> ${ev.date_debut}  
-                        <br><strong>📅 Au :</strong> ${ev.date_fin}</p>
+                        <p><strong>📅 Du :</strong> ${ev.date_debut}<br>
+                        <strong>📅 Au :</strong> ${ev.date_fin}</p>
 
                         <p><strong>📍 Lieu :</strong> ${ev.lieu || "Non spécifié"}</p>
 
