@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+Pourquoi dans ce code les noms apparaissent (code que je t'ai fourni et demandé de modifier l'alignement à gauche, et depuis les noms ont disparu)  : on va repartie de ce code : <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -17,6 +17,7 @@
             background-attachment: fixed;
         }
 
+        /* ⭐ HEADER PREMIUM */
         header.admin-header {
             background: rgba(44, 62, 80, 0.90);
             padding: 18px 25px;
@@ -42,6 +43,10 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
 
+        .header-btn:hover {
+            background: #9c0015;
+        }
+
         header.admin-header h1 {
             flex: 1;
             text-align: center;
@@ -50,6 +55,7 @@
             font-weight: 600;
         }
 
+        /* ⭐ CARTE */
         .card {
             background: rgba(255,255,255,0.95);
             padding: 25px;
@@ -79,63 +85,6 @@
             height: 120px;
         }
 
-        /* ⭐ DATES côte à côte */
-        .dates-row {
-            display: flex;
-            gap: 20px;
-        }
-
-        .dates-row input {
-            width: 100%;
-            padding: 8px;
-            font-size: 14px;
-        }
-
-        /* ⭐ BLOC RESPONSABLES */
-        .responsables-box {
-            background: rgba(255,255,255,0.95);
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            padding: 12px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        .responsables-header {
-            font-weight: bold;
-        }
-
-        /* ⭐ LISTE RESPONSABLES */
-        .responsables-list {
-            display: none;
-            margin-top: 10px;
-            border-top: 1px solid #ccc;
-            padding-top: 10px;
-
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 4px 10px;
-
-            justify-items: start; /* ⭐ aligne les colonnes à gauche */
-        }
-
-        .responsables-list label {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 14px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            line-height: 1.1;
-
-            width: 100%; /* ⭐ empêche le texte de disparaître */
-        }
-
-        .responsables-list input[type="checkbox"] {
-            flex-shrink: 0;
-        }
-
         .btn {
             display: inline-block;
             background: #8b0000;
@@ -153,19 +102,71 @@
             background: #b30000;
         }
 
-        .success { color: green; font-weight: bold; margin-top: 15px; }
-        .error { color: red; font-weight: bold; margin-top: 15px; }
+        /* ⭐ BLOC RESPONSABLES */
+        .responsables-box {
+            background: rgba(255,255,255,0.95);
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 12px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .responsables-header {
+            font-weight: bold;
+        }
+
+        /* ⭐ Liste fermée au chargement */
+        .responsables-list {
+            display: none;
+            margin-top: 10px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+
+            /* ⭐ 3 colonnes alignées */
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px 10px;
+        }
+
+        /* ⭐ Chaque ligne = checkbox + nom sur une seule ligne */
+        .responsables-list label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: normal;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.1;
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+            margin-top: 15px;
+        }
     </style>
 </head>
 
 <body>
 
+<!-- ⭐ HEADER PREMIUM AVEC BOUTONS -->
 <header class="admin-header">
+
     <div class="header-buttons">
         <a href="../index.html" class="header-btn">Menu</a>
         <a href="admin-menu.html" class="header-btn">Menu admin</a>
     </div>
+
     <h1>Nouvel événement public</h1>
+
 </header>
 
 <div class="card">
@@ -173,6 +174,7 @@
     <label>Nom de l’événement :</label>
     <input type="text" id="titre" required>
 
+    <!-- ⭐ BLOC RESPONSABLES -->
     <label>Responsables :</label>
     <div id="responsablesBox" class="responsables-box">
         <div class="responsables-header">Sélectionner les responsables ▼</div>
@@ -182,18 +184,13 @@
     <label>Description :</label>
     <textarea id="description"></textarea>
 
-    <div class="dates-row">
-        <div>
-            <label>Date de début :</label>
-            <input type="date" id="date_debut">
-        </div>
-        <div>
-            <label>Date de fin :</label>
-            <input type="date" id="date_fin">
-        </div>
-    </div>
+    <label>Date de début :</label>
+    <input type="date" id="date_debut">
 
-    <button class="btn" onclick="creerEvenement()">Mémoriser</button>
+    <label>Date de fin :</label>
+    <input type="date" id="date_fin">
+
+    <button class="btn" onclick="creerEvenement()">Créer l’événement public</button>
 
     <p id="feedback"></p>
 </div>
@@ -201,10 +198,12 @@
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
+    // 🔒 Protection d’accès
     if (!pb.authStore.isValid) {
         window.location.href = "../login.html";
     }
 
+    // ⭐ Charger les compagnons
     async function loadResponsables() {
         try {
             const companions = await pb.collection("companions").getFullList({
@@ -229,13 +228,18 @@
 
     loadResponsables();
 
-    document.getElementById("responsablesBox").addEventListener("click", (e) => {
-        if (e.target.tagName === "INPUT") return;
-
+    // ⭐ Ouvrir / fermer le bloc
+    document.getElementById("responsablesBox").addEventListener("click", () => {
         const list = document.getElementById("responsablesList");
-        list.style.display = (list.style.display === "grid") ? "none" : "grid";
+
+        if (list.style.display === "grid") {
+            list.style.display = "none";
+        } else {
+            list.style.display = "grid";
+        }
     });
 
+    // ⭐ Création de l’événement
     async function creerEvenement() {
         const feedback = document.getElementById("feedback");
         feedback.textContent = "";
@@ -255,12 +259,13 @@
 
         try {
             await pb.collection("planning_events").create(data);
-            feedback.textContent = "Événement public mémorisé !";
+
+            feedback.textContent = "Événement public créé avec succès !";
             feedback.className = "success";
 
         } catch (error) {
             console.error(error);
-            feedback.textContent = "Erreur lors de la mémorisation.";
+            feedback.textContent = "Erreur lors de la création.";
             feedback.className = "error";
         }
     }
