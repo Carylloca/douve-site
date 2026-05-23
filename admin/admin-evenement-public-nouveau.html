@@ -1,4 +1,4 @@
-Pourquoi dans ce code les noms apparaissent (code que je t'ai fourni et demandé de modifier l'alignement à gauche, et depuis les noms ont disparu)  : on va repartie de ce code : <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -17,7 +17,6 @@ Pourquoi dans ce code les noms apparaissent (code que je t'ai fourni et demandé
             background-attachment: fixed;
         }
 
-        /* ⭐ HEADER PREMIUM */
         header.admin-header {
             background: rgba(44, 62, 80, 0.90);
             padding: 18px 25px;
@@ -43,10 +42,6 @@ Pourquoi dans ce code les noms apparaissent (code que je t'ai fourni et demandé
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
 
-        .header-btn:hover {
-            background: #9c0015;
-        }
-
         header.admin-header h1 {
             flex: 1;
             text-align: center;
@@ -55,7 +50,6 @@ Pourquoi dans ce code les noms apparaissent (code que je t'ai fourni et demandé
             font-weight: 600;
         }
 
-        /* ⭐ CARTE */
         .card {
             background: rgba(255,255,255,0.95);
             padding: 25px;
@@ -85,6 +79,16 @@ Pourquoi dans ce code les noms apparaissent (code que je t'ai fourni et demandé
             height: 120px;
         }
 
+        /* ⭐ DATES côte à côte */
+        .dates-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .dates-row div {
+            flex: 1;
+        }
+
         .btn {
             display: inline-block;
             background: #8b0000;
@@ -102,7 +106,6 @@ Pourquoi dans ce code les noms apparaissent (code que je t'ai fourni et demandé
             background: #b30000;
         }
 
-        /* ⭐ BLOC RESPONSABLES */
         .responsables-box {
             background: rgba(255,255,255,0.95);
             border: 1px solid #ccc;
@@ -116,25 +119,21 @@ Pourquoi dans ce code les noms apparaissent (code que je t'ai fourni et demandé
             font-weight: bold;
         }
 
-        /* ⭐ Liste fermée au chargement */
         .responsables-list {
             display: none;
             margin-top: 10px;
             border-top: 1px solid #ccc;
             padding-top: 10px;
 
-            /* ⭐ 3 colonnes alignées */
             grid-template-columns: repeat(3, 1fr);
             gap: 4px 10px;
         }
 
-        /* ⭐ Chaque ligne = checkbox + nom sur une seule ligne */
         .responsables-list label {
             display: flex;
             align-items: center;
             gap: 6px;
             font-size: 14px;
-            font-weight: normal;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -157,16 +156,12 @@ Pourquoi dans ce code les noms apparaissent (code que je t'ai fourni et demandé
 
 <body>
 
-<!-- ⭐ HEADER PREMIUM AVEC BOUTONS -->
 <header class="admin-header">
-
     <div class="header-buttons">
         <a href="../index.html" class="header-btn">Menu</a>
         <a href="admin-menu.html" class="header-btn">Menu admin</a>
     </div>
-
     <h1>Nouvel événement public</h1>
-
 </header>
 
 <div class="card">
@@ -174,7 +169,6 @@ Pourquoi dans ce code les noms apparaissent (code que je t'ai fourni et demandé
     <label>Nom de l’événement :</label>
     <input type="text" id="titre" required>
 
-    <!-- ⭐ BLOC RESPONSABLES -->
     <label>Responsables :</label>
     <div id="responsablesBox" class="responsables-box">
         <div class="responsables-header">Sélectionner les responsables ▼</div>
@@ -184,13 +178,20 @@ Pourquoi dans ce code les noms apparaissent (code que je t'ai fourni et demandé
     <label>Description :</label>
     <textarea id="description"></textarea>
 
-    <label>Date de début :</label>
-    <input type="date" id="date_debut">
+    <!-- ⭐ DATES côte à côte -->
+    <div class="dates-row">
+        <div>
+            <label>Date de début :</label>
+            <input type="date" id="date_debut">
+        </div>
+        <div>
+            <label>Date de fin :</label>
+            <input type="date" id="date_fin">
+        </div>
+    </div>
 
-    <label>Date de fin :</label>
-    <input type="date" id="date_fin">
-
-    <button class="btn" onclick="creerEvenement()">Créer l’événement public</button>
+    <!-- ⭐ Bouton renommé -->
+    <button class="btn" onclick="creerEvenement()">Mémoriser</button>
 
     <p id="feedback"></p>
 </div>
@@ -198,12 +199,10 @@ Pourquoi dans ce code les noms apparaissent (code que je t'ai fourni et demandé
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-    // 🔒 Protection d’accès
     if (!pb.authStore.isValid) {
         window.location.href = "../login.html";
     }
 
-    // ⭐ Charger les compagnons
     async function loadResponsables() {
         try {
             const companions = await pb.collection("companions").getFullList({
@@ -228,18 +227,11 @@ Pourquoi dans ce code les noms apparaissent (code que je t'ai fourni et demandé
 
     loadResponsables();
 
-    // ⭐ Ouvrir / fermer le bloc
     document.getElementById("responsablesBox").addEventListener("click", () => {
         const list = document.getElementById("responsablesList");
-
-        if (list.style.display === "grid") {
-            list.style.display = "none";
-        } else {
-            list.style.display = "grid";
-        }
+        list.style.display = (list.style.display === "grid") ? "none" : "grid";
     });
 
-    // ⭐ Création de l’événement
     async function creerEvenement() {
         const feedback = document.getElementById("feedback");
         feedback.textContent = "";
@@ -259,13 +251,12 @@ Pourquoi dans ce code les noms apparaissent (code que je t'ai fourni et demandé
 
         try {
             await pb.collection("planning_events").create(data);
-
-            feedback.textContent = "Événement public créé avec succès !";
+            feedback.textContent = "Événement public mémorisé !";
             feedback.className = "success";
 
         } catch (error) {
             console.error(error);
-            feedback.textContent = "Erreur lors de la création.";
+            feedback.textContent = "Erreur lors de la mémorisation.";
             feedback.className = "error";
         }
     }
