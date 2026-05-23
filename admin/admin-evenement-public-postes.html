@@ -2,75 +2,55 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Gestion des postes – Admin</title>
-
+    <title>Postes de l’événement – Admin</title>
     <link rel="icon" type="image/png" href="../favicon.png">
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
-            background: url("../img/page-admin-evenement-public-postes.jpg") no-repeat center center fixed;
+            font-family: "DM Sans", sans-serif;
+            background-image: url("../img/page-admin-evenement-public-nouveau.jpg");
             background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
 
-        header {
-            background: rgba(0, 0, 0, 0.85);
+        header.admin-header {
+            background: rgba(44, 62, 80, 0.90);
+            padding: 18px 25px;
             color: white;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 10px 20px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-        }
-
-        .left-buttons {
-            display: flex;
             gap: 10px;
+            flex-wrap: wrap;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.4);
         }
 
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 14px;
+        .header-btn {
             background: #7A0010;
             color: white;
+            padding: 8px 14px;
             border-radius: 6px;
             text-decoration: none;
-            font-weight: bold;
-            transition: 0.2s;
-            border: none;
-            cursor: pointer;
+            font-size: 15px;
         }
 
-        .btn:hover {
-            background: #5A000C;
-        }
-
-        h2 {
+        header h1 {
+            width: 100%;
             text-align: center;
-            color: white;
-            margin: 0;
-            text-shadow: 0 0 10px black;
+            margin: 10px 0 0 0;
+            font-size: 28px;
+            font-weight: 600;
         }
 
-        .overlay {
-            background: rgba(0, 0, 0, 0.55);
-            min-height: 100vh;
-            padding: 30px 0;
-        }
-
-        .panel {
-            width: 95%;
-            max-width: 1200px;
-            margin: 20px auto;
-            background: rgba(255,255,255,0.92);
+        .card {
+            background: rgba(255,255,255,0.95);
             padding: 25px;
-            border-radius: 12px;
-            backdrop-filter: blur(4px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            border-radius: 10px;
+            max-width: 900px;
+            margin: 30px auto;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }
 
         table {
@@ -79,107 +59,117 @@
             margin-top: 15px;
         }
 
-        table th, table td {
+        th, td {
             padding: 10px;
             border-bottom: 1px solid #ccc;
         }
 
-        table th {
+        th {
             background: #eee;
+            text-align: left;
         }
 
-        .actions button {
-            margin-right: 5px;
+        .btn {
+            background: #8b0000;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn:hover {
+            background: #b30000;
+        }
+
+        .btn-red {
+            background: #b30000;
+        }
+
+        .btn-red:hover {
+            background: #7A0010;
+        }
+
+        .top-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 
 <body>
 
-<div class="overlay">
-
-<header>
-    <div class="left-buttons">
-        <a href="admin-menu.html" class="btn">Menu admin</a>
-    </div>
-
-    <h2>Gestion des postes</h2>
-
-    <div class="left-buttons">
-        <a href="admin-evenement-public-poste-nouveau.html" class="btn">+ Nouveau poste</a>
-    </div>
+<header class="admin-header">
+    <a href="../index.html" class="header-btn">Menu</a>
+    <a href="admin-menu.html" class="header-btn">Menu admin</a>
+    <a id="retourEvent" class="header-btn">Retour à l’événement</a>
+    <a class="header-btn">Postes de l’événement</a>
+    <h1>Postes de l’événement</h1>
 </header>
 
-<div class="panel">
+<div class="card">
 
-    <h3>Liste des postes</h3>
+    <div class="top-actions">
+        <a id="btnNew" class="btn">+ Nouveau poste</a>
+    </div>
 
     <table>
         <thead>
             <tr>
-                <th>Nom du poste</th>
-                <th>Description</th>
-                <th>Événement public</th>
-                <th style="width:150px;">Actions</th>
+                <th>Poste</th>
+                <th>Tiers</th>
+                <th>Responsables</th>
+                <th>Actions</th>
             </tr>
         </thead>
-        <tbody id="tablePostes"></tbody>
+        <tbody id="postesTable"></tbody>
     </table>
 
-</div>
 </div>
 
 <script>
 const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+const eventId = new URLSearchParams(window.location.search).get("event");
+
+document.getElementById("retourEvent").href =
+    "admin-evenement-public-modifier.html?id=" + eventId;
+
+document.getElementById("btnNew").href =
+    "admin-evenement-public-poste-nouveau.html?event=" + eventId;
 
 async function loadPostes() {
-    try {
-        const postes = await pb.collection("planning_postes").getFullList({
-            expand: "manifestation",
-            sort: "titre"
-        });
+    const postes = await pb.collection("planning_postes").getFullList({
+        filter: `manifestation = "${eventId}"`,
+        expand: "responsable"
+    });
 
-        const tbody = document.getElementById("tablePostes");
-        tbody.innerHTML = "";
+    const tbody = document.getElementById("postesTable");
+    tbody.innerHTML = "";
 
-        postes.forEach(p => {
-            const tr = document.createElement("tr");
+    postes.forEach(p => {
+        const resp = p.expand?.responsable?.map(r => r.nom).join(", ") || "-";
+        const tiers = p.est_tiers ? "Oui" : "Non";
 
-            const manifestation = p.expand?.manifestation?.titre || "—";
-
-            tr.innerHTML = `
+        tbody.innerHTML += `
+            <tr>
                 <td>${p.titre}</td>
-                <td>${p.description || ""}</td>
-                <td>${manifestation}</td>
-                <td class="actions">
-                    <button class="btn" onclick="editPoste('${p.id}')">Modifier</button>
-                    <button class="btn" style="background:#b00020;" onclick="deletePoste('${p.id}')">Supprimer</button>
+                <td>${tiers}</td>
+                <td>${resp}</td>
+                <td>
+                    <a class="btn" href="admin-evenement-public-poste-modifier.html?id=${p.id}&event=${eventId}">Modifier</a>
+                    <button class="btn btn-red" onclick="supprimer('${p.id}')">Supprimer</button>
                 </td>
-            `;
-
-            tbody.appendChild(tr);
-        });
-
-    } catch (err) {
-        alert("Erreur lors du chargement des postes.");
-        console.error(err);
-    }
+            </tr>
+        `;
+    });
 }
 
-function editPoste(id) {
-    window.location.href = "admin-evenement-public-poste-modifier.html?id=" + id;
-}
-
-async function deletePoste(id) {
+async function supprimer(id) {
     if (!confirm("Supprimer ce poste ?")) return;
-
-    try {
-        await pb.collection("planning_postes").delete(id);
-        loadPostes();
-    } catch (err) {
-        alert("Erreur lors de la suppression.");
-        console.error(err);
-    }
+    await pb.collection("planning_postes").delete(id);
+    loadPostes();
 }
 
 loadPostes();
