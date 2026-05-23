@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Nouveau créneau – Admin</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "DM Sans", sans-serif;
+            background-image: url("../img/page-admin-evenement-public-nouveau.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        header.admin-header {
+            background: rgba(44, 62, 80, 0.90);
+            padding: 18px 25px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+        }
+
+        .header-btn {
+            background: #7A0010;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 15px;
+        }
+
+        header h1 {
+            width: 100%;
+            text-align: center;
+            margin: 10px 0 0 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.95);
+            padding: 25px;
+            border-radius: 10px;
+            max-width: 700px;
+            margin: 30px auto;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 15px;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+
+        .btn {
+            background: #8b0000;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background: #b30000;
+        }
+
+        .success { color: green; font-weight: bold; margin-top: 15px; }
+        .error { color: red; font-weight: bold; margin-top: 15px; }
+    </style>
+</head>
+
+<body>
+
+<header class="admin-header">
+    <a href="../index.html" class="header-btn">Menu</a>
+    <a href="admin-menu.html" class="header-btn">Menu admin</a>
+    <a id="retourEvent" class="header-btn">Retour à l’événement</a>
+    <a id="retourJours" class="header-btn">Retour aux jours</a>
+    <a id="retourCreneaux" class="header-btn">Créneaux du jour</a>
+    <h1>Nouveau créneau</h1>
+</header>
+
+<div class="card">
+
+    <label>Heure de début :</label>
+    <select id="heure_debut"></select>
+
+    <label>Heure de fin :</label>
+    <select id="heure_fin"></select>
+
+    <label>Poste :</label>
+    <select id="poste"></select>
+
+    <label>Compagnon assigné (optionnel) :</label>
+    <select id="compagnon_assigne">
+        <option value="">— Aucun —</option>
+    </select>
+
+    <label>État :</label>
+    <select id="etat">
+        <option value="disponible">Disponible</option>
+        <option value="attribué">Attribué</option>
+        <option value="autre">Autre</option>
+    </select>
+
+    <label>Commentaire :</label>
+    <textarea id="commentaire"></textarea>
+
+    <button class="btn" onclick="creerCreneau()">Enregistrer</button>
+
+    <p id="feedback"></p>
+</div>
+
+<script>
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
+const eventId = new URLSearchParams(window.location.search).get("event");
+const jourId = new URLSearchParams(window.location.search).get("jour");
+
+/* 🔐 Sécurité */
+const user = pb.authStore.model;
+
+if (!user) {
+    window.location.href = "../login.html";
+}
+
+if (user.role !== "comite" && user.role !== "responsable") {
+    alert("Accès refusé");
+    window.location.href = "../index.html";
+}
+
+/* Navigation */
+document.getElementById("retourEvent").href =
+    "admin-evenement-public-modifier.html?id=" + eventId;
+
+document.getElementById("retourJours").href =
+    "admin-evenement-public-jours.html?event=" + eventId;
+
+document.getElementById("retourCreneaux").href =
+    "admin-evenement-public-creneaux.html?event=" + eventId + "&jour=" + jourId;
+
+/* Génération des heures toutes les 15 minutes */
+function generateTimeOptions() {
+    const times = [];
+    for (let h = 0; h < 24; h++) {
+        for (let m of ["00", "15", "30", "45"]) {
+            times.push(`${String(h).padStart(2, "0")}:${m}`);
+        }
+    }
+    return times;
+}
+
+function fillTimeSelects() {
+    const times = generateTimeOptions();
+    const debut = document.getElementById("heure_debut");
+    const fin = document.getElementById("heure_fin");
+
+    times.forEach(t => {
+        debut.innerHTML += `<option value="${t}">${t}</option>`;
+        fin.innerHTML += `<option value="${t}">${t}</option>`;
+    });
+}
+
+/* Charger les postes */
+async function loadPostes() {
+    const postes = await pb.collection("planning_postes").getFullList({
+        filter: `manifestation = "${eventId}"`,
+        sort: "titre"
+    });
+
+    const select = document.getElementById("poste");
+
+    postes.forEach(p => {
+        select.innerHTML += `<option value="${p.id}">${p.titre}</option>`;
+    });
+}
+
+/* Charger les compagnons */
+async function loadCompagnons() {
+    const companions = await pb.collection("companions").getFullList({
+        sort: "nom"
+    });
+
+    const select = document.getElementById("compagnon_assigne");
+
+    companions.forEach(c => {
+        select.innerHTML += `<option value="${c.id}">${c.nom} ${c.prenom}</option>`;
+    });
+}
+
+/* Enregistrer */
+async function creerCreneau() {
+    const feedback = document.getElementById("feedback");
+    feedback.textContent = "";
+
+    const data = {
+        planning_jour: jourId,
+        heure_debut: document.getElementById("heure_debut").value,
+        heure_fin: document.getElementById("heure_fin").value,
+        poste: document.getElementById("poste").value,
+        compagnon_assigne: document.getElementById("compagnon_assigne").value || null,
+        etat: document.getElementById("etat").value,
+        commentaire: document.getElementById("commentaire").value
+    };
+
+    try {
+        await pb.collection("planning_creneaux").create(data);
+
+        feedback.textContent = "Créneau enregistré !";
+        feedback.className = "success";
+
+        setTimeout(() => {
+            window.location.href =
+                "admin-evenement-public-creneaux.html?event=" + eventId + "&jour=" + jourId;
+        }, 800);
+
+    } catch (error) {
+        console.error(error);
+        feedback.textContent = "Erreur lors de l’enregistrement.";
+        feedback.className = "error";
+    }
+}
+
+/* Initialisation */
+fillTimeSelects();
+loadPostes();
+loadCompagnons();
+</script>
+
+</body>
+</html>
