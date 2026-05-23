@@ -24,10 +24,7 @@
             text-align: center;
         }
 
-        h1 {
-            margin: 0;
-            font-size: 28px;
-        }
+        h1 { margin: 0; font-size: 28px; }
 
         .container {
             max-width: 900px;
@@ -49,7 +46,6 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-            margin-bottom: 25px;
         }
 
         .btn {
@@ -62,9 +58,7 @@
             margin-top: 15px;
         }
 
-        .btn:hover {
-            background: #1f6391;
-        }
+        .btn:hover { background: #1f6391; }
 
         .back {
             display: inline-block;
@@ -74,9 +68,7 @@
             text-shadow: 0 1px 3px rgba(0,0,0,0.6);
         }
 
-        .back:hover {
-            text-decoration: underline;
-        }
+        .back:hover { text-decoration: underline; }
     </style>
 </head>
 
@@ -99,6 +91,11 @@
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
+    // 🔒 Protection d’accès
+    if (!pb.authStore.isValid) {
+        window.location.href = "login.html";
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const eventId = urlParams.get("id");
 
@@ -106,7 +103,7 @@
         const container = document.getElementById("eventContainer");
 
         if (!eventId) {
-            container.innerHTML = "<p style='color:white; text-shadow:0 1px 3px rgba(0,0,0,0.6);'>Événement introuvable.</p>";
+            container.innerHTML = "<p style='color:white;'>Événement introuvable.</p>";
             return;
         }
 
@@ -138,7 +135,7 @@
 
         } catch (error) {
             console.error(error);
-            container.innerHTML = "<p style='color:white; text-shadow:0 1px 3px rgba(0,0,0,0.6);'>Impossible de charger les détails de l'événement.</p>";
+            container.innerHTML = "<p style='color:white;'>Impossible de charger l'événement.</p>";
         }
     }
 
