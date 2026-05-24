@@ -11,7 +11,7 @@
         body {
             margin: 0;
             font-family: "DM Sans", sans-serif;
-            background-image: url("img/page-public-manifestations.jpg"); /* ✔ tu gardes ton style */
+            background-image: url("img/page-public-manifestations.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -78,13 +78,21 @@
 <script>
 const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
+/* 🔐 Sécurité : accès réservé aux compagnons, comité et responsables */
+const user = pb.authStore.model;
+
+if (!user || !["compagnon", "comite", "responsable"].includes(user.role)) {
+    window.location.href = "login.html";
+}
+
+/* 🔽 Chargement des événements */
 async function loadManifestations() {
     const container = document.getElementById("eventsContainer");
 
     container.innerHTML = "<p class='no-events'>Chargement...</p>";
 
     try {
-        const events = await pb.collection("manifestations").getFullList({
+        const events = await pb.collection("planning_events").getFullList({
             filter: `public = true`,
             sort: "-date_debut"
         });
