@@ -48,7 +48,7 @@
             background: rgba(255,255,255,0.95);
             padding: 25px;
             border-radius: 10px;
-            max-width: 700px;
+            max-width: 500px;
             margin: 30px auto;
             box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }
@@ -59,13 +59,42 @@
             margin-top: 15px;
         }
 
-        input {
-            width: 100%;
+        .time-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .time-inner {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .time-select {
+            width: 80px;
             padding: 10px;
-            margin-top: 6px;
             border-radius: 6px;
             border: 1px solid #ccc;
             font-size: 15px;
+        }
+
+        .time-sep {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .poste-list {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f7f7f7;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .poste-item {
+            margin: 5px 0;
         }
 
         .btn {
@@ -77,11 +106,24 @@
             border: none;
             font-size: 16px;
             width: 100%;
-            margin-top: 20px;
         }
 
         .btn:hover {
             background: #b30000;
+        }
+
+        .btn-small {
+            background: #7A0010;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .btn-small:hover {
+            background: #a00015;
         }
 
         .success { color: green; font-weight: bold; margin-top: 15px; }
@@ -100,16 +142,47 @@
 
 <div class="card">
 
-    <label>Heure de début :</label>
-    <input type="time" id="heure_debut" required>
+    <h2 id="jourTitre" style="text-align:center; margin-top:0;"></h2>
 
-    <label>Heure de fin :</label>
-    <input type="time" id="heure_fin" required>
+    <div class="time-row">
+        <div>
+            <label>Heure de début :</label>
+            <div class="time-inner">
+                <select id="h_debut" class="time-select"></select>
+                <span class="time-sep">:</span>
+                <select id="m_debut" class="time-select">
+                    <option>00</option>
+                    <option>15</option>
+                    <option>30</option>
+                    <option>45</option>
+                </select>
+            </div>
+        </div>
 
-    <label>Poste :</label>
-    <input type="text" id="poste" required>
+        <div>
+            <label>Heure de fin :</label>
+            <div class="time-inner">
+                <select id="h_fin" class="time-select"></select>
+                <span class="time-sep">:</span>
+                <select id="m_fin" class="time-select">
+                    <option>00</option>
+                    <option>15</option>
+                    <option>30</option>
+                    <option>45</option>
+                </select>
+            </div>
+        </div>
+    </div>
 
-    <button class="btn" onclick="modifierCreneau()">Enregistrer les modifications</button>
+    <label>Postes :</label>
+    <div id="postesContainer" class="poste-list">
+        <button onclick="toggleTous()" class="btn-small" style="margin-bottom:10px;">Tous</button>
+    </div>
+
+    <div style="display:flex; gap:15px; margin-top:20px;">
+        <button class="btn" style="flex:1;" onclick="modifierCreneau()">Enregistrer</button>
+        <button class="btn" style="flex:1;" onclick="memoriserEtDupliquer()">Mémoriser et Dupliquer</button>
+    </div>
 
     <p id="feedback"></p>
 </div>
@@ -135,38 +208,81 @@ if (user.role !== "comite" && user.role !== "responsable") {
 document.getElementById("retourPlanning").href =
     "admin-evenement-public-planning.html?event=" + eventId;
 
-/* Utilitaire : date + 1 jour */
-function addOneDay(dateStr) {
-    const d = new Date(dateStr);
-    d.setDate(d.getDate() + 1);
-    return d.toISOString().split("T")[0];
+/* Remplir heures */
+function remplirHeures() {
+    const selects = [document.getElementById("h_debut"), document.getElementById("h_fin")];
+    selects.forEach(sel => {
+        for (let h = 0; h < 24; h++) {
+            const hh = h.toString().padStart(2, "0");
+            sel.innerHTML += `<option>${hh}</option>`;
+        }
+    });
 }
+remplirHeures();
 
-/* Charger le créneau existant */
-async function chargerCreneau() {
-    creneauOriginal = await pb.collection("planning_creneaux").getOne(creneauId, {
-        expand: "planning_jour"
+/* Charger les postes */
+async function chargerPostes(posteActuel) {
+    const postes = await pb.collection("planning_postes").getFullList({
+        filter: `manifestation = "${eventId}"`,
+        sort: "titre"
     });
 
-    document.getElementById("heure_debut").value = creneauOriginal.heure_debut;
-    document.getElementById("heure_fin").value = creneauOriginal.heure_fin;
-    document.getElementById("poste").value = creneauOriginal.poste;
+    const container = document.getElementById("postesContainer");
+
+    postes.forEach(p => {
+        container.innerHTML += `
+            <div class="poste-item">
+                <label>
+                    <input type="checkbox" class="posteCheck" value="${p.id}" ${p.id === posteActuel ? "checked" : ""}>
+                    ${p.titre}
+                </label>
+            </div>
+        `;
+    });
 }
 
+/* Bouton Tous */
+function toggleTous() {
+    const checks = document.querySelectorAll(".posteCheck");
+    const allChecked = [...checks].every(c => c.checked);
+    checks.forEach(c => c.checked = !allChecked);
+}
+
+/* Charger le créneau */
+async function chargerCreneau() {
+    creneauOriginal = await pb.collection("planning_creneaux").getOne(creneauId, {
+        expand: "planning_jour,poste"
+    });
+
+    const [hDeb, mDeb] = creneauOriginal.heure_debut.split(":");
+    const [hFin, mFin] = creneauOriginal.heure_fin.split(":");
+
+    document.getElementById("h_debut").value = hDeb;
+    document.getElementById("m_debut").value = mDeb;
+    document.getElementById("h_fin").value = hFin;
+    document.getElementById("m_fin").value = mFin;
+
+    document.getElementById("jourTitre").textContent =
+        new Date(creneauOriginal.expand.planning_jour.date)
+            .toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" });
+
+    await chargerPostes(creneauOriginal.poste);
+}
 chargerCreneau();
 
-/* Modifier le créneau */
-async function modifierCreneau() {
+/* Modifier */
+async function modifierCreneau(dupliquer = false) {
     const feedback = document.getElementById("feedback");
     feedback.textContent = "";
     feedback.className = "";
 
-    const heureDebut = document.getElementById("heure_debut").value;
-    const heureFin = document.getElementById("heure_fin").value;
-    const poste = document.getElementById("poste").value.trim();
+    const heureDebut = document.getElementById("h_debut").value + ":" + document.getElementById("m_debut").value;
+    const heureFin = document.getElementById("h_fin").value + ":" + document.getElementById("m_fin").value;
 
-    if (!heureDebut || !heureFin || !poste) {
-        feedback.textContent = "Veuillez remplir tous les champs.";
+    const postes = [...document.querySelectorAll(".posteCheck:checked")].map(c => c.value);
+
+    if (postes.length === 0) {
+        feedback.textContent = "Veuillez sélectionner un poste.";
         feedback.className = "error";
         return;
     }
@@ -174,48 +290,45 @@ async function modifierCreneau() {
     const depasseMinuit = heureFin < heureDebut;
 
     try {
-        // Supprimer l'ancien créneau
         await pb.collection("planning_creneaux").delete(creneauId);
 
-        if (!depasseMinuit) {
-            // Créneau normal
-            await pb.collection("planning_creneaux").create({
-                planning_jour: creneauOriginal.planning_jour,
-                heure_debut: heureDebut,
-                heure_fin: heureFin,
-                poste: poste
-            });
-        } else {
-            // Créneau 1 : jour actuel
-            await pb.collection("planning_creneaux").create({
-                planning_jour: creneauOriginal.planning_jour,
-                heure_debut: heureDebut,
-                heure_fin: "23:59",
-                poste: poste
-            });
+        for (const posteId of postes) {
 
-            // Jour suivant
-            const jour = creneauOriginal.expand.planning_jour;
-            const dateSuivante = addOneDay(jour.date);
-
-            let jourSuivant = null;
-            try {
-                jourSuivant = await pb.collection("planning_jours").getFirstListItem(
-                    `planning_event = "${eventId}" && date = "${dateSuivante}"`
-                );
-            } catch (e) {
-                console.warn("Jour suivant introuvable :", dateSuivante);
-            }
-
-            if (jourSuivant) {
+            if (!depasseMinuit) {
                 await pb.collection("planning_creneaux").create({
-                    planning_jour: jourSuivant.id,
-                    heure_debut: "00:00",
+                    planning_jour: creneauOriginal.planning_jour,
+                    heure_debut: heureDebut,
                     heure_fin: heureFin,
-                    poste: poste
+                    poste: posteId
                 });
             } else {
-                alert("Attention : aucun jour suivant n'existe. Seule la partie jusqu'à 23:59 a été créée.");
+                await pb.collection("planning_creneaux").create({
+                    planning_jour: creneauOriginal.planning_jour,
+                    heure_debut: heureDebut,
+                    heure_fin: "23:59",
+                    poste: posteId
+                });
+
+                const jour = creneauOriginal.expand.planning_jour;
+                const d = new Date(jour.date);
+                d.setDate(d.getDate() + 1);
+                const dateSuivante = d.toISOString().split("T")[0];
+
+                let jourSuivant = null;
+                try {
+                    jourSuivant = await pb.collection("planning_jours").getFirstListItem(
+                        `planning_event = "${eventId}" && date = "${dateSuivante}"`
+                    );
+                } catch (e) {}
+
+                if (jourSuivant) {
+                    await pb.collection("planning_creneaux").create({
+                        planning_jour: jourSuivant.id,
+                        heure_debut: "00:00",
+                        heure_fin: heureFin,
+                        poste: posteId
+                    });
+                }
             }
         }
 
@@ -223,8 +336,13 @@ async function modifierCreneau() {
         feedback.className = "success";
 
         setTimeout(() => {
-            window.location.href =
-                "admin-evenement-public-planning.html?event=" + eventId;
+            if (dupliquer) {
+                window.location.href =
+                    "admin-evenement-public-creneau-modifier.html?id=" + creneauId + "&event=" + eventId;
+            } else {
+                window.location.href =
+                    "admin-evenement-public-planning.html?event=" + eventId;
+            }
         }, 800);
 
     } catch (error) {
@@ -233,6 +351,46 @@ async function modifierCreneau() {
         feedback.className = "error";
     }
 }
+
+/* DUPLICATION AUTOMATIQUE */
+async function memoriserEtDupliquer() {
+    localStorage.setItem("dup_h_debut", document.getElementById("h_debut").value);
+    localStorage.setItem("dup_m_debut", document.getElementById("m_debut").value);
+    localStorage.setItem("dup_h_fin", document.getElementById("h_fin").value);
+    localStorage.setItem("dup_m_fin", document.getElementById("m_fin").value);
+
+    const postes = [...document.querySelectorAll(".posteCheck:checked")].map(c => c.value);
+    localStorage.setItem("dup_postes", JSON.stringify(postes));
+
+    await modifierCreneau(true);
+}
+
+/* RECHARGEMENT AUTO */
+function rechargerDuplication() {
+    const hDeb = localStorage.getItem("dup_h_debut");
+    const mDeb = localStorage.getItem("dup_m_debut");
+    const hFin = localStorage.getItem("dup_h_fin");
+    const mFin = localStorage.getItem("dup_m_fin");
+    const postes = JSON.parse(localStorage.getItem("dup_postes") || "[]");
+
+    if (hDeb) document.getElementById("h_debut").value = hDeb;
+    if (mDeb) document.getElementById("m_debut").value = mDeb;
+    if (hFin) document.getElementById("h_fin").value = hFin;
+    if (mFin) document.getElementById("m_fin").value = mFin;
+
+    postes.forEach(id => {
+        const checkbox = document.querySelector(`.posteCheck[value="${id}"]`);
+        if (checkbox) checkbox.checked = true;
+    });
+
+    localStorage.removeItem("dup_h_debut");
+    localStorage.removeItem("dup_m_debut");
+    localStorage.removeItem("dup_h_fin");
+    localStorage.removeItem("dup_m_fin");
+    localStorage.removeItem("dup_postes");
+}
+
+setTimeout(rechargerDuplication, 300);
 </script>
 
 </body>
