@@ -10,7 +10,7 @@
         body {
             margin: 0;
             font-family: "DM Sans", sans-serif;
-            background-image: url("../img/page-admin-evenement-public-nouveau.jpg");
+            background-image: url("../img/page-admin-evenement-public-creneau-nouveau.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -59,18 +59,13 @@
             margin-top: 15px;
         }
 
-        select, input, textarea {
+        input {
             width: 100%;
             padding: 10px;
             margin-top: 6px;
             border-radius: 6px;
             border: 1px solid #ccc;
             font-size: 15px;
-        }
-
-        textarea {
-            resize: vertical;
-            height: 100px;
         }
 
         .btn {
@@ -99,37 +94,20 @@
 <header class="admin-header">
     <a href="../index.html" class="header-btn">Menu</a>
     <a href="admin-menu.html" class="header-btn">Menu admin</a>
-    <a id="retourEvent" class="header-btn">Retour à l’événement</a>
-    <a id="retourJours" class="header-btn">Retour aux jours</a>
-    <a id="retourCreneaux" class="header-btn">Créneaux du jour</a>
+    <a id="retourPlanning" class="header-btn">Retour au planning</a>
     <h1>Nouveau créneau</h1>
 </header>
 
 <div class="card">
 
     <label>Heure de début :</label>
-    <select id="heure_debut"></select>
+    <input type="time" id="heure_debut" required>
 
     <label>Heure de fin :</label>
-    <select id="heure_fin"></select>
+    <input type="time" id="heure_fin" required>
 
     <label>Poste :</label>
-    <select id="poste"></select>
-
-    <label>Compagnon assigné (optionnel) :</label>
-    <select id="compagnon_assigne">
-        <option value="">— Aucun —</option>
-    </select>
-
-    <label>État :</label>
-    <select id="etat">
-        <option value="disponible">Disponible</option>
-        <option value="attribué">Attribué</option>
-        <option value="autre">Autre</option>
-    </select>
-
-    <label>Commentaire :</label>
-    <textarea id="commentaire"></textarea>
+    <input type="text" id="poste" placeholder="Ex : Bar, Sécurité…" required>
 
     <button class="btn" onclick="creerCreneau()">Enregistrer</button>
 
@@ -139,117 +117,107 @@
 <script>
 const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-const eventId = new URLSearchParams(window.location.search).get("event");
-const jourId = new URLSearchParams(window.location.search).get("jour");
+const params = new URLSearchParams(window.location.search);
+const eventId = params.get("event");
+const jourId = params.get("jour");
 
-/* 🔐 Sécurité */
+/* Sécurité */
 const user = pb.authStore.model;
-
-if (!user) {
-    window.location.href = "../login.html";
-}
-
+if (!user) window.location.href = "../login.html";
 if (user.role !== "comite" && user.role !== "responsable") {
     alert("Accès refusé");
     window.location.href = "../index.html";
 }
 
 /* Navigation */
-document.getElementById("retourEvent").href =
-    "admin-evenement-public-modifier.html?id=" + eventId;
+document.getElementById("retourPlanning").href =
+    "admin-evenement-public-planning.html?event=" + eventId;
 
-document.getElementById("retourJours").href =
-    "admin-evenement-public-jours.html?event=" + eventId;
-
-document.getElementById("retourCreneaux").href =
-    "admin-evenement-public-creneaux.html?event=" + eventId + "&jour=" + jourId;
-
-/* Génération des heures toutes les 15 minutes */
-function generateTimeOptions() {
-    const times = [];
-    for (let h = 0; h < 24; h++) {
-        for (let m of ["00", "15", "30", "45"]) {
-            times.push(`${String(h).padStart(2, "0")}:${m}`);
-        }
-    }
-    return times;
+/* Utilitaire : format date YYYY-MM-DD → +1 jour */
+function addOneDay(dateStr) {
+    const d = new Date(dateStr);
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split("T")[0];
 }
 
-function fillTimeSelects() {
-    const times = generateTimeOptions();
-    const debut = document.getElementById("heure_debut");
-    const fin = document.getElementById("heure_fin");
-
-    times.forEach(t => {
-        debut.innerHTML += `<option value="${t}">${t}</option>`;
-        fin.innerHTML += `<option value="${t}">${t}</option>`;
-    });
-}
-
-/* Charger les postes */
-async function loadPostes() {
-    const postes = await pb.collection("planning_postes").getFullList({
-        filter: `manifestation = "${eventId}"`,
-        sort: "titre"
-    });
-
-    const select = document.getElementById("poste");
-
-    postes.forEach(p => {
-        select.innerHTML += `<option value="${p.id}">${p.titre}</option>`;
-    });
-}
-
-/* Charger les compagnons */
-async function loadCompagnons() {
-    const companions = await pb.collection("companions").getFullList({
-        sort: "nom"
-    });
-
-    const select = document.getElementById("compagnon_assigne");
-
-    companions.forEach(c => {
-        select.innerHTML += `<option value="${c.id}">${c.nom} ${c.prenom}</option>`;
-    });
-}
-
-/* Enregistrer */
+/* Création du créneau avec découpage automatique si dépasse minuit */
 async function creerCreneau() {
     const feedback = document.getElementById("feedback");
     feedback.textContent = "";
+    feedback.className = "";
 
-    const data = {
-        planning_jour: jourId,
-        heure_debut: document.getElementById("heure_debut").value,
-        heure_fin: document.getElementById("heure_fin").value,
-        poste: document.getElementById("poste").value,
-        compagnon_assigne: document.getElementById("compagnon_assigne").value || null,
-        etat: document.getElementById("etat").value,
-        commentaire: document.getElementById("commentaire").value
-    };
+    const heureDebut = document.getElementById("heure_debut").value;
+    const heureFin = document.getElementById("heure_fin").value;
+    const poste = document.getElementById("poste").value.trim();
+
+    if (!heureDebut || !heureFin || !poste) {
+        feedback.textContent = "Veuillez remplir tous les champs.";
+        feedback.className = "error";
+        return;
+    }
+
+    const depasseMinuit = heureFin < heureDebut;
 
     try {
-        await pb.collection("planning_creneaux").create(data);
+        if (!depasseMinuit) {
+            // Créneau normal
+            await pb.collection("planning_creneaux").create({
+                planning_jour: jourId,
+                heure_debut: heureDebut,
+                heure_fin: heureFin,
+                poste: poste
+            });
+        } else {
+            // Créneau 1 : jour actuel (jusqu'à 23:59)
+            await pb.collection("planning_creneaux").create({
+                planning_jour: jourId,
+                heure_debut: heureDebut,
+                heure_fin: "23:59",
+                poste: poste
+            });
 
-        feedback.textContent = "Créneau enregistré !";
+            // Récupérer le jour actuel pour connaître sa date
+            const jour = await pb.collection("planning_jours").getOne(jourId);
+            const dateSuivante = addOneDay(jour.date);
+
+            // Chercher le jour suivant dans le même événement
+            let jourSuivant = null;
+            try {
+                jourSuivant = await pb.collection("planning_jours").getFirstListItem(
+                    `planning_event = "${eventId}" && date = "${dateSuivante}"`
+                );
+            } catch (e) {
+                // Aucun jour suivant trouvé : on informe mais on ne bloque pas la création du premier créneau
+                console.warn("Jour suivant introuvable pour la date", dateSuivante);
+            }
+
+            if (jourSuivant) {
+                // Créneau 2 : jour suivant (00:00 → heureFin)
+                await pb.collection("planning_creneaux").create({
+                    planning_jour: jourSuivant.id,
+                    heure_debut: "00:00",
+                    heure_fin: heureFin,
+                    poste: poste
+                });
+            } else {
+                alert("Attention : le créneau dépasse minuit mais aucun jour suivant n'existe pour cette date. Seule la partie jusqu'à 23:59 a été créée.");
+            }
+        }
+
+        feedback.textContent = "Créneau enregistré.";
         feedback.className = "success";
 
         setTimeout(() => {
             window.location.href =
-                "admin-evenement-public-creneaux.html?event=" + eventId + "&jour=" + jourId;
+                "admin-evenement-public-planning.html?event=" + eventId;
         }, 800);
 
     } catch (error) {
         console.error(error);
-        feedback.textContent = "Erreur lors de l’enregistrement.";
+        feedback.textContent = "Erreur lors de l’enregistrement du créneau.";
         feedback.className = "error";
     }
 }
-
-/* Initialisation */
-fillTimeSelects();
-loadPostes();
-loadCompagnons();
 </script>
 
 </body>
