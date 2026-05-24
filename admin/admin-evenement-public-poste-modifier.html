@@ -10,7 +10,7 @@
         body {
             margin: 0;
             font-family: "DM Sans", sans-serif;
-            background-image: url("../img/page-admin-evenement-public-nouveau.jpg");
+            background-image: url("../img/page-admin-evenement-public-poste-modifier.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -102,15 +102,6 @@
             font-size: 14px;
         }
 
-        .tiers-fields {
-            display: none;
-            margin-top: 10px;
-            padding: 10px;
-            border-left: 4px solid #7A0010;
-            background: rgba(255,255,255,0.8);
-            border-radius: 6px;
-        }
-
         .btn-row {
             display: flex;
             gap: 10px;
@@ -163,20 +154,7 @@
     <label>Description :</label>
     <textarea id="description"></textarea>
 
-    <label>
-        <input type="checkbox" id="est_tiers"> Poste pour un tiers ?
-    </label>
-
-    <div id="tiersFields" class="tiers-fields">
-        <label>Nom du tiers :</label>
-        <input type="text" id="nom_tiers">
-
-        <label>Prénom du tiers :</label>
-        <input type="text" id="prenom_tiers">
-
-        <label>Poste souhaité par le tiers :</label>
-        <input type="text" id="poste_souhaite_tiers">
-    </div>
+    <!-- ❌ Bloc TIERS supprimé -->
 
     <label>Responsables :</label>
     <div id="responsablesBox" class="responsables-box">
@@ -200,7 +178,7 @@ const posteId = new URLSearchParams(window.location.search).get("id");
 const eventId = new URLSearchParams(window.location.search).get("event");
 
 document.getElementById("retourEvent").href =
-    "admin-evenement-public-modifier.html?id=" + eventId;
+    "admin-evenement-public-dashboard.html?id=" + eventId;
 
 document.getElementById("retourPostes").href =
     "admin-evenement-public-postes.html?event=" + eventId;
@@ -209,11 +187,6 @@ document.getElementById("responsablesBox").addEventListener("click", (e) => {
     if (e.target.tagName === "INPUT") return;
     const list = document.getElementById("responsablesList");
     list.style.display = (list.style.display === "grid") ? "none" : "grid";
-});
-
-document.getElementById("est_tiers").addEventListener("change", () => {
-    document.getElementById("tiersFields").style.display =
-        document.getElementById("est_tiers").checked ? "block" : "none";
 });
 
 async function loadResponsables() {
@@ -238,13 +211,6 @@ async function loadPoste() {
     document.getElementById("titre").value = p.titre;
     document.getElementById("description").value = p.description || "";
 
-    document.getElementById("est_tiers").checked = p.est_tiers;
-    document.getElementById("tiersFields").style.display = p.est_tiers ? "block" : "none";
-
-    document.getElementById("nom_tiers").value = p.nom_tiers || "";
-    document.getElementById("prenom_tiers").value = p.prenom_tiers || "";
-    document.getElementById("poste_souhaite_tiers").value = p.poste_souhaite_tiers || "";
-
     const responsablesExistants = p.responsable || [];
 
     document.querySelectorAll("#responsablesList input").forEach(cb => {
@@ -263,10 +229,6 @@ async function modifierPoste() {
     const data = {
         titre: document.getElementById("titre").value,
         description: document.getElementById("description").value,
-        est_tiers: document.getElementById("est_tiers").checked,
-        nom_tiers: document.getElementById("nom_tiers").value,
-        prenom_tiers: document.getElementById("prenom_tiers").value,
-        poste_souhaite_tiers: document.getElementById("poste_souhaite_tiers").value,
         responsable: responsables,
         manifestation: eventId
     };
@@ -295,10 +257,6 @@ async function dupliquerPoste() {
     const data = {
         titre: p.titre + " (copie)",
         description: p.description,
-        est_tiers: p.est_tiers,
-        nom_tiers: p.nom_tiers,
-        prenom_tiers: p.prenom_tiers,
-        poste_souhaite_tiers: p.poste_souhaite_tiers,
         responsable: p.responsable,
         manifestation: eventId
     };
