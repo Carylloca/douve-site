@@ -10,7 +10,7 @@
         body {
             margin: 0;
             font-family: "DM Sans", sans-serif;
-            background-image: url("../img/page-admin-evenement-public-planning.jpg");
+            background-image: url("../img/page-admin-evenement-public-jour.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -220,7 +220,7 @@ async function voirCreneaux(jourId, date) {
 
     const creneaux = await pb.collection("planning_creneaux").getFullList({
         filter: `planning_jour = "${jourId}"`,
-        expand: "poste,compagnon_assigne",
+        expand: "compagnon_assigne",
         sort: "heure_debut"
     });
 
@@ -228,7 +228,6 @@ async function voirCreneaux(jourId, date) {
     tbody.innerHTML = "";
 
     creneaux.forEach(c => {
-        const poste = c.expand?.poste?.titre || "—";
         const assign = c.expand?.compagnon_assigne
             ? c.expand.companon_assigne.nom + " " + c.expand.companon_assigne.prenom
             : "—";
@@ -236,10 +235,11 @@ async function voirCreneaux(jourId, date) {
         tbody.innerHTML += `
             <tr>
                 <td>${c.heure_debut} → ${c.heure_fin}</td>
-                <td>${poste}</td>
+                <td>${c.poste}</td>
                 <td>${assign}</td>
                 <td>
                     <a class="btn" href="admin-evenement-public-creneau-modifier.html?id=${c.id}&event=${eventId}">Modifier</a>
+                    <button class="btn" onclick="dupliquerCreneau('${c.id}')">Dupliquer</button>
                     <button class="btn btn-red" onclick="supprimerCreneau('${c.id}')">Supprimer</button>
                 </td>
             </tr>
@@ -265,6 +265,78 @@ async function supprimerCreneau(id) {
     if (!confirm("Supprimer ce créneau ?")) return;
     await pb.collection("planning_creneaux").delete(id);
     voirCreneaux(jourSelectionne);
+}
+
+/* DUPLIQUER UN CRENEAU */
+async function dupliquerCreneau(id) {
+    if (!confirm("Dupliquer ce créneau ?")) return;
+
+    const c = await pb.collection("planning_creneaux").getOne(id, {
+        expand: "planning_jour"
+    });
+
+    const heureDebut = c.heure_debut;
+    const heureFin = c.heure_fin;
+    const poste = c.poste;
+    const compagnon = c.companon_assigne || null;
+    const jourId = c.planning_jour;
+
+    const depasseMinuit = heureFin < heureDebut;
+
+    function addOneDay(dateStr) {
+        const d = new Date(dateStr);
+        d.setDate(d.getDate() + 1);
+        return d.toISOString().split("T")[0];
+    }
+
+    try {
+        if (!depasseMinuit) {
+            await pb.collection("planning_creneaux").create({
+                planning_jour: jourId,
+                heure_debut: heureDebut,
+                heure_fin: heureFin,
+                poste: poste,
+                compagnon_assigne: compagnon
+            });
+        } else {
+            await pb.collection("planning_creneaux").create({
+                planning_jour: jourId,
+                heure_debut: heureDebut,
+                heure_fin: "23:59",
+                poste: poste,
+                compagnon_assigne: compagnon
+            });
+
+            const jour = c.expand.planning_jour;
+            const dateSuivante = addOneDay(jour.date);
+
+            let jourSuivant = null;
+            try {
+                jourSuivant = await pb.collection("planning_jours").getFirstListItem(
+                    `planning_event = "${eventId}" && date = "${dateSuivante}"`
+                );
+            } catch (e) {}
+
+            if (jourSuivant) {
+                await pb.collection("planning_creneaux").create({
+                    planning_jour: jourSuivant.id,
+                    heure_debut: "00:00",
+                    heure_fin: heureFin,
+                    poste: poste,
+                    compagnon_assigne: compagnon
+                });
+            } else {
+                alert("Attention : aucun jour suivant n'existe. Seule la partie jusqu'à 23:59 a été dupliquée.");
+            }
+        }
+
+        alert("Créneau dupliqué !");
+        voirCreneaux(jourId);
+
+    } catch (error) {
+        console.error(error);
+        alert("Erreur lors de la duplication.");
+    }
 }
 
 loadJours();
