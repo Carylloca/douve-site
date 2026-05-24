@@ -10,7 +10,7 @@
         body {
             margin: 0;
             font-family: "DM Sans", sans-serif;
-            background-image: url("../img/page-admin-evenement-public-nouveau.jpg");
+            background-image: url("../img/page-admin-evenement-public-jour.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -146,7 +146,7 @@ if (user.role !== "comite" && user.role !== "responsable") {
 
 /* Navigation */
 document.getElementById("retourEvent").href =
-    "admin-evenement-public-modifier.html?id=" + eventId;
+    "admin-evenement-public-dashboard.html?id=" + eventId;
 
 document.getElementById("btnNew").href =
     "admin-evenement-public-jour-nouveau.html?event=" + eventId;
@@ -154,7 +154,7 @@ document.getElementById("btnNew").href =
 /* Charger les jours */
 async function loadJours() {
     const jours = await pb.collection("planning_jours").getFullList({
-        filter: `manifestation = "${eventId}"`,
+        filter: `planning_event = "${eventId}"`,
         sort: "date"
     });
 
