@@ -10,7 +10,7 @@
         body {
             margin: 0;
             font-family: "DM Sans", sans-serif;
-            background-image: url("../img/page-admin-evenement-public-nouveau.jpg");
+            background-image: url("../img/page-admin-evenement-public-jour-nouveau.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -131,7 +131,7 @@ if (user.role !== "comite" && user.role !== "responsable") {
 
 /* Navigation */
 document.getElementById("retourEvent").href =
-    "admin-evenement-public-modifier.html?id=" + eventId;
+    "admin-evenement-public-dashboard.html?id=" + eventId;
 
 document.getElementById("retourJours").href =
     "admin-evenement-public-jours.html?event=" + eventId;
@@ -142,7 +142,7 @@ async function creerJour() {
     feedback.textContent = "";
 
     const data = {
-        manifestation: eventId,
+        planning_event: eventId,   // ✔ CORRECTION ICI
         date: document.getElementById("date").value,
         nom_jour: document.getElementById("nom_jour").value
     };
@@ -170,6 +170,7 @@ async function creerJour() {
         feedback.className = "error";
     }
 }
+
 </script>
 
 </body>
