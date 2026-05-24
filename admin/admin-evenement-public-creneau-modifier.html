@@ -10,7 +10,7 @@
         body {
             margin: 0;
             font-family: "DM Sans", sans-serif;
-            background-image: url("../img/page-admin-evenement-public-nouveau.jpg");
+            background-image: url("../img/page-admin-evenement-public-creneau-modifier.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -59,24 +59,13 @@
             margin-top: 15px;
         }
 
-        select, input, textarea {
+        input {
             width: 100%;
             padding: 10px;
             margin-top: 6px;
             border-radius: 6px;
             border: 1px solid #ccc;
             font-size: 15px;
-        }
-
-        textarea {
-            resize: vertical;
-            height: 100px;
-        }
-
-        .btn-row {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
         }
 
         .btn {
@@ -87,19 +76,12 @@
             cursor: pointer;
             border: none;
             font-size: 16px;
-            flex: 1;
+            width: 100%;
+            margin-top: 20px;
         }
 
         .btn:hover {
             background: #b30000;
-        }
-
-        .btn-red {
-            background: #b30000;
-        }
-
-        .btn-red:hover {
-            background: #7A0010;
         }
 
         .success { color: green; font-weight: bold; margin-top: 15px; }
@@ -112,43 +94,22 @@
 <header class="admin-header">
     <a href="../index.html" class="header-btn">Menu</a>
     <a href="admin-menu.html" class="header-btn">Menu admin</a>
-    <a id="retourEvent" class="header-btn">Retour à l’événement</a>
-    <a id="retourJours" class="header-btn">Retour aux jours</a>
-    <a id="retourCreneaux" class="header-btn">Créneaux du jour</a>
+    <a id="retourPlanning" class="header-btn">Retour au planning</a>
     <h1>Modifier un créneau</h1>
 </header>
 
 <div class="card">
 
     <label>Heure de début :</label>
-    <select id="heure_debut"></select>
+    <input type="time" id="heure_debut" required>
 
     <label>Heure de fin :</label>
-    <select id="heure_fin"></select>
+    <input type="time" id="heure_fin" required>
 
     <label>Poste :</label>
-    <select id="poste"></select>
+    <input type="text" id="poste" required>
 
-    <label>Compagnon assigné (optionnel) :</label>
-    <select id="compagnon_assigne">
-        <option value="">— Aucun —</option>
-    </select>
-
-    <label>État :</label>
-    <select id="etat">
-        <option value="disponible">Disponible</option>
-        <option value="attribué">Attribué</option>
-        <option value="autre">Autre</option>
-    </select>
-
-    <label>Commentaire :</label>
-    <textarea id="commentaire"></textarea>
-
-    <div class="btn-row">
-        <button class="btn" onclick="modifierCreneau()">Enregistrer</button>
-        <button class="btn" onclick="dupliquerCreneau()">Dupliquer</button>
-        <button class="btn btn-red" onclick="supprimerCreneau()">Supprimer</button>
-    </div>
+    <button class="btn" onclick="modifierCreneau()">Enregistrer les modifications</button>
 
     <p id="feedback"></p>
 </div>
@@ -156,159 +117,122 @@
 <script>
 const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-const creneauId = new URLSearchParams(window.location.search).get("id");
-const eventId = new URLSearchParams(window.location.search).get("event");
-const jourId = new URLSearchParams(window.location.search).get("jour");
+const params = new URLSearchParams(window.location.search);
+const eventId = params.get("event");
+const creneauId = params.get("id");
 
-/* 🔐 Sécurité */
+let creneauOriginal = null;
+
+/* Sécurité */
 const user = pb.authStore.model;
-
-if (!user) {
-    window.location.href = "../login.html";
-}
-
+if (!user) window.location.href = "../login.html";
 if (user.role !== "comite" && user.role !== "responsable") {
     alert("Accès refusé");
     window.location.href = "../index.html";
 }
 
 /* Navigation */
-document.getElementById("retourEvent").href =
-    "admin-evenement-public-modifier.html?id=" + eventId;
+document.getElementById("retourPlanning").href =
+    "admin-evenement-public-planning.html?event=" + eventId;
 
-document.getElementById("retourJours").href =
-    "admin-evenement-public-jours.html?event=" + eventId;
-
-document.getElementById("retourCreneaux").href =
-    "admin-evenement-public-creneaux.html?event=" + eventId + "&jour=" + jourId;
-
-/* Génération des heures toutes les 15 minutes */
-function generateTimeOptions() {
-    const times = [];
-    for (let h = 0; h < 24; h++) {
-        for (let m of ["00", "15", "30", "45"]) {
-            times.push(`${String(h).padStart(2, "0")}:${m}`);
-        }
-    }
-    return times;
+/* Utilitaire : date + 1 jour */
+function addOneDay(dateStr) {
+    const d = new Date(dateStr);
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split("T")[0];
 }
 
-function fillTimeSelects() {
-    const times = generateTimeOptions();
-    const debut = document.getElementById("heure_debut");
-    const fin = document.getElementById("heure_fin");
-
-    times.forEach(t => {
-        debut.innerHTML += `<option value="${t}">${t}</option>`;
-        fin.innerHTML += `<option value="${t}">${t}</option>`;
+/* Charger le créneau existant */
+async function chargerCreneau() {
+    creneauOriginal = await pb.collection("planning_creneaux").getOne(creneauId, {
+        expand: "planning_jour"
     });
+
+    document.getElementById("heure_debut").value = creneauOriginal.heure_debut;
+    document.getElementById("heure_fin").value = creneauOriginal.heure_fin;
+    document.getElementById("poste").value = creneauOriginal.poste;
 }
 
-/* Charger les postes */
-async function loadPostes() {
-    const postes = await pb.collection("planning_postes").getFullList({
-        filter: `manifestation = "${eventId}"`,
-        sort: "titre"
-    });
+chargerCreneau();
 
-    const select = document.getElementById("poste");
-
-    postes.forEach(p => {
-        select.innerHTML += `<option value="${p.id}">${p.titre}</option>`;
-    });
-}
-
-/* Charger les compagnons */
-async function loadCompagnons() {
-    const companions = await pb.collection("companions").getFullList({
-        sort: "nom"
-    });
-
-    const select = document.getElementById("compagnon_assigne");
-
-    companions.forEach(c => {
-        select.innerHTML += `<option value="${c.id}">${c.nom} ${c.prenom}</option>`;
-    });
-}
-
-/* Charger le créneau */
-async function loadCreneau() {
-    const c = await pb.collection("planning_creneaux").getOne(creneauId);
-
-    document.getElementById("heure_debut").value = c.heure_debut;
-    document.getElementById("heure_fin").value = c.heure_fin;
-    document.getElementById("poste").value = c.poste;
-    document.getElementById("etat").value = c.etat;
-    document.getElementById("commentaire").value = c.commentaire || "";
-
-    if (c.compagnon_assigne) {
-        document.getElementById("compagnon_assigne").value = c.compagnon_assigne;
-    }
-}
-
-/* Enregistrer */
+/* Modifier le créneau */
 async function modifierCreneau() {
     const feedback = document.getElementById("feedback");
     feedback.textContent = "";
+    feedback.className = "";
 
-    const data = {
-        heure_debut: document.getElementById("heure_debut").value,
-        heure_fin: document.getElementById("heure_fin").value,
-        poste: document.getElementById("poste").value,
-        compagnon_assigne: document.getElementById("compagnon_assigne").value || null,
-        etat: document.getElementById("etat").value,
-        commentaire: document.getElementById("commentaire").value
-    };
+    const heureDebut = document.getElementById("heure_debut").value;
+    const heureFin = document.getElementById("heure_fin").value;
+    const poste = document.getElementById("poste").value.trim();
+
+    if (!heureDebut || !heureFin || !poste) {
+        feedback.textContent = "Veuillez remplir tous les champs.";
+        feedback.className = "error";
+        return;
+    }
+
+    const depasseMinuit = heureFin < heureDebut;
 
     try {
-        await pb.collection("planning_creneaux").update(creneauId, data);
+        // Supprimer l'ancien créneau
+        await pb.collection("planning_creneaux").delete(creneauId);
 
-        feedback.textContent = "Modifications enregistrées !";
+        if (!depasseMinuit) {
+            // Créneau normal
+            await pb.collection("planning_creneaux").create({
+                planning_jour: creneauOriginal.planning_jour,
+                heure_debut: heureDebut,
+                heure_fin: heureFin,
+                poste: poste
+            });
+        } else {
+            // Créneau 1 : jour actuel
+            await pb.collection("planning_creneaux").create({
+                planning_jour: creneauOriginal.planning_jour,
+                heure_debut: heureDebut,
+                heure_fin: "23:59",
+                poste: poste
+            });
+
+            // Jour suivant
+            const jour = creneauOriginal.expand.planning_jour;
+            const dateSuivante = addOneDay(jour.date);
+
+            let jourSuivant = null;
+            try {
+                jourSuivant = await pb.collection("planning_jours").getFirstListItem(
+                    `planning_event = "${eventId}" && date = "${dateSuivante}"`
+                );
+            } catch (e) {
+                console.warn("Jour suivant introuvable :", dateSuivante);
+            }
+
+            if (jourSuivant) {
+                await pb.collection("planning_creneaux").create({
+                    planning_jour: jourSuivant.id,
+                    heure_debut: "00:00",
+                    heure_fin: heureFin,
+                    poste: poste
+                });
+            } else {
+                alert("Attention : aucun jour suivant n'existe. Seule la partie jusqu'à 23:59 a été créée.");
+            }
+        }
+
+        feedback.textContent = "Modifications enregistrées.";
         feedback.className = "success";
+
+        setTimeout(() => {
+            window.location.href =
+                "admin-evenement-public-planning.html?event=" + eventId;
+        }, 800);
 
     } catch (error) {
         console.error(error);
-        feedback.textContent = "Erreur lors de l’enregistrement.";
+        feedback.textContent = "Erreur lors de la modification.";
         feedback.className = "error";
     }
 }
-
-/* Dupliquer */
-async function dupliquerCreneau() {
-    const c = await pb.collection("planning_creneaux").getOne(creneauId);
-
-    const data = {
-        planning_jour: jourId,
-        heure_debut: c.heure_debut,
-        heure_fin: c.heure_fin,
-        poste: c.poste,
-        compagnon_assigne: c.compagnon_assigne,
-        etat: c.etat,
-        commentaire: c.commentaire
-    };
-
-    const newCreneau = await pb.collection("planning_creneaux").create(data);
-
-    window.location.href =
-        "admin-evenement-public-creneau-modifier.html?id=" + newCreneau.id +
-        "&event=" + eventId + "&jour=" + jourId;
-}
-
-/* Supprimer */
-async function supprimerCreneau() {
-    if (!confirm("Supprimer ce créneau ?")) return;
-
-    await pb.collection("planning_creneaux").delete(creneauId);
-
-    window.location.href =
-        "admin-evenement-public-creneaux.html?event=" + eventId + "&jour=" + jourId;
-}
-
-/* Initialisation */
-fillTimeSelects();
-await loadPostes();
-await loadCompagnons();
-await loadCreneau();
 </script>
 
 </body>
