@@ -273,9 +273,12 @@ async function creerJour() {
         nom_jour: nomDuJour(date)
     };
 
-    /* 🔎 Vérifier doublon */
+    /* 🔎 Vérifier doublon (version fiable) */
+    const dateMin = date + " 00:00:00";
+    const dateMax = date + " 23:59:59";
+
     const deja = await pb.collection("planning_jours").getFullList({
-        filter: `planning_event="${eventId}" && date="${date}"`
+        filter: `planning_event="${eventId}" && date >= "${dateMin}" && date <= "${dateMax}"`
     });
 
     if (deja.length > 0) {
