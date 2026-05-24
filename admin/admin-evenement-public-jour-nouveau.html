@@ -59,7 +59,7 @@
             margin-top: 15px;
         }
 
-        input, select {
+        input {
             width: 100%;
             padding: 10px;
             margin-top: 6px;
@@ -104,9 +104,6 @@
     <label>Date du jour :</label>
     <input type="date" id="date" required>
 
-    <label>Nom du jour (optionnel) :</label>
-    <input type="text" id="nom_jour" placeholder="Ex : Vendredi, Samedi, Dimanche…">
-
     <button class="btn" onclick="creerJour()">Enregistrer</button>
 
     <p id="feedback"></p>
@@ -136,22 +133,30 @@ document.getElementById("retourEvent").href =
 document.getElementById("retourJours").href =
     "admin-evenement-public-jours.html?event=" + eventId;
 
+/* ⭐ Générer automatiquement le nom du jour */
+function nomDuJour(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("fr-FR", { weekday: "long" });
+}
+
 /* Enregistrer */
 async function creerJour() {
     const feedback = document.getElementById("feedback");
     feedback.textContent = "";
 
-    const data = {
-        planning_event: eventId,   // ✔ CORRECTION ICI
-        date: document.getElementById("date").value,
-        nom_jour: document.getElementById("nom_jour").value
-    };
+    const date = document.getElementById("date").value;
 
-    if (!data.date) {
+    if (!date) {
         feedback.textContent = "Veuillez choisir une date.";
         feedback.className = "error";
         return;
     }
+
+    const data = {
+        planning_event: eventId,
+        date: date,
+        nom_jour: nomDuJour(date)   // ⭐ automatique
+    };
 
     try {
         await pb.collection("planning_jours").create(data);
@@ -170,7 +175,6 @@ async function creerJour() {
         feedback.className = "error";
     }
 }
-
 </script>
 
 </body>
