@@ -10,7 +10,7 @@
         body {
             margin: 0;
             font-family: "DM Sans", sans-serif;
-            background-image: url("../img/page-admin-evenement-public-nouveau.jpg");
+            background-image: url("../img/page-admin-evenement-public-postes.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -105,7 +105,6 @@
     <a href="../index.html" class="header-btn">Menu</a>
     <a href="admin-menu.html" class="header-btn">Menu admin</a>
     <a id="retourEvent" class="header-btn">Retour à l’événement</a>
-    <a class="header-btn">Postes de l’événement</a>
     <h1>Postes de l’événement</h1>
 </header>
 
@@ -119,7 +118,6 @@
         <thead>
             <tr>
                 <th>Poste</th>
-                <th>Tiers</th>
                 <th>Responsables</th>
                 <th>Actions</th>
             </tr>
@@ -150,12 +148,10 @@ async function loadPostes() {
 
     postes.forEach(p => {
         const resp = p.expand?.responsable?.map(r => r.nom).join(", ") || "-";
-        const tiers = p.est_tiers ? "Oui" : "Non";
 
         tbody.innerHTML += `
             <tr>
                 <td>${p.titre}</td>
-                <td>${tiers}</td>
                 <td>${resp}</td>
                 <td>
                     <a class="btn" href="admin-evenement-public-poste-modifier.html?id=${p.id}&event=${eventId}">Modifier</a>
