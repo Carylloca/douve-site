@@ -10,7 +10,7 @@
         body {
             margin: 0;
             font-family: "DM Sans", sans-serif;
-            background-image: url("../img/page-admin-evenement-public-nouveau.jpg");
+            background-image: url("../img/page-admin-evenement-public-postes-nouveau.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -103,15 +103,6 @@
             font-weight: normal;
         }
 
-        .tiers-fields {
-            display: none;
-            margin-top: 10px;
-            padding: 10px;
-            border-left: 4px solid #7A0010;
-            background: rgba(255,255,255,0.8);
-            border-radius: 6px;
-        }
-
         .btn {
             background: #8b0000;
             color: white;
@@ -152,20 +143,7 @@
     <label>Description :</label>
     <textarea id="description"></textarea>
 
-    <label>
-        <input type="checkbox" id="est_tiers"> Poste pour un tiers ?
-    </label>
-
-    <div id="tiersFields" class="tiers-fields">
-        <label>Nom du tiers :</label>
-        <input type="text" id="nom_tiers">
-
-        <label>Prénom du tiers :</label>
-        <input type="text" id="prenom_tiers">
-
-        <label>Poste souhaité par le tiers :</label>
-        <input type="text" id="poste_souhaite_tiers">
-    </div>
+    <!-- ❌ Bloc TIERS supprimé -->
 
     <label>Responsables :</label>
     <div id="responsablesBox" class="responsables-box">
@@ -187,11 +165,6 @@ document.getElementById("retourEvent").href =
 
 document.getElementById("retourPostes").href =
     "admin-evenement-public-postes.html?event=" + eventId;
-
-document.getElementById("est_tiers").addEventListener("change", () => {
-    document.getElementById("tiersFields").style.display =
-        document.getElementById("est_tiers").checked ? "block" : "none";
-});
 
 document.getElementById("responsablesBox").addEventListener("click", (e) => {
     if (e.target.tagName === "INPUT") return;
@@ -224,10 +197,6 @@ async function creerPoste() {
     const data = {
         titre: document.getElementById("titre").value,
         description: document.getElementById("description").value,
-        est_tiers: document.getElementById("est_tiers").checked,
-        nom_tiers: document.getElementById("nom_tiers").value,
-        prenom_tiers: document.getElementById("prenom_tiers").value,
-        poste_souhaite_tiers: document.getElementById("poste_souhaite_tiers").value,
         responsable: responsables,
         manifestation: eventId
     };
