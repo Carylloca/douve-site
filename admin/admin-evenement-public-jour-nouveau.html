@@ -48,7 +48,7 @@
             background: rgba(255,255,255,0.95);
             padding: 25px;
             border-radius: 10px;
-            max-width: 700px;
+            max-width: 500px;
             margin: 30px auto;
             box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }
@@ -86,6 +86,7 @@
 
         .success { color: green; font-weight: bold; margin-top: 15px; }
         .error { color: red; font-weight: bold; margin-top: 15px; }
+        .warning { color: #b36b00; font-weight: bold; margin-top: 15px; }
     </style>
 </head>
 
@@ -139,10 +140,23 @@ function nomDuJour(dateStr) {
     return date.toLocaleDateString("fr-FR", { weekday: "long" });
 }
 
+/* ⭐ Vérifier si un jour existe déjà */
+async function jourExiste(date) {
+    try {
+        const j = await pb.collection("planning_jours").getFirstListItem(
+            `planning_event = "${eventId}" && date = "${date}"`
+        );
+        return j; // renvoie l'objet si trouvé
+    } catch (e) {
+        return null; // aucun jour trouvé
+    }
+}
+
 /* Enregistrer */
 async function creerJour() {
     const feedback = document.getElementById("feedback");
     feedback.textContent = "";
+    feedback.className = "";
 
     const date = document.getElementById("date").value;
 
@@ -152,10 +166,27 @@ async function creerJour() {
         return;
     }
 
+    /* 🔍 Vérifier si le jour existe déjà */
+    const existe = await jourExiste(date);
+
+    if (existe) {
+        const nom = existe.nom_jour || nomDuJour(date);
+
+        const confirmation = confirm(
+            `⚠️ Le jour "${nom}" (${date}) existe déjà dans cet événement.\n\nVoulez-vous vraiment l'ajouter à nouveau ?`
+        );
+
+        if (!confirmation) {
+            feedback.textContent = "Création annulée.";
+            feedback.className = "warning";
+            return;
+        }
+    }
+
     const data = {
         planning_event: eventId,
         date: date,
-        nom_jour: nomDuJour(date)   // ⭐ automatique
+        nom_jour: nomDuJour(date)
     };
 
     try {
