@@ -15,7 +15,7 @@
         body {
             margin: 0;
             font-family: "DM Sans", sans-serif;
-            background-image: url("../img/page-admin-evenement-public-nouveau.jpg");
+            background-image: url("../img/page-admin-evenement-public-creneaux-calendrier.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -67,6 +67,10 @@
     <a href="admin-menu.html" class="header-btn">Menu admin</a>
     <a id="retourEvent" class="header-btn">Retour à l’événement</a>
     <a id="retourJours" class="header-btn">Retour aux jours</a>
+
+    <!-- ⭐ Nouveau bouton -->
+    <a id="btnNewCreneau" class="header-btn">+ Nouveau créneau</a>
+
     <h1>Calendrier des créneaux</h1>
 </header>
 
@@ -94,6 +98,10 @@ document.getElementById("retourEvent").href =
     "admin-evenement-public-modifier.html?id=" + eventId;
 
 document.getElementById("retourJours").href =
+    "admin-evenement-public-jours.html?event=" + eventId;
+
+/* ⭐ Nouveau créneau → renvoie vers la page des jours */
+document.getElementById("btnNewCreneau").href =
     "admin-evenement-public-jours.html?event=" + eventId;
 
 /* Couleurs par poste */
