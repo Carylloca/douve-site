@@ -49,9 +49,31 @@
             font-weight: 600;
         }
 
+        /* ⭐ Conteneur du bouton sous le header */
+        .top-actions {
+            max-width: 1100px;
+            margin: 15px auto 0 auto;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            background: #7A0010;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .btn:hover {
+            background: #b30000;
+        }
+
         #calendar {
             max-width: 1100px;
-            margin: 30px auto;
+            margin: 20px auto;
             background: rgba(255,255,255,0.95);
             padding: 20px;
             border-radius: 10px;
@@ -67,12 +89,13 @@
     <a href="admin-menu.html" class="header-btn">Menu admin</a>
     <a id="retourEvent" class="header-btn">Retour à l’événement</a>
     <a id="retourJours" class="header-btn">Retour aux jours</a>
-
-    <!-- ⭐ Nouveau bouton -->
-    <a id="btnNewCreneau" class="header-btn">+ Nouveau créneau</a>
-
     <h1>Calendrier des créneaux</h1>
 </header>
+
+<!-- ⭐ Bouton sous le header -->
+<div class="top-actions">
+    <a id="btnNewCreneau" class="btn">+ Nouveau créneau</a>
+</div>
 
 <div id="calendar"></div>
 
@@ -95,7 +118,7 @@ if (user.role !== "comite" && user.role !== "responsable") {
 
 /* Navigation */
 document.getElementById("retourEvent").href =
-    "admin-evenement-public-dashboard.html?id=" + eventId;
+    "admin-evenement-public-modifier.html?id=" + eventId;
 
 document.getElementById("retourJours").href =
     "admin-evenement-public-jours.html?event=" + eventId;
@@ -184,7 +207,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         eventClick: function(info) {
             const id = info.event.id;
             window.location.href =
-                "admin-evenement-public-creneau-modifier.html?id=" + id + "&event=" + eventId;
+                "admin-evenement-public-creneau-dashboard.html?id=" + id + "&event=" + eventId;
         }
     });
 
