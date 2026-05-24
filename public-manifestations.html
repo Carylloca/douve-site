@@ -89,9 +89,14 @@
 <script>
 const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-/* Charger les manifestations publiques */
 async function loadManifestations() {
     const container = document.getElementById("listeManifestations");
+
+    if (!container) {
+        console.error("❌ ERREUR : élément #listeManifestations introuvable !");
+        return;
+    }
+
     container.innerHTML = "Chargement...";
 
     try {
@@ -132,6 +137,7 @@ async function loadManifestations() {
 
 loadManifestations();
 </script>
+
 
 
 </body>
