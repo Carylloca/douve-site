@@ -59,13 +59,23 @@
             margin-top: 15px;
         }
 
-        select {
-            width: 100%;
+        .time-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .time-select {
+            width: 80px;
             padding: 10px;
-            margin-top: 6px;
             border-radius: 6px;
             border: 1px solid #ccc;
             font-size: 15px;
+        }
+
+        .time-sep {
+            font-size: 20px;
+            font-weight: bold;
         }
 
         .poste-list {
@@ -115,9 +125,10 @@
     <h2 id="jourTitre" style="text-align:center; margin-top:0;"></h2>
 
     <label>Heure de début :</label>
-    <div style="display:flex; gap:10px;">
-        <select id="h_debut"></select>
-        <select id="m_debut">
+    <div class="time-row">
+        <select id="h_debut" class="time-select"></select>
+        <span class="time-sep">:</span>
+        <select id="m_debut" class="time-select">
             <option>00</option>
             <option>15</option>
             <option>30</option>
@@ -126,9 +137,10 @@
     </div>
 
     <label>Heure de fin :</label>
-    <div style="display:flex; gap:10px;">
-        <select id="h_fin"></select>
-        <select id="m_fin">
+    <div class="time-row">
+        <select id="h_fin" class="time-select"></select>
+        <span class="time-sep">:</span>
+        <select id="m_fin" class="time-select">
             <option>00</option>
             <option>15</option>
             <option>30</option>
@@ -188,7 +200,7 @@ chargerJour();
 /* Charger les postes */
 async function chargerPostes() {
     const postes = await pb.collection("planning_postes").getFullList({
-        filter: `planning_event = "${eventId}"`,
+        filter: `manifestation = "${eventId}"`,
         sort: "titre"
     });
 
