@@ -59,13 +59,25 @@
             margin-top: 15px;
         }
 
-        input {
+        select {
             width: 100%;
             padding: 10px;
             margin-top: 6px;
             border-radius: 6px;
             border: 1px solid #ccc;
             font-size: 15px;
+        }
+
+        .poste-list {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f7f7f7;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .poste-item {
+            margin: 5px 0;
         }
 
         .btn {
@@ -100,14 +112,33 @@
 
 <div class="card">
 
+    <h2 id="jourTitre" style="text-align:center; margin-top:0;"></h2>
+
     <label>Heure de début :</label>
-    <input type="time" id="heure_debut" required>
+    <div style="display:flex; gap:10px;">
+        <select id="h_debut"></select>
+        <select id="m_debut">
+            <option>00</option>
+            <option>15</option>
+            <option>30</option>
+            <option>45</option>
+        </select>
+    </div>
 
     <label>Heure de fin :</label>
-    <input type="time" id="heure_fin" required>
+    <div style="display:flex; gap:10px;">
+        <select id="h_fin"></select>
+        <select id="m_fin">
+            <option>00</option>
+            <option>15</option>
+            <option>30</option>
+            <option>45</option>
+        </select>
+    </div>
 
-    <label>Poste :</label>
-    <input type="text" id="poste" placeholder="Ex : Bar, Sécurité…" required>
+    <label>Postes :</label>
+    <button onclick="toggleTous()" style="margin-bottom:10px;">Tous</button>
+    <div id="postesContainer" class="poste-list"></div>
 
     <button class="btn" onclick="creerCreneau()">Enregistrer</button>
 
@@ -133,25 +164,77 @@ if (user.role !== "comite" && user.role !== "responsable") {
 document.getElementById("retourPlanning").href =
     "admin-evenement-public-planning.html?event=" + eventId;
 
-/* Utilitaire : format date YYYY-MM-DD → +1 jour */
+/* Remplir les heures */
+function remplirHeures() {
+    const selects = [document.getElementById("h_debut"), document.getElementById("h_fin")];
+    selects.forEach(sel => {
+        for (let h = 0; h < 24; h++) {
+            const hh = h.toString().padStart(2, "0");
+            sel.innerHTML += `<option>${hh}</option>`;
+        }
+    });
+}
+remplirHeures();
+
+/* Charger le jour */
+async function chargerJour() {
+    const jour = await pb.collection("planning_jours").getOne(jourId);
+    const date = new Date(jour.date);
+    const nom = date.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+    document.getElementById("jourTitre").textContent = nom;
+}
+chargerJour();
+
+/* Charger les postes */
+async function chargerPostes() {
+    const postes = await pb.collection("planning_postes").getFullList({
+        filter: `planning_event = "${eventId}"`,
+        sort: "titre"
+    });
+
+    const container = document.getElementById("postesContainer");
+    container.innerHTML = "";
+
+    postes.forEach(p => {
+        container.innerHTML += `
+            <div class="poste-item">
+                <label>
+                    <input type="checkbox" class="posteCheck" value="${p.titre}">
+                    ${p.titre}
+                </label>
+            </div>
+        `;
+    });
+}
+chargerPostes();
+
+/* Bouton Tous */
+function toggleTous() {
+    const checks = document.querySelectorAll(".posteCheck");
+    const allChecked = [...checks].every(c => c.checked);
+    checks.forEach(c => c.checked = !allChecked);
+}
+
+/* Utilitaire : +1 jour */
 function addOneDay(dateStr) {
     const d = new Date(dateStr);
     d.setDate(d.getDate() + 1);
     return d.toISOString().split("T")[0];
 }
 
-/* Création du créneau avec découpage automatique si dépasse minuit */
+/* Création */
 async function creerCreneau() {
     const feedback = document.getElementById("feedback");
     feedback.textContent = "";
     feedback.className = "";
 
-    const heureDebut = document.getElementById("heure_debut").value;
-    const heureFin = document.getElementById("heure_fin").value;
-    const poste = document.getElementById("poste").value.trim();
+    const heureDebut = document.getElementById("h_debut").value + ":" + document.getElementById("m_debut").value;
+    const heureFin = document.getElementById("h_fin").value + ":" + document.getElementById("m_fin").value;
 
-    if (!heureDebut || !heureFin || !poste) {
-        feedback.textContent = "Veuillez remplir tous les champs.";
+    const postes = [...document.querySelectorAll(".posteCheck:checked")].map(c => c.value);
+
+    if (postes.length === 0) {
+        feedback.textContent = "Veuillez sélectionner au moins un poste.";
         feedback.className = "error";
         return;
     }
@@ -159,52 +242,45 @@ async function creerCreneau() {
     const depasseMinuit = heureFin < heureDebut;
 
     try {
-        if (!depasseMinuit) {
-            // Créneau normal
-            await pb.collection("planning_creneaux").create({
-                planning_jour: jourId,
-                heure_debut: heureDebut,
-                heure_fin: heureFin,
-                poste: poste
-            });
-        } else {
-            // Créneau 1 : jour actuel (jusqu'à 23:59)
-            await pb.collection("planning_creneaux").create({
-                planning_jour: jourId,
-                heure_debut: heureDebut,
-                heure_fin: "23:59",
-                poste: poste
-            });
+        for (const poste of postes) {
 
-            // Récupérer le jour actuel pour connaître sa date
-            const jour = await pb.collection("planning_jours").getOne(jourId);
-            const dateSuivante = addOneDay(jour.date);
-
-            // Chercher le jour suivant dans le même événement
-            let jourSuivant = null;
-            try {
-                jourSuivant = await pb.collection("planning_jours").getFirstListItem(
-                    `planning_event = "${eventId}" && date = "${dateSuivante}"`
-                );
-            } catch (e) {
-                // Aucun jour suivant trouvé : on informe mais on ne bloque pas la création du premier créneau
-                console.warn("Jour suivant introuvable pour la date", dateSuivante);
-            }
-
-            if (jourSuivant) {
-                // Créneau 2 : jour suivant (00:00 → heureFin)
+            if (!depasseMinuit) {
                 await pb.collection("planning_creneaux").create({
-                    planning_jour: jourSuivant.id,
-                    heure_debut: "00:00",
+                    planning_jour: jourId,
+                    heure_debut: heureDebut,
                     heure_fin: heureFin,
                     poste: poste
                 });
             } else {
-                alert("Attention : le créneau dépasse minuit mais aucun jour suivant n'existe pour cette date. Seule la partie jusqu'à 23:59 a été créée.");
+                await pb.collection("planning_creneaux").create({
+                    planning_jour: jourId,
+                    heure_debut: heureDebut,
+                    heure_fin: "23:59",
+                    poste: poste
+                });
+
+                const jour = await pb.collection("planning_jours").getOne(jourId);
+                const dateSuivante = addOneDay(jour.date);
+
+                let jourSuivant = null;
+                try {
+                    jourSuivant = await pb.collection("planning_jours").getFirstListItem(
+                        `planning_event = "${eventId}" && date = "${dateSuivante}"`
+                    );
+                } catch (e) {}
+
+                if (jourSuivant) {
+                    await pb.collection("planning_creneaux").create({
+                        planning_jour: jourSuivant.id,
+                        heure_debut: "00:00",
+                        heure_fin: heureFin,
+                        poste: poste
+                    });
+                }
             }
         }
 
-        feedback.textContent = "Créneau enregistré.";
+        feedback.textContent = "Créneaux enregistrés.";
         feedback.className = "success";
 
         setTimeout(() => {
@@ -214,7 +290,7 @@ async function creerCreneau() {
 
     } catch (error) {
         console.error(error);
-        feedback.textContent = "Erreur lors de l’enregistrement du créneau.";
+        feedback.textContent = "Erreur lors de l’enregistrement.";
         feedback.className = "error";
     }
 }
