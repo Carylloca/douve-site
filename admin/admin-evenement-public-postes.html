@@ -132,7 +132,7 @@ const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 const eventId = new URLSearchParams(window.location.search).get("event");
 
 document.getElementById("retourEvent").href =
-    "admin-evenement-public-modifier.html?id=" + eventId;
+    "admin-evenement-public-dashboard.html?id=" + eventId;
 
 document.getElementById("btnNew").href =
     "admin-evenement-public-postes-nouveau.html?event=" + eventId;
