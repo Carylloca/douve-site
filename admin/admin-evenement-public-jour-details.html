@@ -186,7 +186,7 @@ async function loadCreneaux() {
     zone.innerHTML = "Chargement...";
 
     const creneaux = await pb.collection("planning_creneaux").getFullList({
-        filter: `jour="${jourId}"`,
+        filter: `planning_jour="${jourId}"`,
         sort: "heure_debut"
     });
 
