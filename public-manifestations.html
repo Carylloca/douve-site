@@ -11,7 +11,7 @@
         body {
             margin: 0;
             font-family: "DM Sans", sans-serif;
-            background-image: url("img/page-public-manifestations.jpg");
+            background-image: url("img/page-public-manifestations.jpg"); /* ✔ tu gardes ton style */
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -37,19 +37,9 @@
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 25px;
-            display: flex;
-            gap: 20px;
             box-shadow: 0 3px 8px rgba(0,0,0,0.1);
         }
 
-        .event-card img {
-            width: 220px;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-
-        .event-info { flex: 1; }
         .event-info h2 { margin-top: 0; color: #2c3e50; }
         .event-info p { margin: 6px 0; }
 
@@ -85,19 +75,13 @@
     <p class="no-events">Chargement des événements publics...</p>
 </div>
 
-<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 <script>
 const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
 async function loadManifestations() {
-    const container = document.getElementById("listeManifestations");
+    const container = document.getElementById("eventsContainer");
 
-    if (!container) {
-        console.error("❌ ERREUR : élément #listeManifestations introuvable !");
-        return;
-    }
-
-    container.innerHTML = "Chargement...";
+    container.innerHTML = "<p class='no-events'>Chargement...</p>";
 
     try {
         const events = await pb.collection("manifestations").getFullList({
@@ -106,7 +90,7 @@ async function loadManifestations() {
         });
 
         if (events.length === 0) {
-            container.innerHTML = "<p>Aucune manifestation pour le moment.</p>";
+            container.innerHTML = "<p class='no-events'>Aucun événement public pour le moment.</p>";
             return;
         }
 
@@ -121,24 +105,25 @@ async function loadManifestations() {
             });
 
             container.innerHTML += `
-                <div class="manifestation-item">
-                    <h3>${ev.titre}</h3>
-                    <p>${date}</p>
-                    <a href="public-manifestation-details.html?id=${ev.id}" class="btn">Voir</a>
+                <div class="event-card">
+                    <div class="event-info">
+                        <h2>${ev.titre}</h2>
+                        <p><strong>Date :</strong> ${date}</p>
+                        <p>${ev.description || ""}</p>
+                        <a href="public-manifestation-details.html?id=${ev.id}" class="btn">Voir</a>
+                    </div>
                 </div>
             `;
         });
 
     } catch (err) {
         console.error(err);
-        container.innerHTML = "<p>Erreur lors du chargement.</p>";
+        container.innerHTML = "<p class='no-events'>Erreur lors du chargement.</p>";
     }
 }
 
 loadManifestations();
 </script>
-
-
 
 </body>
 </html>
