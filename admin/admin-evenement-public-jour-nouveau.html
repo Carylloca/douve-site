@@ -51,6 +51,7 @@
             max-width: 500px;
             margin: 30px auto;
             box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            position: relative;
         }
 
         label {
@@ -98,6 +99,46 @@
         .jours-list div {
             margin: 4px 0;
         }
+
+        /* ⭐ Alerte élégante */
+        .alert-duplicate {
+            background: #ffdddd;
+            border-left: 5px solid #cc0000;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .alert-buttons {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .alert-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+            font-size: 15px;
+        }
+
+        .alert-cancel {
+            background: #bbb;
+        }
+
+        .alert-continue {
+            background: #cc0000;
+            color: white;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 
@@ -122,6 +163,15 @@
         <div id="listeJours"></div>
     </div>
 
+    <!-- ⭐ Alerte doublon -->
+    <div id="alertDuplicate" class="alert-duplicate">
+        ⚠️ Cette date existe déjà pour cet événement.
+        <div class="alert-buttons">
+            <button class="alert-btn alert-cancel" onclick="annulerCreation()">Annuler</button>
+            <button class="alert-btn alert-continue" onclick="confirmerCreation()">Continuer quand même</button>
+        </div>
+    </div>
+
     <button class="btn" onclick="creerJour()">Enregistrer</button>
 
     <p id="feedback"></p>
@@ -135,9 +185,7 @@ const eventId = new URLSearchParams(window.location.search).get("event");
 /* 🔐 Sécurité */
 const user = pb.authStore.model;
 
-if (!user) {
-    window.location.href = "../login.html";
-}
+if (!user) window.location.href = "../login.html";
 
 if (user.role !== "comite" && user.role !== "responsable") {
     alert("Accès refusé");
@@ -193,7 +241,20 @@ async function chargerJoursExistants() {
 
 chargerJoursExistants();
 
-/* Enregistrer */
+/* ⭐ Gestion de l’alerte */
+let creationData = null;
+
+function annulerCreation() {
+    document.getElementById("alertDuplicate").style.display = "none";
+    creationData = null;
+}
+
+function confirmerCreation() {
+    document.getElementById("alertDuplicate").style.display = "none";
+    if (creationData) envoyerCreation(creationData);
+}
+
+/* ⭐ Enregistrer */
 async function creerJour() {
     const feedback = document.getElementById("feedback");
     feedback.textContent = "";
@@ -211,6 +272,24 @@ async function creerJour() {
         date: date,
         nom_jour: nomDuJour(date)
     };
+
+    /* 🔎 Vérifier doublon */
+    const deja = await pb.collection("planning_jours").getFullList({
+        filter: `planning_event="${eventId}" && date="${date}"`
+    });
+
+    if (deja.length > 0) {
+        creationData = data;
+        document.getElementById("alertDuplicate").style.display = "block";
+        return;
+    }
+
+    envoyerCreation(data);
+}
+
+/* ⭐ Création réelle */
+async function envoyerCreation(data) {
+    const feedback = document.getElementById("feedback");
 
     try {
         await pb.collection("planning_jours").create(data);
