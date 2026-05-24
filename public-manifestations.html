@@ -85,61 +85,54 @@
     <p class="no-events">Chargement des événements publics...</p>
 </div>
 
+<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 <script>
-    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-    // 🔒 Protection d’accès
-    if (!pb.authStore.isValid) {
-        window.location.href = "login.html";
-    }
+/* Charger les manifestations publiques */
+async function loadManifestations() {
+    const container = document.getElementById("listeManifestations");
+    container.innerHTML = "Chargement...";
 
-    async function loadPublicEvents() {
-        const container = document.getElementById("eventsContainer");
+    try {
+        const events = await pb.collection("manifestations").getFullList({
+            filter: `public = true`,
+            sort: "-date_debut"
+        });
 
-        try {
-            const events = await pb.collection("planning_events").getFullList({ sort: "date_debut" });
-            const publicEvents = events.filter(ev => ev.type === "public");
+        if (events.length === 0) {
+            container.innerHTML = "<p>Aucune manifestation pour le moment.</p>";
+            return;
+        }
 
-            if (publicEvents.length === 0) {
-                container.innerHTML = `<p class="no-events">Aucun événement public pour le moment.</p>`;
-                return;
-            }
+        container.innerHTML = "";
 
-            container.innerHTML = "";
-
-            publicEvents.forEach(ev => {
-                const imgUrl = ev.image
-                    ? pb.files.getUrl(ev, ev.image)
-                    : "https://via.placeholder.com/220x150?text=Événement";
-
-                const card = document.createElement("div");
-                card.className = "event-card";
-
-                card.innerHTML = `
-                    <img src="${imgUrl}" alt="Image événement">
-                    <div class="event-info">
-                        <h2>${ev.titre}</h2>
-                        <p><strong>📅 Du :</strong> ${ev.date_debut}<br>
-                        <strong>📅 Au :</strong> ${ev.date_fin}</p>
-                        <p><strong>📍 Lieu :</strong> ${ev.lieu || "Non spécifié"}</p>
-                        <p>${ev.description_courte || ""}</p>
-                        <a class="btn" href="public-manifestation-details.html?id=${ev.id}">
-                            Voir les détails
-                        </a>
-                    </div>
-                `;
-
-                container.appendChild(card);
+        events.forEach(ev => {
+            const date = new Date(ev.date_debut).toLocaleDateString("fr-FR", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric"
             });
 
-        } catch (error) {
-            console.error("Erreur :", error);
-            container.innerHTML = `<p class="no-events">Impossible de charger les événements publics.</p>`;
-        }
-    }
+            container.innerHTML += `
+                <div class="manifestation-item">
+                    <h3>${ev.titre}</h3>
+                    <p>${date}</p>
+                    <a href="public-manifestation-details.html?id=${ev.id}" class="btn">Voir</a>
+                </div>
+            `;
+        });
 
-    loadPublicEvents();
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = "<p>Erreur lors du chargement.</p>";
+    }
+}
+
+loadManifestations();
 </script>
+
 
 </body>
 </html>
