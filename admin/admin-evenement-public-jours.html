@@ -176,8 +176,7 @@ async function loadJours() {
             <tr>
                 <td>${formatDateFr(j.date)}</td>
                 <td>
-                    <a class="btn" href="admin-evenement-public-creneaux.html?event=${eventId}&jour=${j.id}">Créneaux</a>
-                    <a class="btn" href="admin-evenement-public-jour-modifier.html?id=${j.id}&event=${eventId}">Modifier</a>
+                    <a class="btn" href="admin-evenement-public-jour-details.html?id=${j.id}&event=${eventId}">Détails</a>
                     <button class="btn btn-red" onclick="supprimer('${j.id}')">Supprimer</button>
                 </td>
             </tr>
