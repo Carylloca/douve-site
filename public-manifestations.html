@@ -93,7 +93,7 @@ async function loadManifestations() {
 
     try {
         const events = await pb.collection("planning_events").getFullList({
-            filter: `public = true`,
+            // pas de filtre
             sort: "-date_debut"
         });
 
