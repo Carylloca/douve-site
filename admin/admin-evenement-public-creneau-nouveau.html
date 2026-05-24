@@ -48,7 +48,7 @@
             background: rgba(255,255,255,0.95);
             padding: 25px;
             border-radius: 10px;
-            max-width: 700px;
+            max-width: 500px; /* Réduction de 30% */
             margin: 30px auto;
             box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }
@@ -109,7 +109,6 @@
             border: none;
             font-size: 16px;
             width: 100%;
-            margin-top: 20px;
         }
 
         .btn:hover {
@@ -148,12 +147,6 @@
 
     <h2 id="jourTitre" style="text-align:center; margin-top:0;"></h2>
 
-    <!-- BOUTONS -->
-    <div style="display:flex; gap:10px; justify-content:center; margin-bottom:20px;">
-        <button class="btn-small" onclick="window.location.reload()">+ Nouveau créneau</button>
-        <button class="btn-small" onclick="alert('La duplication sera ajoutée ici si tu veux la même logique que dans la page Planning.')">Dupliquer créneau</button>
-    </div>
-
     <!-- HEURES SUR UNE SEULE LIGNE -->
     <div class="time-row">
         <div>
@@ -191,7 +184,11 @@
         <button onclick="toggleTous()" class="btn-small" style="margin-bottom:10px;">Tous</button>
     </div>
 
-    <button class="btn" onclick="creerCreneau()">Enregistrer</button>
+    <!-- BOUTONS EN BAS -->
+    <div style="display:flex; gap:15px; margin-top:20px;">
+        <button class="btn" style="flex:1;" onclick="creerCreneau()">Enregistrer</button>
+        <button class="btn" style="flex:1;" onclick="memoriserEtDupliquer()">Mémoriser et Dupliquer</button>
+    </div>
 
     <p id="feedback"></p>
 </div>
@@ -273,7 +270,7 @@ function addOneDay(dateStr) {
 }
 
 /* Création */
-async function creerCreneau() {
+async function creerCreneau(dupliquer = false) {
     const feedback = document.getElementById("feedback");
     feedback.textContent = "";
     feedback.className = "";
@@ -334,8 +331,13 @@ async function creerCreneau() {
         feedback.className = "success";
 
         setTimeout(() => {
-            window.location.href =
-                "admin-evenement-public-planning.html?event=" + eventId;
+            if (dupliquer) {
+                window.location.href =
+                    "admin-evenement-public-creneau-nouveau.html?event=" + eventId + "&jour=" + jourId;
+            } else {
+                window.location.href =
+                    "admin-evenement-public-planning.html?event=" + eventId;
+            }
         }, 800);
 
     } catch (error) {
@@ -344,6 +346,51 @@ async function creerCreneau() {
         feedback.className = "error";
     }
 }
+
+/* DUPLICATION AUTOMATIQUE */
+async function memoriserEtDupliquer() {
+    // Sauvegarde des valeurs actuelles
+    localStorage.setItem("dup_h_debut", document.getElementById("h_debut").value);
+    localStorage.setItem("dup_m_debut", document.getElementById("m_debut").value);
+    localStorage.setItem("dup_h_fin", document.getElementById("h_fin").value);
+    localStorage.setItem("dup_m_fin", document.getElementById("m_fin").value);
+
+    // Sauvegarde des postes cochés
+    const postes = [...document.querySelectorAll(".posteCheck:checked")].map(c => c.value);
+    localStorage.setItem("dup_postes", JSON.stringify(postes));
+
+    await creerCreneau(true);
+}
+
+/* RECHARGEMENT AUTOMATIQUE DES VALEURS DUPLIQUÉES */
+function rechargerDuplication() {
+    const hDeb = localStorage.getItem("dup_h_debut");
+    const mDeb = localStorage.getItem("dup_m_debut");
+    const hFin = localStorage.getItem("dup_h_fin");
+    const mFin = localStorage.getItem("dup_m_fin");
+    const postes = JSON.parse(localStorage.getItem("dup_postes") || "[]");
+
+    if (hDeb) document.getElementById("h_debut").value = hDeb;
+    if (mDeb) document.getElementById("m_debut").value = mDeb;
+    if (hFin) document.getElementById("h_fin").value = hFin;
+    if (mFin) document.getElementById("m_fin").value = mFin;
+
+    postes.forEach(id => {
+        const checkbox = document.querySelector(`.posteCheck[value="${id}"]`);
+        if (checkbox) checkbox.checked = true;
+    });
+
+    // Nettoyage
+    localStorage.removeItem("dup_h_debut");
+    localStorage.removeItem("dup_m_debut");
+    localStorage.removeItem("dup_h_fin");
+    localStorage.removeItem("dup_m_fin");
+    localStorage.removeItem("dup_postes");
+}
+
+// Appel après chargement des postes
+setTimeout(rechargerDuplication, 300);
+
 </script>
 
 </body>
