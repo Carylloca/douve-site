@@ -208,9 +208,9 @@ if (user.role !== "comite" && user.role !== "responsable") {
     window.location.href = "../index.html";
 }
 
-/* Navigation */
+/* Navigation : retour vers la page Détails du jour */
 document.getElementById("retourPlanning").href =
-    "admin-evenement-public-planning.html?event=" + eventId;
+    "admin-evenement-public-jour-details.html?id=" + jourId + "&event=" + eventId;
 
 /* Remplir les heures */
 function remplirHeures() {
@@ -336,7 +336,7 @@ async function creerCreneau(dupliquer = false) {
                     "admin-evenement-public-creneau-nouveau.html?event=" + eventId + "&jour=" + jourId;
             } else {
                 window.location.href =
-                    "admin-evenement-public-planning.html?event=" + eventId;
+                    "admin-evenement-public-jour-details.html?id=" + jourId + "&event=" + eventId;
             }
         }, 800);
 
@@ -349,13 +349,11 @@ async function creerCreneau(dupliquer = false) {
 
 /* DUPLICATION AUTOMATIQUE */
 async function memoriserEtDupliquer() {
-    // Sauvegarde des valeurs actuelles
     localStorage.setItem("dup_h_debut", document.getElementById("h_debut").value);
     localStorage.setItem("dup_m_debut", document.getElementById("m_debut").value);
     localStorage.setItem("dup_h_fin", document.getElementById("h_fin").value);
     localStorage.setItem("dup_m_fin", document.getElementById("m_fin").value);
 
-    // Sauvegarde des postes cochés
     const postes = [...document.querySelectorAll(".posteCheck:checked")].map(c => c.value);
     localStorage.setItem("dup_postes", JSON.stringify(postes));
 
@@ -380,7 +378,6 @@ function rechargerDuplication() {
         if (checkbox) checkbox.checked = true;
     });
 
-    // Nettoyage
     localStorage.removeItem("dup_h_debut");
     localStorage.removeItem("dup_m_debut");
     localStorage.removeItem("dup_h_fin");
@@ -388,9 +385,7 @@ function rechargerDuplication() {
     localStorage.removeItem("dup_postes");
 }
 
-// Appel après chargement des postes
 setTimeout(rechargerDuplication, 300);
-
 </script>
 
 </body>
