@@ -151,6 +151,7 @@
     <div class="header-buttons">
         <a href="../index.html" class="header-btn">Menu</a>
         <a href="admin-menu.html" class="header-btn">Menu admin</a>
+        <a href="admin-evenement-public-dashboard.html" class="header-btn">Menu liste</a>
     </div>
     <h1>Modifier un événement public</h1>
 </header>
@@ -198,7 +199,7 @@ let responsablesExistants = [];
 /* ⭐ Nettoyage des dates PocketBase → input type="date" */
 function cleanDate(d) {
     if (!d) return "";
-    return d.split("T")[0];
+    return d.split(" ")[0]; // coupe avant l'heure
 }
 
 /* ⭐ Charger l'événement AVANT tout */
