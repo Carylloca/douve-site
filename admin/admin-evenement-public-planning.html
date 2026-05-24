@@ -144,7 +144,7 @@
             <thead>
                 <tr>
                     <th>Heure</th>
-                    <th>Poste</th>
+                    <th>Postes</th>
                     <th>Assigné</th>
                     <th>Actions</th>
                 </tr>
@@ -220,7 +220,7 @@ async function voirCreneaux(jourId, date) {
 
     const creneaux = await pb.collection("planning_creneaux").getFullList({
         filter: `planning_jour = "${jourId}"`,
-        expand: "compagnon_assigne",
+        expand: "poste,compagnon_assigne",
         sort: "heure_debut"
     });
 
@@ -232,11 +232,20 @@ async function voirCreneaux(jourId, date) {
             ? c.expand.companon_assigne.nom + " " + c.expand.companon_assigne.prenom
             : "—";
 
+        const posteTitre = c.expand?.poste?.titre || "—";
+
         tbody.innerHTML += `
             <tr>
                 <td>${c.heure_debut} → ${c.heure_fin}</td>
-                <td>${c.poste}</td>
+
+                <td>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span>${posteTitre}</span>
+                    </div>
+                </td>
+
                 <td>${assign}</td>
+
                 <td>
                     <a class="btn" href="admin-evenement-public-creneau-modifier.html?id=${c.id}&event=${eventId}">Modifier</a>
                     <button class="btn" onclick="dupliquerCreneau('${c.id}')">Dupliquer</button>
@@ -267,7 +276,7 @@ async function supprimerCreneau(id) {
     voirCreneaux(jourSelectionne);
 }
 
-/* DUPLIQUER UN CRENEAU */
+/* DUPLIQUER UN CRÉNEAU */
 async function dupliquerCreneau(id) {
     if (!confirm("Dupliquer ce créneau ?")) return;
 
