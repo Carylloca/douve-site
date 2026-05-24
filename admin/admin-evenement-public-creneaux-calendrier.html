@@ -118,7 +118,7 @@ if (user.role !== "comite" && user.role !== "responsable") {
 
 /* Navigation */
 document.getElementById("retourEvent").href =
-    "admin-evenement-public-modifier.html?id=" + eventId;
+    "admin-evenement-public-dashboard.html?id=" + eventId;
 
 document.getElementById("retourJours").href =
     "admin-evenement-public-jours.html?event=" + eventId;
@@ -207,7 +207,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         eventClick: function(info) {
             const id = info.event.id;
             window.location.href =
-                "admin-evenement-public-creneau-dashboard.html?id=" + id + "&event=" + eventId;
+                "admin-evenement-public-creneau-modifier.html?id=" + id + "&event=" + eventId;
         }
     });
 
