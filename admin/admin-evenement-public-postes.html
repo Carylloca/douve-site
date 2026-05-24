@@ -135,7 +135,7 @@ document.getElementById("retourEvent").href =
     "admin-evenement-public-modifier.html?id=" + eventId;
 
 document.getElementById("btnNew").href =
-    "admin-evenement-public-poste-nouveau.html?event=" + eventId;
+    "admin-evenement-public-postes-nouveau.html?event=" + eventId;
 
 async function loadPostes() {
     const postes = await pb.collection("planning_postes").getFullList({
