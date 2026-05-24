@@ -11,7 +11,7 @@
     <style>
         body {
             margin: 0;
-            background-image: url("img/page-compagnons.jpg");
+            background-image: url("img/page-compagnons-inscription.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -103,10 +103,10 @@
             margin: 20px 0;
             border-radius: 6px;
             color: #664d03;
-            font-size: 17px;      /* 🔥 plus grand */
+            font-size: 17px;
             gap: 15px;
-            text-align: center;   /* 🔥 centré */
-            font-weight: 600;     /* 🔥 plus lisible */
+            text-align: center;
+            font-weight: 600;
         }
 
         .warning-icon {
@@ -118,8 +118,8 @@
 
         .warning-text {
             flex: 1;
-            text-align: center;   /* 🔥 centré */
-            font-size: 17px;      /* 🔥 plus grand */
+            text-align: center;
+            font-size: 17px;
             font-weight: 600;
         }
 
@@ -153,16 +153,13 @@
 
             <span id="desc"></span>
 
-            <!-- 🔥 Ce bloc reste vide, plus de message rouge -->
-            <div id="limite" style="margin-bottom:10px;"></div>
-
             <label>Nombre de personnes :</label>
-            <input type="number" id="nb" min="0" value="0">
+            <input type="number" id="nb" min="1" value="1">
 
             <div class="warning-block">
                 <div class="warning-icon">⚠️</div>
                 <div class="warning-text">
-                    <strong>En cas de modification d'inscription après la date limite, veuillez contacter l'organisateur.</strong>
+                    <strong>En cas de modification d'inscription, veuillez contacter l'organisateur.</strong>
                 </div>
             </div>
 
@@ -181,73 +178,30 @@
     document.getElementById("btnInscrits").href =
         "liste-inscrits-compagnon.html?id=" + manifestId;
 
-    let isClosed = false;
-
     async function load() {
         try {
-            const m = await pb.collection("manifestations").getOne(manifestId, {
-                expand: "responsables"
+            const m = await pb.collection("planning_events").getOne(manifestId, {
+                expand: "responsable"
             });
-
-            // Date + heure
-            let dateAff = "";
-            let heureAff = "";
-            if (m.date) {
-                const d = new Date(m.date);
-                if (!isNaN(d.getTime())) dateAff = d.toLocaleDateString("fr-CH");
-
-                if (typeof m.date === "string" && m.date.includes(" ")) {
-                    heureAff = m.date.split(" ")[1].slice(0,5);
-                }
-            }
-
-            // Date limite
-            let limiteAff = "";
-            let limiteDate = null;
-            if (m.date_limite) {
-                const d = new Date(m.date_limite);
-                if (!isNaN(d.getTime())) {
-                    limiteDate = d;
-                    limiteAff = d.toLocaleDateString("fr-CH");
-                }
-            }
-
-            // Organisateur
-            let organisateur = "Non défini";
-            if (m.expand?.responsables?.length > 0) {
-                organisateur = m.expand.responsables
-                    .map(r => `${r.nom} ${r.prenom} (${r.initiales || ""})`)
-                    .join(", ");
-            }
 
             const user = pb.authStore.model;
             const nomCompagnon = `${user.prenom || ""} ${user.nom || ""}`.trim();
 
-            let html = `${m.title}<br>`;
-            if (dateAff) html += `<span style="font-size:16px;color:#444;">📅 ${dateAff} ${heureAff ? "à " + heureAff : ""}</span><br>`;
+            const dateAff = m.date_debut
+                ? new Date(m.date_debut).toLocaleDateString("fr-CH")
+                : "";
+
+            const organisateur = m.expand?.responsable
+                ? `${m.expand.responsable.nom} ${m.expand.responsable.prenom}`
+                : "Non défini";
+
+            let html = `${m.titre}<br>`;
+            if (dateAff) html += `<span style="font-size:16px;color:#444;">📅 ${dateAff}</span><br>`;
             html += `<span style="font-size:16px;color:#7b0f23;">👤 ${nomCompagnon}</span><br>`;
-            if (limiteAff) html += `<span style="font-size:16px;color:#444;">⏳ Date limite : ${limiteAff}</span><br>`;
             html += `<span style="font-size:16px;color:#444;">📌 Organisateur : ${organisateur}</span>`;
 
             document.getElementById("title").innerHTML = html;
             document.getElementById("desc").textContent = m.description || "Aucune description.";
-
-            // 🔥 Vérification délai dépassé
-            if (limiteDate && new Date() > limiteDate) {
-                isClosed = true;
-
-                // ❌ On ne met plus rien ici
-                document.getElementById("limite").innerHTML = "";
-
-                // Désactivation du formulaire
-                document.getElementById("nb").disabled = true;
-                document.getElementById("btnSave").disabled = true;
-                document.getElementById("btnSave").style.background = "#777";
-
-                // 🔄 Mise à jour automatique du pavé jaune
-                document.querySelector(".warning-text strong").textContent =
-                    "⛔ Date limite dépassée, veuillez contacter l'organisateur";
-            }
 
         } catch (err) {
             console.error(err);
@@ -256,14 +210,6 @@
     }
 
     async function save() {
-
-        // 🔥 Sécurité côté JS
-        const m = await pb.collection("manifestations").getOne(manifestId);
-        if (m.date_limite && new Date() > new Date(m.date_limite)) {
-            alert("Date limite dépassée, veuillez contacter l'organisateur.");
-            return;
-        }
-
         const nb = parseInt(document.getElementById("nb").value, 10);
         if (!nb || nb < 1) {
             alert("Veuillez saisir un nombre de personnes valide.");
