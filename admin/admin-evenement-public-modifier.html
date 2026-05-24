@@ -201,6 +201,7 @@ function cleanDate(d) {
     return d.split("T")[0];
 }
 
+/* ⭐ Charger l'événement AVANT tout */
 async function loadEvent() {
     const ev = await pb.collection("planning_events").getOne(eventId, {
         expand: "responsable"
@@ -215,6 +216,7 @@ async function loadEvent() {
     responsablesExistants = ev.responsable || [];
 }
 
+/* ⭐ Charger les responsables APRÈS que les dates soient posées */
 async function loadResponsables() {
     const companions = await pb.collection("companions").getFullList({ sort: "nom" });
     const list = document.getElementById("responsablesList");
@@ -272,7 +274,7 @@ async function modifierEvenement() {
     }
 }
 
-/* ⭐ Ordre corrigé : on charge l’événement AVANT les responsables */
+/* ⭐ Ordre CORRECT : on charge l'événement → puis les responsables */
 (async () => {
     await loadEvent();
     await loadResponsables();
