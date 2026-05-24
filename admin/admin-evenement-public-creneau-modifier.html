@@ -193,6 +193,7 @@ const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 const params = new URLSearchParams(window.location.search);
 const eventId = params.get("event");
 const creneauId = params.get("id");
+const jourId = params.get("jour");   // ⭐ NOUVEAU : identifiant du jour
 
 let creneauOriginal = null;
 
@@ -206,7 +207,7 @@ if (user.role !== "comite" && user.role !== "responsable") {
 
 /* Navigation */
 document.getElementById("retourPlanning").href =
-    "admin-evenement-public-planning.html?event=" + eventId;
+    "admin-evenement-public-jour-details.html?id=" + jourId + "&event=" + eventId;
 
 /* Remplir heures */
 function remplirHeures() {
@@ -338,10 +339,13 @@ async function modifierCreneau(dupliquer = false) {
         setTimeout(() => {
             if (dupliquer) {
                 window.location.href =
-                    "admin-evenement-public-creneau-modifier.html?id=" + creneauId + "&event=" + eventId;
+                    "admin-evenement-public-creneau-modifier.html?id=" + creneauId +
+                    "&jour=" + jourId +
+                    "&event=" + eventId;
             } else {
                 window.location.href =
-                    "admin-evenement-public-planning.html?event=" + eventId;
+                    "admin-evenement-public-jour-details.html?id=" + jourId +
+                    "&event=" + eventId;
             }
         }, 800);
 
