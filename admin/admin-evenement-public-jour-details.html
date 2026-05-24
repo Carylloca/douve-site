@@ -186,9 +186,10 @@ async function loadCreneaux() {
     zone.innerHTML = "Chargement...";
 
     const creneaux = await pb.collection("planning_creneaux").getFullList({
-        filter: `planning_jour="${jourId}"`,
-        sort: "heure_debut"
-    });
+    filter: `planning_jour="${jourId}"`,
+    expand: "poste",
+    sort: "heure_debut"
+});
 
     if (creneaux.length === 0) {
         zone.innerHTML = "<p class='empty'>Aucun créneau pour ce jour.</p>";
