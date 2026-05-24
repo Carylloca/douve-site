@@ -151,6 +151,17 @@ document.getElementById("retourEvent").href =
 document.getElementById("btnNew").href =
     "admin-evenement-public-jour-nouveau.html?event=" + eventId;
 
+/* Format lisible */
+function formatDateFr(dateStr) {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("fr-FR", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+    });
+}
+
 /* Charger les jours */
 async function loadJours() {
     const jours = await pb.collection("planning_jours").getFullList({
@@ -164,7 +175,7 @@ async function loadJours() {
     jours.forEach(j => {
         tbody.innerHTML += `
             <tr>
-                <td>${j.date}</td>
+                <td>${formatDateFr(j.date)}</td>
                 <td>${j.nom_jour || "-"}</td>
                 <td>
                     <a class="btn" href="admin-evenement-public-creneaux.html?event=${eventId}&jour=${j.id}">Créneaux</a>
