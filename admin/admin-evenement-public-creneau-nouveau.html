@@ -59,11 +59,18 @@
             margin-top: 15px;
         }
 
+        /* Heures côte à côte */
         .time-row {
             display: flex;
-            align-items: center;
+            justify-content: space-between;
             gap: 20px;
             margin-bottom: 15px;
+        }
+
+        .time-inner {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .time-select {
@@ -79,6 +86,7 @@
             font-weight: bold;
         }
 
+        /* Postes */
         .poste-list {
             margin-top: 10px;
             padding: 10px;
@@ -91,6 +99,7 @@
             margin: 5px 0;
         }
 
+        /* Boutons */
         .btn {
             background: #8b0000;
             color: white;
@@ -109,10 +118,16 @@
 
         .btn-small {
             background: #7A0010;
-            padding: 6px 10px;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
             font-size: 13px;
-            width: auto;
-            margin-bottom: 10px;
+        }
+
+        .btn-small:hover {
+            background: #a00015;
         }
 
         .success { color: green; font-weight: bold; margin-top: 15px; }
@@ -133,17 +148,17 @@
 
     <h2 id="jourTitre" style="text-align:center; margin-top:0;"></h2>
 
-    <!-- BOUTONS AJOUTÉS -->
+    <!-- BOUTONS -->
     <div style="display:flex; gap:10px; justify-content:center; margin-bottom:20px;">
-        <button class="btn-small" onclick="ouvrirNouveau()">+ Nouveau créneau</button>
-        <button class="btn-small" onclick="dupliquer()">Dupliquer créneau</button>
+        <button class="btn-small" onclick="window.location.reload()">+ Nouveau créneau</button>
+        <button class="btn-small" onclick="alert('La duplication sera ajoutée ici si tu veux la même logique que dans la page Planning.')">Dupliquer créneau</button>
     </div>
 
     <!-- HEURES SUR UNE SEULE LIGNE -->
     <div class="time-row">
         <div>
             <label>Heure de début :</label>
-            <div style="display:flex; align-items:center; gap:8px;">
+            <div class="time-inner">
                 <select id="h_debut" class="time-select"></select>
                 <span class="time-sep">:</span>
                 <select id="m_debut" class="time-select">
@@ -157,7 +172,7 @@
 
         <div>
             <label>Heure de fin :</label>
-            <div style="display:flex; align-items:center; gap:8px;">
+            <div class="time-inner">
                 <select id="h_fin" class="time-select"></select>
                 <span class="time-sep">:</span>
                 <select id="m_fin" class="time-select">
@@ -234,7 +249,7 @@ async function chargerPostes() {
         container.innerHTML += `
             <div class="poste-item">
                 <label>
-                    <input type="checkbox" class="posteCheck" value="${p.titre}">
+                    <input type="checkbox" class="posteCheck" value="${p.id}">
                     ${p.titre}
                 </label>
             </div>
@@ -248,15 +263,6 @@ function toggleTous() {
     const checks = document.querySelectorAll(".posteCheck");
     const allChecked = [...checks].every(c => c.checked);
     checks.forEach(c => c.checked = !allChecked);
-}
-
-/* Boutons ajoutés */
-function ouvrirNouveau() {
-    window.location.reload();
-}
-
-function dupliquer() {
-    alert("La duplication sera ajoutée ici si tu veux la même logique que dans la page Planning.");
 }
 
 /* Utilitaire : +1 jour */
@@ -286,21 +292,21 @@ async function creerCreneau() {
     const depasseMinuit = heureFin < heureDebut;
 
     try {
-        for (const poste of postes) {
+        for (const posteId of postes) {
 
             if (!depasseMinuit) {
                 await pb.collection("planning_creneaux").create({
                     planning_jour: jourId,
                     heure_debut: heureDebut,
                     heure_fin: heureFin,
-                    poste: poste
+                    poste: posteId
                 });
             } else {
                 await pb.collection("planning_creneaux").create({
                     planning_jour: jourId,
                     heure_debut: heureDebut,
                     heure_fin: "23:59",
-                    poste: poste
+                    poste: posteId
                 });
 
                 const jour = await pb.collection("planning_jours").getOne(jourId);
@@ -318,7 +324,7 @@ async function creerCreneau() {
                         planning_jour: jourSuivant.id,
                         heure_debut: "00:00",
                         heure_fin: heureFin,
-                        poste: poste
+                        poste: posteId
                     });
                 }
             }
