@@ -86,7 +86,18 @@
 
         .success { color: green; font-weight: bold; margin-top: 15px; }
         .error { color: red; font-weight: bold; margin-top: 15px; }
-        .warning { color: #b36b00; font-weight: bold; margin-top: 15px; }
+
+        .jours-list {
+            margin-top: 20px;
+            padding: 12px;
+            background: #f7f7f7;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .jours-list div {
+            margin: 4px 0;
+        }
     </style>
 </head>
 
@@ -104,6 +115,12 @@
 
     <label>Date du jour :</label>
     <input type="date" id="date" required>
+
+    <!-- ⭐ Liste des jours existants -->
+    <div id="joursExistants" class="jours-list">
+        <strong>Jours déjà créés :</strong>
+        <div id="listeJours"></div>
+    </div>
 
     <button class="btn" onclick="creerJour()">Enregistrer</button>
 
@@ -140,27 +157,46 @@ function nomDuJour(dateStr) {
     return date.toLocaleDateString("fr-FR", { weekday: "long" });
 }
 
-/* ⭐ Vérifier si un jour existe déjà */
-async function jourExiste(dateStr) {
-    // Normalisation de la date en YYYY-MM-DD
-    const date = new Date(dateStr);
-    const iso = date.toISOString().split("T")[0];
+/* ⭐ Charger les jours existants */
+async function chargerJoursExistants() {
+    const liste = document.getElementById("listeJours");
+    liste.innerHTML = "Chargement...";
 
     try {
-        const j = await pb.collection("planning_jours").getFirstListItem(
-            `planning_event="${eventId}" && date="${iso}"`
-        );
-        return j;
+        const jours = await pb.collection("planning_jours").getFullList({
+            filter: `planning_event="${eventId}"`,
+            sort: "date"
+        });
+
+        if (jours.length === 0) {
+            liste.innerHTML = "<em>Aucun jour créé pour cet événement.</em>";
+            return;
+        }
+
+        liste.innerHTML = "";
+
+        jours.forEach(j => {
+            const d = new Date(j.date);
+            const txt = d.toLocaleDateString("fr-FR", {
+                weekday: "long",
+                day: "numeric",
+                month: "long"
+            });
+
+            liste.innerHTML += `<div>• ${txt}</div>`;
+        });
+
     } catch (e) {
-        return null;
+        liste.innerHTML = "<em>Erreur lors du chargement.</em>";
     }
 }
+
+chargerJoursExistants();
 
 /* Enregistrer */
 async function creerJour() {
     const feedback = document.getElementById("feedback");
     feedback.textContent = "";
-    feedback.className = "";
 
     const date = document.getElementById("date").value;
 
@@ -168,23 +204,6 @@ async function creerJour() {
         feedback.textContent = "Veuillez choisir une date.";
         feedback.className = "error";
         return;
-    }
-
-    /* 🔍 Vérifier si le jour existe déjà */
-    const existe = await jourExiste(date);
-
-    if (existe) {
-        const nom = existe.nom_jour || nomDuJour(date);
-
-        const confirmation = confirm(
-            `⚠️ Le jour "${nom}" (${date}) existe déjà dans cet événement.\n\nVoulez-vous vraiment l'ajouter à nouveau ?`
-        );
-
-        if (!confirmation) {
-            feedback.textContent = "Création annulée.";
-            feedback.className = "warning";
-            return;
-        }
     }
 
     const data = {
