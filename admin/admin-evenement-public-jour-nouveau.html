@@ -141,14 +141,18 @@ function nomDuJour(dateStr) {
 }
 
 /* ⭐ Vérifier si un jour existe déjà */
-async function jourExiste(date) {
+async function jourExiste(dateStr) {
+    // Normalisation de la date en YYYY-MM-DD
+    const date = new Date(dateStr);
+    const iso = date.toISOString().split("T")[0];
+
     try {
         const j = await pb.collection("planning_jours").getFirstListItem(
-            `planning_event = "${eventId}" && date = "${date}"`
+            `planning_event="${eventId}" && date="${iso}"`
         );
-        return j; // renvoie l'objet si trouvé
+        return j;
     } catch (e) {
-        return null; // aucun jour trouvé
+        return null;
     }
 }
 
