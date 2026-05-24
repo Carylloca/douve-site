@@ -186,10 +186,10 @@ async function loadCreneaux() {
     zone.innerHTML = "Chargement...";
 
     const creneaux = await pb.collection("planning_creneaux").getFullList({
-    filter: `planning_jour="${jourId}"`,
-    expand: "poste",
-    sort: "heure_debut"
-});
+        filter: `planning_jour="${jourId}"`,
+        expand: "poste",
+        sort: "heure_debut"
+    });
 
     if (creneaux.length === 0) {
         zone.innerHTML = "<p class='empty'>Aucun créneau pour ce jour.</p>";
@@ -202,10 +202,12 @@ async function loadCreneaux() {
         const debut = c.heure_debut.substring(0,5);
         const fin = c.heure_fin.substring(0,5);
 
+        const posteTitre = c.expand?.poste?.titre || "Non défini";
+
         zone.innerHTML += `
             <div class="creneau-item">
                 <strong>${debut} – ${fin}</strong><br>
-                Poste : ${c.poste || "Non défini"}<br>
+                Poste : ${posteTitre}<br>
                 <a href="admin-evenement-public-creneau-modifier.html?id=${c.id}&jour=${jourId}&event=${eventId}">
                     Modifier
                 </a>
