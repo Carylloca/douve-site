@@ -77,8 +77,9 @@
 
         .back:hover { text-decoration: underline; }
 
-        .success { color: green; font-weight: bold; margin-top: 15px; }
-        .error { color: red; font-weight: bold; margin-top: 15px; }
+        #feedback { margin-top: 15px; font-weight: bold; }
+        .success { color: green; }
+        .error { color: red; }
     </style>
 </head>
 
@@ -125,16 +126,18 @@
 
 </div>
 
-<!-- Ton script d'inscription -->
+<!-- Ton script d'inscription (pb est déclaré ici) -->
 <script src="js/inscription.js"></script>
 
 <script>
-    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+    // ⚠️ IMPORTANT : pb est déjà déclaré dans inscription.js
+    // Donc on NE le redéclare PAS ici.
 
     const urlParams = new URLSearchParams(window.location.search);
     const eventId = urlParams.get("id");
 
-    document.getElementById("backBtn").href = "public-manifestation-details.html?id=" + eventId;
+    document.getElementById("backBtn").href =
+        "public-manifestation-details.html?id=" + eventId;
 
     // Charger le titre de l'événement
     async function chargerTitre() {
@@ -190,6 +193,7 @@
         });
     }
 
+    // Charger tout
     chargerTitre();
     chargerJours();
     chargerCreneaux();
