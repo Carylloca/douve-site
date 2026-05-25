@@ -163,24 +163,33 @@
 
     // Charger les créneaux
     async function chargerCreneaux() {
+        // 1) Charger les jours de l'événement
+        const jours = await pb.collection("planning_jours").getFullList({
+            filter: `planning_event = "${eventId}"`
+        });
+
+        const joursIds = jours.map(j => j.id);
+        if (joursIds.length === 0) return;
+
+        // 2) Charger les créneaux liés à ces jours
         const creneaux = await pb.collection("planning_creneaux").getFullList({
-            filter: `planning_event = "${eventId}"`,
-            sort: "ordre"
+            filter: `planning_jour.id ?~ "${joursIds.join(',')}"`
         });
 
         const select = document.getElementById("creneau");
         creneaux.forEach(c => {
             const opt = document.createElement("option");
             opt.value = c.id;
-            opt.textContent = c.nom;
+            opt.textContent = c.heure_debut + " → " + c.heure_fin;
             select.appendChild(opt);
         });
     }
 
+
     // Charger les postes
     async function chargerPostes() {
         const postes = await pb.collection("planning_postes").getFullList({
-            filter: `planning_event = "${eventId}"`,
+            filter: `manifestation = "${eventId}"`,
             sort: "ordre"
         });
 
@@ -188,10 +197,11 @@
         postes.forEach(p => {
             const opt = document.createElement("option");
             opt.value = p.id;
-            opt.textContent = p.nom;
+            opt.textContent = p.titre;
             select.appendChild(opt);
         });
     }
+
 
     // Charger tout
     chargerTitre();
