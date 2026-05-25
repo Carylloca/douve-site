@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Inscription à l'événement public</title>
+    <title>Inscription à l'événement</title>
 
     <link rel="icon" type="image/png" href="favicon.png">
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
@@ -41,7 +41,7 @@
 
         label { font-weight: bold; display: block; margin-top: 15px; }
 
-        input, textarea {
+        input, select, textarea {
             width: 100%;
             padding: 10px;
             margin-top: 6px;
@@ -85,7 +85,7 @@
 <body>
 
 <header>
-    <h1>Inscription à l'événement public</h1>
+    <h1>Inscription à l'événement</h1>
 </header>
 
 <div class="container">
@@ -95,21 +95,27 @@
     <div class="card">
         <h2 id="eventTitle">Chargement...</h2>
 
-        <form id="inscriptionForm">
+        <form id="inscriptionForm" onsubmit="inscrirePersonne(event)">
+
             <label>Nom</label>
             <input type="text" id="nom" required>
 
             <label>Prénom</label>
             <input type="text" id="prenom" required>
 
-            <label>Email</label>
-            <input type="email" id="email" required>
+            <label>Jour</label>
+            <select id="jour" required></select>
 
-            <label>Téléphone</label>
-            <input type="text" id="telephone">
+            <label>Créneau</label>
+            <select id="creneau" required></select>
 
-            <label>Message (optionnel)</label>
-            <textarea id="message"></textarea>
+            <label>Poste souhaité (optionnel)</label>
+            <select id="poste">
+                <option value="">— Aucun —</option>
+            </select>
+
+            <label>Commentaire (optionnel)</label>
+            <textarea id="commentaire"></textarea>
 
             <button class="btn" type="submit">Valider l'inscription</button>
 
@@ -119,62 +125,75 @@
 
 </div>
 
+<!-- Ton script d'inscription -->
+<script src="js/inscription.js"></script>
+
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
     const urlParams = new URLSearchParams(window.location.search);
     const eventId = urlParams.get("id");
 
-    document.getElementById("backBtn").href =
-        "public-manifestation-details.html?id=" + eventId;
+    document.getElementById("backBtn").href = "public-manifestation-details.html?id=" + eventId;
 
-    async function loadEvent() {
-        const title = document.getElementById("eventTitle");
-
-        if (!eventId) {
-            title.textContent = "Événement introuvable";
-            return;
-        }
-
-        try {
-            const ev = await pb.collection("planning_events").getOne(eventId);
-            title.textContent = ev.titre;
-        } catch (err) {
-            title.textContent = "Impossible de charger l'événement";
-        }
+    // Charger le titre de l'événement
+    async function chargerTitre() {
+        const ev = await pb.collection("planning_events").getOne(eventId);
+        document.getElementById("eventTitle").textContent = ev.nom;
     }
 
-    loadEvent();
+    // Charger les jours
+    async function chargerJours() {
+        const jours = await pb.collection("planning_jours").getFullList({
+            filter: `planning_event = "${eventId}"`,
+            sort: "ordre"
+        });
 
-    document.getElementById("inscriptionForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
+        const select = document.getElementById("jour");
+        jours.forEach(j => {
+            const opt = document.createElement("option");
+            opt.value = j.id;
+            opt.textContent = j.nom;
+            select.appendChild(opt);
+        });
+    }
 
-        const feedback = document.getElementById("feedback");
-        feedback.textContent = "";
+    // Charger les créneaux
+    async function chargerCreneaux() {
+        const creneaux = await pb.collection("planning_creneaux").getFullList({
+            filter: `planning_event = "${eventId}"`,
+            sort: "ordre"
+        });
 
-        const data = {
-            manifestation: eventId,
-            nom: document.getElementById("nom").value,
-            prenom: document.getElementById("prenom").value,
-            email: document.getElementById("email").value,
-            telephone: document.getElementById("telephone").value,
-            message: document.getElementById("message").value
-        };
+        const select = document.getElementById("creneau");
+        creneaux.forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c.id;
+            opt.textContent = c.nom;
+            select.appendChild(opt);
+        });
+    }
 
-        try {
-            await pb.collection("inscriptions").create(data);
+    // Charger les postes
+    async function chargerPostes() {
+        const postes = await pb.collection("planning_postes").getFullList({
+            filter: `planning_event = "${eventId}"`,
+            sort: "ordre"
+        });
 
-            feedback.textContent = "Inscription enregistrée avec succès !";
-            feedback.className = "success";
+        const select = document.getElementById("poste");
+        postes.forEach(p => {
+            const opt = document.createElement("option");
+            opt.value = p.id;
+            opt.textContent = p.nom;
+            select.appendChild(opt);
+        });
+    }
 
-            document.getElementById("inscriptionForm").reset();
-
-        } catch (error) {
-            console.error(error);
-            feedback.textContent = "Erreur lors de l'inscription.";
-            feedback.className = "error";
-        }
-    });
+    chargerTitre();
+    chargerJours();
+    chargerCreneaux();
+    chargerPostes();
 </script>
 
 </body>
