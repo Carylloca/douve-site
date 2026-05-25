@@ -126,12 +126,10 @@
 
 </div>
 
-<!-- Ton script d'inscription (pb est déclaré ici) -->
 <script src="js/inscription.js"></script>
 
 <script>
-    // ⚠️ IMPORTANT : pb est déjà déclaré dans inscription.js
-    // Donc on NE le redéclare PAS ici.
+    // pb est déjà déclaré dans inscription.js
 
     const urlParams = new URLSearchParams(window.location.search);
     const eventId = urlParams.get("id");
@@ -141,7 +139,9 @@
 
     // Charger le titre de l'événement
     async function chargerTitre() {
-        const ev = await pb.collection("planning_events").getOne(eventId);
+        const ev = await pb.collection("planning_events").getOne(eventId, {
+            requestKey: null
+        });
         document.getElementById("eventTitle").textContent = ev.nom;
     }
 
@@ -149,10 +149,13 @@
     async function chargerJours() {
         const jours = await pb.collection("planning_jours").getFullList({
             filter: `planning_event = "${eventId}"`,
-            sort: "ordre"
+            sort: "ordre",
+            requestKey: null
         });
 
         const select = document.getElementById("jour");
+        select.innerHTML = ""; // reset
+
         jours.forEach(j => {
             const opt = document.createElement("option");
             opt.value = j.id;
@@ -165,7 +168,8 @@
     async function chargerCreneaux() {
         // 1) Charger les jours de l'événement
         const jours = await pb.collection("planning_jours").getFullList({
-            filter: `planning_event = "${eventId}"`
+            filter: `planning_event = "${eventId}"`,
+            requestKey: null
         });
 
         const joursIds = jours.map(j => j.id);
@@ -173,10 +177,13 @@
 
         // 2) Charger les créneaux liés à ces jours
         const creneaux = await pb.collection("planning_creneaux").getFullList({
-            filter: `planning_jour.id ?~ "${joursIds.join(',')}"`
+            filter: `planning_jour.id ?~ "${joursIds.join(',')}"`,
+            requestKey: null
         });
 
         const select = document.getElementById("creneau");
+        select.innerHTML = ""; // reset
+
         creneaux.forEach(c => {
             const opt = document.createElement("option");
             opt.value = c.id;
@@ -185,15 +192,17 @@
         });
     }
 
-
     // Charger les postes
     async function chargerPostes() {
         const postes = await pb.collection("planning_postes").getFullList({
             filter: `manifestation = "${eventId}"`,
-            sort: "ordre"
+            sort: "ordre",
+            requestKey: null
         });
 
         const select = document.getElementById("poste");
+        select.innerHTML = '<option value="">— Aucun —</option>';
+
         postes.forEach(p => {
             const opt = document.createElement("option");
             opt.value = p.id;
@@ -202,13 +211,13 @@
         });
     }
 
-
     // Charger tout
     chargerTitre();
     chargerJours();
     chargerCreneaux();
     chargerPostes();
 </script>
+
 
 </body>
 </html>
