@@ -154,7 +154,7 @@
         });
 
         const select = document.getElementById("jour");
-        select.innerHTML = ""; // reset
+        select.innerHTML = "";
 
         jours.forEach(j => {
             const d = new Date(j.date);
@@ -173,39 +173,64 @@
         });
     }
 
+    // Mémoire locale des créneaux
+    let creneauxParJour = [];
+
     // Charger les créneaux du jour sélectionné
     async function chargerCreneaux() {
-    const jourId = document.getElementById("jour").value;
-    if (!jourId) return;
+        const jourId = document.getElementById("jour").value;
+        if (!jourId) return;
 
-    const creneaux = await pb.collection("planning_creneaux").getFullList({
-        filter: `planning_jour = "${jourId}"`,
-        sort: "heure_debut",
-        requestKey: null
-    });
+        const creneaux = await pb.collection("planning_creneaux").getFullList({
+            filter: `planning_jour = "${jourId}"`,
+            sort: "heure_debut",
+            requestKey: null
+        });
 
-    // Déduplication des créneaux
-    const uniques = {};
-    creneaux.forEach(c => {
-        const key = c.heure_debut + "|" + c.heure_fin;
-        if (!uniques[key]) uniques[key] = c;
-    });
+        // Déduplication + regroupement par créneau
+        const uniques = {};
+        creneaux.forEach(c => {
+            const key = c.heure_debut + "|" + c.heure_fin;
 
-    const select = document.getElementById("creneau");
-    select.innerHTML = ""; // reset
+            if (!uniques[key]) {
+                uniques[key] = {
+                    id: c.id,
+                    heure_debut: c.heure_debut,
+                    heure_fin: c.heure_fin,
+                    postes: []
+                };
+            }
 
-    Object.values(uniques).forEach(c => {
-        const opt = document.createElement("option");
-        opt.value = c.id;
-        opt.textContent = c.heure_debut + " → " + c.heure_fin;
-        select.appendChild(opt);
-    });
-}
+            uniques[key].postes.push(c.poste);
+        });
 
-    // Charger les postes
-    async function chargerPostes() {
+        creneauxParJour = Object.values(uniques);
+
+        const select = document.getElementById("creneau");
+        select.innerHTML = "";
+
+        creneauxParJour.forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c.id;
+            opt.textContent = c.heure_debut + " → " + c.heure_fin;
+            select.appendChild(opt);
+        });
+
+        chargerPostesPourCreneau();
+    }
+
+    // Quand on change de créneau → mettre à jour les postes
+    document.getElementById("creneau").addEventListener("change", chargerPostesPourCreneau);
+
+    async function chargerPostesPourCreneau() {
+        const creneauId = document.getElementById("creneau").value;
+        if (!creneauId) return;
+
+        const creneau = creneauxParJour.find(c => c.id === creneauId);
+        if (!creneau) return;
+
         const postes = await pb.collection("planning_postes").getFullList({
-            filter: `manifestation = "${eventId}"`,
+            filter: `id ?~ "${creneau.postes.join(',')}"`,
             sort: "ordre",
             requestKey: null
         });
@@ -228,8 +253,7 @@
     (async () => {
         await chargerTitre();
         await chargerJours();
-        await chargerCreneaux(); // charge les créneaux du premier jour
-        await chargerPostes();
+        await chargerCreneaux();
     })();
 </script>
 
