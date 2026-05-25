@@ -175,25 +175,32 @@
 
     // Charger les créneaux du jour sélectionné
     async function chargerCreneaux() {
-        const jourId = document.getElementById("jour").value;
-        if (!jourId) return;
+    const jourId = document.getElementById("jour").value;
+    if (!jourId) return;
 
-        const creneaux = await pb.collection("planning_creneaux").getFullList({
-            filter: `planning_jour = "${jourId}"`,
-            sort: "heure_debut",
-            requestKey: null
-        });
+    const creneaux = await pb.collection("planning_creneaux").getFullList({
+        filter: `planning_jour = "${jourId}"`,
+        sort: "heure_debut",
+        requestKey: null
+    });
 
-        const select = document.getElementById("creneau");
-        select.innerHTML = ""; // reset
+    // Déduplication des créneaux
+    const uniques = {};
+    creneaux.forEach(c => {
+        const key = c.heure_debut + "|" + c.heure_fin;
+        if (!uniques[key]) uniques[key] = c;
+    });
 
-        creneaux.forEach(c => {
-            const opt = document.createElement("option");
-            opt.value = c.id;
-            opt.textContent = c.heure_debut + " → " + c.heure_fin;
-            select.appendChild(opt);
-        });
-    }
+    const select = document.getElementById("creneau");
+    select.innerHTML = ""; // reset
+
+    Object.values(uniques).forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.heure_debut + " → " + c.heure_fin;
+        select.appendChild(opt);
+    });
+}
 
     // Charger les postes
     async function chargerPostes() {
