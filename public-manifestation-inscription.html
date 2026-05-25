@@ -149,7 +149,7 @@
     async function chargerJours() {
         const jours = await pb.collection("planning_jours").getFullList({
             filter: `planning_event = "${eventId}"`,
-            sort: "ordre",
+            sort: "date",
             requestKey: null
         });
 
