@@ -145,7 +145,7 @@
         document.getElementById("eventTitle").textContent = ev.titre;
     }
 
-    // Charger les jours 
+    // Charger les jours (triés par date + affichage FR)
     async function chargerJours() {
         const jours = await pb.collection("planning_jours").getFullList({
             filter: `planning_event = "${eventId}"`,
@@ -173,36 +173,27 @@
         });
     }
 
-    // Charger les créneaux
-    
+    // Charger les créneaux du jour sélectionné
     async function chargerCreneaux() {
-    // 1) Charger les jours de l'événement
-    const jours = await pb.collection("planning_jours").getFullList({
-        filter: `planning_event = "${eventId}"`,
-        requestKey: null
-    });
+        const jourId = document.getElementById("jour").value;
+        if (!jourId) return;
 
-    const joursIds = jours.map(j => j.id);
-    if (joursIds.length === 0) return;
+        const creneaux = await pb.collection("planning_creneaux").getFullList({
+            filter: `planning_jour = "${jourId}"`,
+            sort: "heure_debut",
+            requestKey: null
+        });
 
-    // 2) Charger les créneaux liés à ces jours
-    const creneaux = await pb.collection("planning_creneaux").getFullList({
-        filter: `planning_jour ?~ "${joursIds.join(',')}"`,
-        sort: "heure_debut",
-        requestKey: null
-    });
+        const select = document.getElementById("creneau");
+        select.innerHTML = ""; // reset
 
-    const select = document.getElementById("creneau");
-    select.innerHTML = ""; // reset
-
-    creneaux.forEach(c => {
-        const opt = document.createElement("option");
-        opt.value = c.id;
-        opt.textContent = c.heure_debut + " → " + c.heure_fin;
-        select.appendChild(opt);
-    });
-}
-
+        creneaux.forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c.id;
+            opt.textContent = c.heure_debut + " → " + c.heure_fin;
+            select.appendChild(opt);
+        });
+    }
 
     // Charger les postes
     async function chargerPostes() {
@@ -223,11 +214,16 @@
         });
     }
 
-    // Charger tout
-    chargerTitre();
-    chargerJours();
-    chargerCreneaux();
-    chargerPostes();
+    // Quand on change de jour → recharger les créneaux
+    document.getElementById("jour").addEventListener("change", chargerCreneaux);
+
+    // Charger tout dans le bon ordre
+    (async () => {
+        await chargerTitre();
+        await chargerJours();
+        await chargerCreneaux(); // charge les créneaux du premier jour
+        await chargerPostes();
+    })();
 </script>
 
 </body>
