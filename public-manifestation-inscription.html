@@ -142,10 +142,10 @@
         const ev = await pb.collection("planning_events").getOne(eventId, {
             requestKey: null
         });
-        document.getElementById("eventTitle").textContent = ev.nom;
+        document.getElementById("eventTitle").textContent = ev.titre;
     }
 
-    // Charger les jours
+    // Charger les jours (OPTION C : afficher date + jour de la semaine)
     async function chargerJours() {
         const jours = await pb.collection("planning_jours").getFullList({
             filter: `planning_event = "${eventId}"`,
@@ -157,9 +157,18 @@
         select.innerHTML = ""; // reset
 
         jours.forEach(j => {
+            const d = new Date(j.date);
+
+            const texte = d.toLocaleDateString("fr-CH", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric"
+            });
+
             const opt = document.createElement("option");
             opt.value = j.id;
-            opt.textContent = j.nom;
+            opt.textContent = texte;
             select.appendChild(opt);
         });
     }
@@ -217,7 +226,6 @@
     chargerCreneaux();
     chargerPostes();
 </script>
-
 
 </body>
 </html>
