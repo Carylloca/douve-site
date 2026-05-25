@@ -145,7 +145,7 @@
         document.getElementById("eventTitle").textContent = ev.titre;
     }
 
-    // Charger les jours (OPTION C : afficher date + jour de la semaine)
+    // Charger les jours 
     async function chargerJours() {
         const jours = await pb.collection("planning_jours").getFullList({
             filter: `planning_event = "${eventId}"`,
@@ -174,32 +174,35 @@
     }
 
     // Charger les créneaux
+    
     async function chargerCreneaux() {
-        // 1) Charger les jours de l'événement
-        const jours = await pb.collection("planning_jours").getFullList({
-            filter: `planning_event = "${eventId}"`,
-            requestKey: null
-        });
+    // 1) Charger les jours de l'événement
+    const jours = await pb.collection("planning_jours").getFullList({
+        filter: `planning_event = "${eventId}"`,
+        requestKey: null
+    });
 
-        const joursIds = jours.map(j => j.id);
-        if (joursIds.length === 0) return;
+    const joursIds = jours.map(j => j.id);
+    if (joursIds.length === 0) return;
 
-        // 2) Charger les créneaux liés à ces jours
-        const creneaux = await pb.collection("planning_creneaux").getFullList({
-            filter: `planning_jour.id ?~ "${joursIds.join(',')}"`,
-            requestKey: null
-        });
+    // 2) Charger les créneaux liés à ces jours
+    const creneaux = await pb.collection("planning_creneaux").getFullList({
+        filter: `planning_jour ?~ "${joursIds.join(',')}"`,
+        sort: "heure_debut",
+        requestKey: null
+    });
 
-        const select = document.getElementById("creneau");
-        select.innerHTML = ""; // reset
+    const select = document.getElementById("creneau");
+    select.innerHTML = ""; // reset
 
-        creneaux.forEach(c => {
-            const opt = document.createElement("option");
-            opt.value = c.id;
-            opt.textContent = c.heure_debut + " → " + c.heure_fin;
-            select.appendChild(opt);
-        });
-    }
+    creneaux.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.heure_debut + " → " + c.heure_fin;
+        select.appendChild(opt);
+    });
+}
+
 
     // Charger les postes
     async function chargerPostes() {
