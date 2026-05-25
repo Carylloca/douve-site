@@ -229,8 +229,11 @@
         const creneau = creneauxParJour.find(c => c.id === creneauId);
         if (!creneau) return;
 
+        // Construire un filtre OR pour PocketBase
+        const conditions = creneau.postes.map(id => `id = "${id}"`).join(" || ");
+
         const postes = await pb.collection("planning_postes").getFullList({
-            filter: `id ?~ "${creneau.postes.join(',')}"`,
+            filter: conditions,
             sort: "ordre",
             requestKey: null
         });
