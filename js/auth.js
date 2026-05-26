@@ -1,9 +1,4 @@
 // ===============================
-//  CONFIGURATION POCKETBASE
-// ===============================
-const pb = new PocketBase(window.PB_URL);
-
-// ===============================
 //  LOGIN (uniquement companions)
 // ===============================
 async function login(email, password) {
