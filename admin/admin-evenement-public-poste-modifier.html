@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <title>Modifier un poste – Admin</title>
     <link rel="icon" type="image/png" href="../favicon.png">
-    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <!-- PocketBase centralisé -->
+    <script src="../js/pocketbase.umd.js"></script>
+    <script src="../js/hebergement_pb.js"></script>
 
     <style>
         body {
@@ -154,8 +157,6 @@
     <label>Description :</label>
     <textarea id="description"></textarea>
 
-    <!-- ❌ Bloc TIERS supprimé -->
-
     <label>Responsables :</label>
     <div id="responsablesBox" class="responsables-box">
         <div class="responsables-header">Sélectionner les responsables ▼</div>
@@ -172,7 +173,7 @@
 </div>
 
 <script>
-const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+const pb = new PocketBase(window.PB_URL);
 
 const posteId = new URLSearchParams(window.location.search).get("id");
 const eventId = new URLSearchParams(window.location.search).get("event");
