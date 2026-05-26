@@ -90,29 +90,21 @@
 
     <div class="buttons">
 
-        <!-- ⭐ Calendrier ouvre TOUJOURS compagnons.html -->
         <a href="compagnons.html" class="btn">Calendrier</a>
-
-        <!-- ⭐ Nouveau : manifestations publiques -->
         <a href="public-manifestations.html" class="btn">Manifestations publiques</a>
-
         <a href="compagnon-chalet.html" class="btn">Occupation du chalet</a>
-
-        <!-- ⭐ Correction : renvoie vers liste-compagnons.html -->
         <a href="liste-compagnons.html" class="btn">Liste des compagnons</a>
 
-        <!-- ⭐ Bouton Administration (visible uniquement si user) -->
         <a href="admin/admin-menu.html" class="btn" id="adminBtn" style="display:none;">
             Administration
         </a>
 
-        <!-- ⭐ Bouton Connexion (masqué si connecté) -->
         <a href="login.html" class="btn" id="loginBtn">Connexion</a>
 
-        <!-- ⭐ Bouton Modifier mot de passe (visible si connecté) -->
-        <a href="changer-mot-de-passe.html" class="btn" id="changePwdBtn" style="display:none;">Modifier mon mot de passe</a>
+        <a href="changer-mot-de-passe.html" class="btn" id="changePwdBtn" style="display:none;">
+            Modifier mon mot de passe
+        </a>
 
-        <!-- ⭐ Bouton Déconnexion (visible si connecté) -->
         <button onclick="logout()" class="btn" id="logoutBtn" style="display:none;">
             Déconnexion
         </button>
@@ -122,8 +114,16 @@
         © Confrérie des Compagnons de la Douve
     </footer>
 
+    <!-- ⭐ Ajout du fichier d’hébergement -->
+    <script src="js/hebergement_pb.js"></script>
+
     <!-- PocketBase -->
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <!-- ⭐ Initialisation PocketBase avec URL dynamique -->
+    <script>
+        const pb = new PocketBase(window.PB_URL);
+    </script>
 
     <!-- Auth -->
     <script src="js/auth.js"></script>
@@ -133,20 +133,13 @@
         if (pb.authStore.isValid) {
             const user = pb.authStore.model;
 
-            // Masquer Connexion
             document.getElementById("loginBtn").style.display = "none";
-
-            // Afficher Déconnexion
             document.getElementById("logoutBtn").style.display = "block";
-
-            // Afficher Modifier mot de passe
             document.getElementById("changePwdBtn").style.display = "block";
 
-            // Afficher Bonjour {nom}
             const nom = user.nom || user.name || user.email || "compagnon";
             document.getElementById("welcome").textContent = "Salut Compagnon " + nom;
 
-            // Afficher Administration si user
             if (user.collectionName === "users") {
                 document.getElementById("adminBtn").style.display = "block";
             }
