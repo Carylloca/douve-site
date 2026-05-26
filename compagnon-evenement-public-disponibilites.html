@@ -4,7 +4,17 @@
     <meta charset="UTF-8">
     <title>Disponibilités – Compagnon</title>
     <link rel="icon" type="image/png" href="../favicon.png">
+
+    <!-- ⭐ URL PocketBase centralisée -->
+    <script src="../js/hebergement_pb.js"></script>
+
+    <!-- PocketBase -->
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <!-- ⭐ Initialisation PocketBase -->
+    <script>
+        const pb = new PocketBase(window.PB_URL);
+    </script>
 
     <style>
         body {
@@ -107,8 +117,6 @@
 <div id="joursContainer"></div>
 
 <script>
-const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
-
 const eventId = new URLSearchParams(window.location.search).get("event");
 const compagnonId = new URLSearchParams(window.location.search).get("compagnon");
 
@@ -119,22 +127,18 @@ if (!user) {
     window.location.href = "../login.html";
 }
 
-// Le compagnon dont on affiche les disponibilités
 const targetCompagnon = compagnonId || user.id;
 
-// Rôles autorisés
 if (!["compagnon", "comite", "responsable"].includes(user.role)) {
     alert("Accès refusé.");
     window.location.href = "../index.html";
 }
 
-// Un compagnon ne peut PAS voir les autres compagnons
 if (compagnonId && user.role === "compagnon") {
     alert("Accès interdit.");
     window.location.href = "../index.html";
 }
 
-// Si admin → changer le titre
 if (user.role !== "compagnon") {
     document.getElementById("titrePage").textContent = "Disponibilités du compagnon";
 }
@@ -153,7 +157,6 @@ async function loadPostes() {
         select.innerHTML += `<option value="${p.id}">${p.titre}</option>`;
     });
 
-    // Charger poste déjà choisi
     const dispo = await pb.collection("planning_disponibilites").getFullList({
         filter: `compagnon = "${targetCompagnon}" && planning_event = "${eventId}"`,
         sort: "-created"
