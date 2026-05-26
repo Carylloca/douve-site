@@ -7,8 +7,15 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="icon" type="image/png" href="../favicon.png">
 
+    <!-- jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- SheetJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- PocketBase centralisé -->
+    <script src="../js/pocketbase.umd.js"></script>
+    <script src="../js/hebergement_pb.js"></script>
 
     <style>
         body {
@@ -171,345 +178,18 @@
 
 </div>
 
-<!-- PocketBase -->
-<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
-
-<!-- Auth (contient pb + logout + requireComite) -->
+<!-- Auth -->
 <script src="../js/auth.js"></script>
 
 <script>
     requireComite();
 
-    let manifestationsCache = [];
-    let sortDirection = 1;
-
-    function sortTable(field) {
-        sortDirection *= -1;
-
-        manifestationsCache.sort((a, b) => {
-
-            if (field === "inscrits") {
-                return (a._nbInscrits - b._nbInscrits) * sortDirection;
-            }
-
-            if (field === "date" || field === "date_limite") {
-                return (new Date(a[field]) - new Date(b[field])) * sortDirection;
-            }
-
-            if (field === "heure") {
-                return a._heure.localeCompare(b._heure) * sortDirection;
-            }
-
-            return a[field].localeCompare(b[field]) * sortDirection;
-        });
-
-        displayTable();
-    }
-
-    function displayTable() {
-        const table = document.getElementById("tableBody");
-        table.innerHTML = "";
-
-        for (const m of manifestationsCache) {
-
-            const d = new Date(m.date);
-            const dateAff = d.toLocaleDateString("fr-CH");
-
-            const heureAff = m.date.split(" ")[1].slice(0,5);
-
-            let dateLimite = "";
-            if (m.date_limite) {
-                const dl = new Date(m.date_limite);
-                dateLimite = dl.toISOString().split("T")[0];
-            }
-
-            table.innerHTML += `
-                <tr>
-                    <td>${m.title}</td>
-                    <td>${dateAff}</td>
-                    <td>${heureAff}</td>
-                    <td>${dateLimite}</td>
-                    <td>${m._nbInscrits}</td>
-
-                    <td class="actions">
-                        <a class="btn-small" href="admin-inscrits.html?id=${m.id}">Liste</a>
-                        <a class="btn-small btn-modifier" href="admin-manifestation-modifier.html?id=${m.id}">Modifier</a>
-                        <button class="btn-small" onclick="supprimer('${m.id}')">Supprimer</button>
-                    </td>
-                </tr>
-            `;
-        }
-    }
-
-    async function loadManifestations() {
-        const table = document.getElementById("tableBody");
-        table.innerHTML = "<tr><td colspan='6'>Chargement...</td></tr>";
-
-        try {
-            const list = await pb.collection("manifestations").getFullList({
-                sort: "-date"
-            });
-
-            manifestationsCache = list;
-
-            for (const m of list) {
-                const inscrits = await pb.collection("inscriptions").getFullList({
-                    filter: `manifestation = "${m.id}"`
-                });
-
-                m._nbInscrits = inscrits.length;
-                m._heure = m.date.split(" ")[1].slice(0,5);
-            }
-
-            displayTable();
-
-        } catch (err) {
-            console.error(err);
-            table.innerHTML = "<tr><td colspan='6'>Erreur de chargement</td></tr>";
-        }
-    }
-
-    loadManifestations();
-
-    async function supprimer(id) {
-        if (!confirm("Supprimer cette manifestation ?")) return;
-
-        try {
-            await pb.collection("manifestations").delete(id);
-            loadManifestations();
-        } catch (err) {
-            alert("Erreur lors de la suppression.");
-        }
-    }
-
-    function exportPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-
-        doc.text("Liste des manifestations", 10, 10);
-
-        let y = 20;
-        manifestationsCache.forEach(m => {
-            const heure = m.date.split(" ")[1].slice(0,5);
-            const d = new Date(m.date);
-            const dateAff = d.toLocaleDateString("fr-CH");
-
-            doc.text(`${m.title} – ${dateAff} ${heure}`, 10, y);
-            y += 8;
-        });
-
-        doc.save("manifestations.pdf");
-    }
-
-    function exportExcel() {
-        const rows = manifestationsCache.map(m => {
-            const d = new Date(m.date);
-            return {
-                Titre: m.title,
-                Date: d.toLocaleDateString("fr-CH"),
-                Heure: m.date.split(" ")[1].slice(0,5),
-                Date_limite: m.date_limite ? new Date(m.date_limite).toISOString().split("T")[0] : "",
-                Inscrits: m._nbInscrits
-            };
-        });
-
-        const ws = XLSX.utils.json_to_sheet(rows);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Manifestations");
-
-        XLSX.writeFile(wb, "manifestations.xlsx");
-    }
-</script>
-
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin – Manifestations</title>
-
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="icon" type="image/png" href="../favicon.png">
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-image: url("../img/page-admin-manifestations.jpg");
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            font-family: "DM Sans", sans-serif;
-        }
-
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 70px;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(4px);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            z-index: 1000;
-            justify-content: space-between;
-        }
-
-        .header-left,
-        .header-right {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .header-title {
-            color: white;
-            font-size: 22px;
-            font-weight: bold;
-            text-shadow: 0 0 10px black;
-        }
-
-        .overlay {
-            padding: 120px 20px 40px 20px;
-            background: rgba(0, 0, 0, 0.55);
-            min-height: 100vh;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        th, td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            text-align: center;
-        }
-
-        th {
-            background: #7b0f23;
-            color: white;
-        }
-
-        th.sortable {
-            cursor: pointer;
-        }
-        th.sortable:hover {
-            background: #9c1a33;
-        }
-
-        .btn {
-            padding: 8px 12px;
-            border-radius: 6px;
-            background: #7b0f23;
-            color: white;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .btn-small {
-            padding: 4px 8px;
-            font-size: 13px;
-        }
-
-        .btn-modifier {
-            background: #fff7c2 !important;
-            color: #7b0f23 !important;
-            border: 1px solid #d8c98a;
-            font-weight: bold;
-        }
-        .btn-modifier:hover {
-            background: #f7eaa4 !important;
-        }
-
-        .actions {
-            display: flex;
-            gap: 6px;
-            justify-content: center;
-        }
-
-        .export-buttons {
-            margin: 10px 0 20px 0;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        .top-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-    </style>
-</head>
-
-<body>
-
-<div class="header">
-    <div class="header-left">
-        <a href="../index.html" class="btn">🏠 Menu</a>
-        <a href="admin-menu.html" class="btn">📋 Accueil admin</a>
-    </div>
-
-    <div class="header-title">Gestion des manifestations</div>
-
-    <div class="header-right">
-        <button class="btn" onclick="logout()">⏻ Déconnexion</button>
-    </div>
-</div>
-
-<div class="overlay">
-
-    <div class="top-buttons">
-        <a href="admin-manifestation-nouveau.html" class="btn">+ Nouvelle manifestation</a>
-        <a href="../compagnons.html" class="btn">Liste des manifestations</a>
-    </div>
-
-    <div class="export-buttons">
-        <button class="btn" onclick="exportPDF()">Export PDF</button>
-        <button class="btn" onclick="exportExcel()">Export Excel</button>
-    </div>
-
-    <table>
-        <thead>
-        <tr>
-            <th class="sortable" onclick="sortTable('title')">Titre</th>
-            <th class="sortable" onclick="sortTable('date')">Date</th>
-            <th class="sortable" onclick="sortTable('heure')">Heure</th>
-            <th class="sortable" onclick="sortTable('date_limite')">Date limite</th>
-            <th class="sortable" onclick="sortTable('inscrits')">Inscrits</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-
-        <tbody id="tableBody"></tbody>
-    </table>
-
-</div>
-
-<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
-<script src="../js/auth.js"></script>
-
-<script>
-    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+    const pb = new PocketBase(window.PB_URL);
 
     function logout() {
         pb.authStore.clear();
         window.location.href = "../index.html";
     }
-</script>
-
-<script>
-    requireComite();
 
     let manifestationsCache = [];
     let sortDirection = 1;
@@ -545,7 +225,6 @@
 
             const d = new Date(m.date);
             const dateAff = d.toLocaleDateString("fr-CH");
-
             const heureAff = m.date.split(" ")[1].slice(0,5);
 
             let dateLimite = "";
