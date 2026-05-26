@@ -15,6 +15,7 @@
     <!-- ⭐ PocketBase centralisé -->
     <script src="js/pocketbase.umd.js"></script>
     <script src="js/hebergement_pb.js"></script>
+    <script src="js/auth.js"></script> <!-- ⭐ OBLIGATOIRE -->
 
     <style>
         body {
@@ -135,6 +136,7 @@
     </div>
 
     <script>
+        // 🔐 Vérification de session
         if (!pb.authStore.isValid) {
             window.location.href = "login.html";
         }
