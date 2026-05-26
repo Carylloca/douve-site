@@ -1,0 +1,47 @@
+/* FullCalendar v6.1.8 - CSS minifié */
+.fc {
+  direction: ltr;
+  text-align: left;
+}
+.fc .fc-scrollgrid {
+  border-collapse: collapse;
+  width: 100%;
+}
+.fc .fc-scrollgrid table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.fc .fc-daygrid-day {
+  border: 1px solid #ddd;
+}
+.fc .fc-daygrid-day-number {
+  padding: 4px;
+  font-size: 12px;
+}
+.fc .fc-daygrid-event {
+  background: #3788d8;
+  color: white;
+  border-radius: 3px;
+  padding: 2px 4px;
+  margin: 1px 0;
+  font-size: 11px;
+  cursor: pointer;
+}
+.fc .fc-toolbar-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+.fc .fc-button {
+  background: #7A0010;
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.fc .fc-button:hover {
+  background: #5a000c;
+}
+.fc .fc-daygrid-day.fc-day-today {
+  background: #fff3cd;
+}
