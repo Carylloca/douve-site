@@ -220,11 +220,16 @@
     </table>
 </div>
 
-<!-- PocketBase -->
+<!-- PocketBase + config -->
+<script src="js/hebergement_pb.js"></script>
 <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+<!-- Auth -->
 <script src="js/auth.js"></script>
 
 <script>
+    const pb = new PocketBase(window.PB_URL);
+
     const url = new URL(window.location.href);
     const manifestationId = url.searchParams.get("id");
 
@@ -304,7 +309,7 @@
             row.innerHTML = `
                 <td>${c?.nom || "-"}</td>
                 <td>${c?.prenom || "-"}</td>
-                <td>${c?.email || "-"}</td>
+                <td>${c?.email_public || "-"}</td>
                 <td>
                     <div class="inline-controls">
                         <button class="btn small-btn" onclick="modifierNb('${i.id}', -1)">–</button>
@@ -435,7 +440,7 @@
         filtered.forEach(i => {
             const c = i.expand?.companion;
             doc.text(
-                `${c?.nom || "-"} ${c?.prenom || "-"} – ${c?.email || "-"} – ${i.nb_personnes || 1} pers.`,
+                `${c?.nom || "-"} ${c?.prenom || "-"} – ${c?.email_public || "-"} – ${i.nb_personnes || 1} pers.`,
                 10,
                 y
             );
@@ -453,7 +458,7 @@
             return {
                 Nom: c?.nom || "-",
                 Prénom: c?.prenom || "-",
-                Email: c?.email || "-",
+                Email: c?.email_public || "-",
                 "Nb personnes": i.nb_personnes || 1
             };
         });
