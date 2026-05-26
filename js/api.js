@@ -1,4 +1,9 @@
 // =====================================
+//  CONFIGURATION POCKETBASE CENTRALISÉE
+// =====================================
+const pb = new PocketBase(window.PB_URL);
+
+// =====================================
 //  MANIFESTATIONS – ADMIN
 // =====================================
 
@@ -154,7 +159,7 @@ function initInscription() {
             email: document.getElementById("email").value,
             telephone: document.getElementById("telephone").value,
             commentaire: document.getElementById("commentaire").value,
-            user: pb.authStore.model?.id || null
+            companion: pb.authStore.model?.id || null
         };
 
         try {
@@ -179,7 +184,7 @@ async function loadInscrits() {
 
     try {
         const records = await pb.collection("inscriptions").getFullList({
-            expand: "manifestation,user",
+            expand: "manifestation,companion",
             sort: "-created"
         });
 
