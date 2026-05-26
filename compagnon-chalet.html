@@ -1,343 +1,354 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Chalet – Espace Compagnon</title>
+    <meta charset="UTF-8">
+    <title>Chalet – Espace Compagnon</title>
 
-  <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/png" href="../favicon.png">
 
-  <!-- FullCalendar -->
-  <link href="https://unpkg.com/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
-  <script src="https://unpkg.com/fullcalendar@6.1.8/main.min.js"></script>>
+    <!-- FullCalendar LOCAL -->
+    <link href="js/fullcalendar.min.css" rel="stylesheet">
+    <script src="js/fullcalendar.min.js"></script>
 
-  <!-- 1) PocketBase -->
-  <script src="js/pocketbase.umd.js"></script>
+    <!-- PocketBase LOCAL OU CDN FIABLE -->
+    <script src="js/pocketbase.umd.js"></script>
 
-  <!-- 2) Configuration PocketBase -->
-  <script src="js/hebergement_pb.js"></script>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 0;
+            background: url("../img/page-compagnon-chalet.jpg") no-repeat center center fixed;
+            background-size: cover;
+        }
 
-  <!-- 3) Authentification -->
-  <script src="js/auth.js"></script>
+        header {
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        }
 
-  <style>
-    body {
-      font-family: Arial;
-      margin: 0;
-      background: url("img/page-compagnon-chalet.jpg") no-repeat center center fixed;
-      background-size: cover;
-    }
+        header h1 {
+            margin: 0;
+            font-size: 22px;
+            text-shadow: 0 0 10px black;
+        }
 
-    header {
-      background: rgba(0, 0, 0, 0.85);
-      color: white;
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-    }
+        .btn {
+            background: #7A0010;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
 
-    header h1 {
-      margin: 0;
-      font-size: 22px;
-      text-shadow: 0 0 10px black;
-    }
+        .btn:hover {
+            background: #5a000c;
+        }
 
-    .btn {
-      background: #7A0010;
-      color: white;
-      padding: 8px 12px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-    }
+        .layout {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
 
-    .btn:hover {
-      background: #5a000c;
-    }
+        #calendar {
+            width: 350px;
+            background: rgba(255,255,255,0.90);
+            padding: 15px;
+            border-radius: 12px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
 
-    .layout {
-      display: flex;
-      justify-content: center;
-      gap: 25px;
-      max-width: 1200px;
-      margin: 20px auto;
-    }
+        .panel {
+            flex: 1;
+            background: rgba(255,255,255,0.90);
+            padding: 25px;
+            border-radius: 12px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
 
-    #calendar {
-      width: 350px;
-      background: rgba(255,255,255,0.90);
-      padding: 15px;
-      border-radius: 12px;
-      backdrop-filter: blur(4px);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-    }
+        .my-badge {
+            background: #7A0010;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 11px;
+            margin-right: 6px;
+        }
 
-    .panel {
-      flex: 1;
-      background: rgba(255,255,255,0.90);
-      padding: 25px;
-      border-radius: 12px;
-      backdrop-filter: blur(4px);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-    }
+        .filter-box {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-    .my-badge {
-      background: #7A0010;
-      color: white;
-      padding: 2px 6px;
-      border-radius: 6px;
-      font-size: 11px;
-      margin-right: 6px;
-    }
+        .filter-toggle {
+            cursor: pointer;
+            padding: 6px 10px;
+            background: #7A0010;
+            color: white;
+            border-radius: 6px;
+            border: none;
+            font-weight: bold;
+        }
 
-    .filter-box {
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+        .filter-toggle.active {
+            background: #32CD32;
+        }
 
-    .filter-toggle {
-      cursor: pointer;
-      padding: 6px 10px;
-      background: #7A0010;
-      color: white;
-      border-radius: 6px;
-      border: none;
-      font-weight: bold;
-    }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
 
-    .filter-toggle.active {
-      background: #32CD32;
-    }
+        th {
+            background: #7A0010;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
+        th.desc-col { text-align: left; }
 
-    th {
-      background: #7A0010;
-      color: white;
-      padding: 10px;
-      border-radius: 4px;
-      text-align: center;
-    }
+        th.type-col, td.type-col {
+            width: 80px;
+            text-align: center;
+            font-size: 18px;
+        }
 
-    th.desc-col { text-align: left; }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
 
-    th.type-col, td.type-col {
-      width: 80px;
-      text-align: center;
-      font-size: 18px;
-    }
+        td.desc-col { text-align: left; }
+        td.date-col { width: 90px; }
 
-    td {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-      text-align: center;
-    }
+        tr:hover {
+            background: #f0f0f0;
+        }
 
-    td.desc-col { text-align: left; }
-    td.date-col { width: 90px; }
-
-    tr:hover {
-      background: #f0f0f0;
-    }
-
-    .status-dot {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin-right: 4px;
-    }
-  </style>
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+    </style>
 </head>
 
 <body>
 
 <header>
-  <a class="btn" href="index.html">Menu</a>
-  <h1>Réservations du Chalet – Espace Compagnon</h1>
-  <button class="btn" onclick="logout()">⏻ Déconnexion</button>
+    <a class="btn" href="../index.html">Menu</a>
+    <h1>Réservations du Chalet – Espace Compagnon</h1>
+    <button class="btn" onclick="logout()">⏻ Déconnexion</button>
 </header>
 
 <div class="layout">
 
-  <div id="calendar"></div>
+    <div id="calendar"></div>
 
-  <div class="panel">
+    <div class="panel">
 
-    <div class="filter-box">
-      <button id="filterBtn" class="filter-toggle">Afficher uniquement mes réservations</button>
+        <div class="filter-box">
+            <button id="filterBtn" class="filter-toggle">Afficher uniquement mes réservations</button>
+        </div>
+
+        <h3>Liste des réservations</h3>
+
+        <table id="reservationsTable">
+            <thead>
+                <tr>
+                    <th class="desc-col">Description</th>
+                    <th class="type-col">Type</th>
+                    <th>Compagnon</th>
+                    <th class="date-col">Début</th>
+                    <th class="date-col">Fin</th>
+                </tr>
+            </thead>
+            <tbody id="reservationsBody"></tbody>
+        </table>
     </div>
-
-    <h3>Liste des réservations</h3>
-
-    <table id="reservationsTable">
-      <thead>
-        <tr>
-          <th class="desc-col">Description</th>
-          <th class="type-col">Type</th>
-          <th>Compagnon</th>
-          <th class="date-col">Début</th>
-          <th class="date-col">Fin</th>
-        </tr>
-      </thead>
-      <tbody id="reservationsBody"></tbody>
-    </table>
-  </div>
 
 </div>
 
 <script>
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
 let currentUser = null;
 let reservationsList = [];
 let filterMineOnly = false;
 
 const statusColors = {
-  "réservation en cours": "#1E90FF",
-  "confirmée": "#32CD32",
-  "terminée": "#8B4513",
-  "annulée": "#B22222"
+    "réservation en cours": "#1E90FF",
+    "confirmée": "#32CD32",
+    "terminée": "#8B4513",
+    "annulée": "#B22222"
 };
 
 const typeIcons = {
-  "Interne 🍷🍽️": "🍷🍽️",
-  "Interne 👤": "👤",
-  "Nettoyage": "🧹",
-  "Frairie": "🧑‍🤝‍🧑",
-  "Externe": "↗️",
-  "Travaux": "🛠️"
+    "Interne 🍷🍽️": "🍷🍽️",
+    "Interne 👤": "👤",
+    "Nettoyage": "🧹",
+    "Frairie": "🧑‍🤝‍🧑",
+    "Externe": "↗️",
+    "Travaux": "🛠️"
 };
 
 function logout() {
-  pb.authStore.clear();
-  window.location.href = "index.html";
+    pb.authStore.clear();
+    window.location.href = "../index.html";
 }
 
 function formatDate(d) {
-  return d.substring(8,10) + "." + d.substring(5,7) + "." + d.substring(0,4);
+    return d.substring(8,10) + "." + d.substring(5,7) + "." + d.substring(0,4);
 }
 
 async function init() {
-  currentUser = pb.authStore.model;
+    currentUser = pb.authStore.model;
 
-  if (!currentUser) {
-    alert("Veuillez vous connecter.");
-    window.location.href = "login.html";
-    return;
-  }
+    if (!currentUser) {
+        alert("Veuillez vous connecter.");
+        window.location.href = "../login.html";
+        return;
+    }
 
-  await loadReservations();
-  populateTable();
-  loadCalendar();
+    await loadReservations();
+    populateTable();
+    loadCalendar();
 
-  document.getElementById("filterBtn").onclick = toggleFilter;
+    document.getElementById("filterBtn").onclick = toggleFilter;
 }
 
 async function loadReservations() {
-  const events = await pb.collection("chalet_reservations").getFullList({
-    expand: "compagnon"
-  });
+    const events = await pb.collection("chalet_reservations").getFullList({
+        expand: "compagnon"
+    });
 
-  reservationsList = events.map(r => ({
-    id: r.id,
-    type: r.type,
-    status: r.status,
-    startDate: r.startDate,
-    endDate: r.endDate,
-    description: r.description || "",
-    companionId: r.expand?.compagnon?.id,
-    companionName: r.expand?.compagnon
-      ? r.expand.compagnon.nom + " " + r.expand.compagnon.prenom
-      : "-"
-  }));
+    reservationsList = events.map(r => ({
+        id: r.id,
+        type: r.type,
+        status: r.status,
+        startDate: r.startDate,
+        endDate: r.endDate,
+        description: r.description,
+        companionId: r.expand?.compagnon?.id,
+        companionName: r.expand?.compagnon
+            ? r.expand.compagnon.nom + " " + r.expand.compagnon.prenom
+            : null
+    }));
 
-  reservationsList.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+    const today = new Date().toISOString().substring(0, 10);
+
+    for (const r of reservationsList) {
+        if (r.endDate < today && r.status !== "annulée" && r.status !== "terminée") {
+            await pb.collection("chalet_reservations").update(r.id, {
+                status: "terminée"
+            });
+            r.status = "terminée";
+        }
+    }
+
+    reservationsList.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 }
 
 function toggleFilter() {
-  filterMineOnly = !filterMineOnly;
+    filterMineOnly = !filterMineOnly;
 
-  const btn = document.getElementById("filterBtn");
-  btn.classList.toggle("active");
+    const btn = document.getElementById("filterBtn");
+    btn.classList.toggle("active");
 
-  btn.textContent = filterMineOnly
-    ? "Afficher toutes les réservations"
-    : "Afficher uniquement mes réservations";
+    btn.textContent = filterMineOnly
+        ? "Afficher toutes les réservations"
+        : "Afficher uniquement mes réservations";
 
-  populateTable();
-  loadCalendar();
+    populateTable();
+    loadCalendar();
 }
 
 function populateTable() {
-  const tbody = document.getElementById("reservationsBody");
-  tbody.innerHTML = "";
+    const tbody = document.getElementById("reservationsBody");
+    tbody.innerHTML = "";
 
-  let list = reservationsList;
+    let list = reservationsList;
 
-  if (filterMineOnly) {
-    list = list.filter(r => r.companionId === currentUser.id);
-  }
+    if (filterMineOnly) {
+        list = list.filter(r => r.companionId === currentUser.id);
+    }
 
-  list.forEach(r => {
-    const shortDesc = r.description.substring(0, 80) + (r.description.length > 80 ? "…" : "");
+    list.forEach(r => {
+        const shortDesc = r.description
+            ? r.description.substring(0, 80) + (r.description.length > 80 ? "…" : "")
+            : "-";
 
-    const tr = document.createElement("tr");
+        const tr = document.createElement("tr");
 
-    tr.innerHTML = `
-      <td class="desc-col">
-        <span class="status-dot" style="background:${statusColors[r.status]}"></span>
-        ${r.companionId === currentUser.id ? '<span class="my-badge">Ma réservation</span>' : ''}
-        ${shortDesc}
-      </td>
-      <td class="type-col">${typeIcons[r.type] || ""}</td>
-      <td>${r.companionName}</td>
-      <td class="date-col">${formatDate(r.startDate)}</td>
-      <td class="date-col">${formatDate(r.endDate)}</td>
-    `;
+        if (r.companionId === currentUser.id) {
+            tr.onclick = () => {
+                window.location.href = "compagnon-chalet-edit.html?id=" + r.id;
+            };
+            tr.style.cursor = "pointer";
+        }
 
-    tbody.appendChild(tr);
-  });
+        tr.innerHTML = `
+            <td class="desc-col">
+                <span class="status-dot" style="background:${statusColors[r.status]}"></span>
+                ${r.companionId === currentUser.id ? '<span class="my-badge">Ma réservation</span>' : ''}
+                ${shortDesc}
+            </td>
+            <td class="type-col">${typeIcons[r.type] || ""}</td>
+            <td>${r.companionName || "-"}</td>
+            <td class="date-col">${formatDate(r.startDate)}</td>
+            <td class="date-col">${formatDate(r.endDate)}</td>
+        `;
+
+        tbody.appendChild(tr);
+    });
 }
 
 function loadCalendar() {
-  const calendarEl = document.getElementById("calendar");
+    const calendarEl = document.getElementById("calendar");
 
-  let list = reservationsList;
+    let list = reservationsList;
 
-  if (filterMineOnly) {
-    list = list.filter(r => r.companionId === currentUser.id);
-  }
+    if (filterMineOnly) {
+        list = list.filter(r => r.companionId === currentUser.id);
+    }
 
-  const events = list.map(r => {
-    const desc = r.description || "";
-    const short = desc.substring(0, 40) + (desc.length > 40 ? "…" : "");
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "dayGridMonth",
+        locale: "fr",
+        height: 450,
+        displayEventTime: false,
+        events: list.map(r => ({
+            id: r.id,
+            title: `${typeIcons[r.type] || ""} ` +
+                   r.description.substring(0, 40) +
+                   (r.description.length > 40 ? "…" : ""),
+            start: r.startDate,
+            end: r.endDate,
+            backgroundColor: statusColors[r.status] || "#555"
+        }))
+    });
 
-    return {
-      id: r.id,
-      title: `${typeIcons[r.type] || ""} ${short}`,
-      start: r.startDate,
-      end: r.endDate,
-      backgroundColor: statusColors[r.status] || "#555"
-    };
-  });
-
-  const calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: "dayGridMonth",
-    locale: "fr",
-    height: 450,
-    displayEventTime: false,
-    events
-  });
-
-  calendar.render();
+    calendar.render();
 }
 
 init();
