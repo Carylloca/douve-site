@@ -157,7 +157,6 @@
             font-size: 12px;
         }
 
-        /* SELECT STANDARD */
         #selectCompanion {
             background: white;
             color: black;
@@ -220,9 +219,9 @@
     </table>
 </div>
 
-<!-- PocketBase + config -->
+<!-- PocketBase centralisé -->
+<script src="js/pocketbase.umd.js"></script>
 <script src="js/hebergement_pb.js"></script>
-<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
 <!-- Auth -->
 <script src="js/auth.js"></script>
@@ -254,7 +253,6 @@
                 expand: "responsables"
             });
 
-            // Vérification responsable
             const responsables = manifestation.expand?.responsables || [];
             const estResponsable = responsables.some(r => r.id === user.id);
 
@@ -264,7 +262,6 @@
                 return;
             }
 
-            // Titre
             const d = new Date(manifestation.date);
             const dateAff = d.toLocaleDateString("fr-CH");
             const heureAff = manifestation.date.split(" ")[1].slice(0,5);
@@ -272,7 +269,6 @@
             document.getElementById("manifestTitle").textContent =
                 `Inscrits – ${manifestation.title} le ${dateAff} à ${heureAff}`;
 
-            // Charger les inscrits
             inscrits = await pb.collection("inscriptions").getFullList({
                 filter: `manifestation = "${manifestationId}"`,
                 expand: "companion"
