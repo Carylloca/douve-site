@@ -10,7 +10,7 @@ async function login(email, password) {
         console.log("Connecté comme ADMIN :", authUser);
 
         // Redirection admin
-        window.location.href = "admin/index.html";
+        window.location.href = "index.html";
         return true;
 
     } catch (e) {
