@@ -114,13 +114,11 @@
         © Confrérie des Compagnons de la Douve
     </footer>
 
-    <!-- ⭐ Ajout du fichier d’hébergement -->
+    <!-- ⭐ PocketBase centralisé -->
+    <script src="js/pocketbase.umd.js"></script>
     <script src="js/hebergement_pb.js"></script>
 
-    <!-- PocketBase -->
-    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
-
-    <!-- ⭐ Initialisation PocketBase avec URL dynamique -->
+    <!-- ⭐ Initialisation PocketBase -->
     <script>
         const pb = new PocketBase(window.PB_URL);
     </script>
