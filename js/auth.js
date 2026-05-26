@@ -1,34 +1,18 @@
 // ===============================
 //  CONFIGURATION POCKETBASE
 // ===============================
-const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+const pb = new PocketBase(window.PB_URL);
 
 // ===============================
-//  LOGIN UNIFIÉ (users → companions)
+//  LOGIN (uniquement companions)
 // ===============================
 async function login(email, password) {
-
-    // 1) ESSAYER DE CONNECTER COMME USER (COMITÉ)
     try {
-        const authUser = await pb.collection("users").authWithPassword(email, password);
+        const auth = await pb.collection("companions").authWithPassword(email, password);
 
-        console.log("Connecté comme USER :", authUser);
+        console.log("Connecté :", auth);
 
-        // Redirection admin
-        window.location.href = "index.html";
-        return true;
-
-    } catch (e) {
-        console.log("Pas un user, on tente companion…");
-    }
-
-    // 2) ESSAYER DE CONNECTER COMME COMPANION
-    try {
-        const authComp = await pb.collection("companions").authWithPassword(email, password);
-
-        console.log("Connecté comme COMPANION :", authComp);
-
-        // Redirection compagnon
+        // Redirection universelle
         window.location.href = "index.html";
         return true;
 
@@ -45,8 +29,8 @@ function logout() {
     pb.authStore.clear();
     document.cookie = "";
 
-    // ⭐ Redirection universelle (fonctionne depuis /admin/, /compagnon/, /)
-    window.location.href = "../index.html";
+    // Redirection universelle
+    window.location.href = "index.html";
 }
 
 // ===============================
@@ -70,22 +54,7 @@ function requireLogin() {
 }
 
 // ===============================
-//  VÉRIFIER SI COMITÉ (users uniquement)
-// ===============================
-function requireComite() {
-    if (!pb.authStore.isValid) {
-        window.location.href = "login.html";
-        return;
-    }
-
-    if (pb.authStore.model.collectionName !== "users") {
-        alert("Accès réservé au comité.");
-        window.location.href = "index.html";
-    }
-}
-
-// ===============================
-//  VÉRIFIER SI COMPANION (autorise aussi les users)
+//  VÉRIFIER SI COMPANION
 // ===============================
 function requireCompanion() {
     if (!pb.authStore.isValid) {
@@ -95,14 +64,10 @@ function requireCompanion() {
 
     const user = pb.authStore.model;
 
-    // Companion → OK
-    if (user.collectionName === "companions") return;
-
-    // User (comité) → OK
-    if (user.collectionName === "users") return;
-
-    // Autre cas improbable
-    window.location.href = "login.html";
+    if (user.collectionName !== "companions") {
+        alert("Accès réservé aux compagnons.");
+        window.location.href = "index.html";
+    }
 }
 
 // ===============================
