@@ -10,7 +10,8 @@
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
-    <!-- PocketBase -->
+    <!-- PocketBase + config -->
+    <script src="../js/hebergement_pb.js"></script>
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <!-- PDF -->
@@ -144,7 +145,6 @@
             margin-right: 4px;
         }
 
-        /* Légendes côte à côte */
         .legend-container {
             display: flex;
             gap: 15px;
@@ -167,6 +167,10 @@
             font-size: 12px;
         }
 
+        .open-icon {
+            cursor: pointer;
+            margin-right: 6px;
+        }
     </style>
 </head>
 
@@ -196,13 +200,9 @@
 
         <h3>Liste complète des réservations</h3>
 
-        <!-- Légendes côte à côte -->
         <div class="legend-container">
-
-            <!-- Statuts -->
             <div class="legend-box">
                 <strong>Statuts :</strong><br><br>
-
                 <div class="legend-grid">
                     <div><span class="status-dot" style="background:#1E90FF;"></span> En cours</div>
                     <div><span class="status-dot" style="background:#32CD32;"></span> Confirmée</div>
@@ -211,10 +211,8 @@
                 </div>
             </div>
 
-            <!-- Types -->
             <div class="legend-box">
                 <strong>Types :</strong><br><br>
-
                 <div class="legend-grid">
                     <div>🍷🍽️ Repas</div>
                     <div>👤 Interne</div>
@@ -224,7 +222,6 @@
                     <div>🛠️ Travaux</div>
                 </div>
             </div>
-
         </div>
 
         <table id="reservationsTable">
@@ -244,7 +241,7 @@
 </div>
 
 <script>
-    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+    const pb = new PocketBase(window.PB_URL);
     let reservationsList = [];
 
     const statusColors = {
