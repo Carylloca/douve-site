@@ -5,6 +5,7 @@
     <title>Admin – Gestion du Bon Laron</title>
 
     <link rel="icon" type="image/png" href="../favicon.png">
+    <script src="../js/hebergement_pb.js"></script>
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
@@ -218,6 +219,7 @@
 <script>
     requireComite();
 
+    const pb = new PocketBase(window.PB_URL);
     let currentEventId = null;
 
     function updateStatusColor() {
