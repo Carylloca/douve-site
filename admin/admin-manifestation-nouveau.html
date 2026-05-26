@@ -204,16 +204,19 @@
     </form>
 </div>
 
-<!-- PocketBase -->
-<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+<!-- PocketBase centralisé -->
+<script src="../js/pocketbase.umd.js"></script>
+<script src="../js/hebergement_pb.js"></script>
 
-<!-- Auth (pb + logout + requireComite) -->
+<!-- Auth -->
 <script src="../js/auth.js"></script>
 
 <script>
     requireComite();
 
-    // 🔥 Charger les compagnons (responsables = companions)
+    const pb = new PocketBase(window.PB_URL);
+
+    // 🔥 Charger les compagnons (responsables)
     async function loadResponsables() {
         const container = document.getElementById("responsables");
         container.innerHTML = "<p>Chargement...</p>";
@@ -251,15 +254,11 @@
 
         const user = pb.authStore.model;
 
-        // 🔥 Récupérer les responsables cochés (companions)
         let responsables = Array.from(
             document.querySelectorAll("#responsables input[type='checkbox']:checked")
-        ).map(cb => String(cb.value)); // 🔥 convertit explicitement en chaîne
+        ).map(cb => String(cb.value));
 
-        // 🔥 Forcer tableau vide si aucun responsable
-        if (!Array.isArray(responsables)) {
-            responsables = [];
-        }
+        if (!Array.isArray(responsables)) responsables = [];
 
         const date = document.getElementById("date").value;
         const heure = document.getElementById("heure").value;
@@ -274,8 +273,8 @@
             date: dateFinale,
             date_limite: document.getElementById("date_limite").value || null,
             places_max: places,
-            created_by: user.id,       // user = admin/comité
-            responsables: responsables.length > 0 ? responsables : [] // 🔥 force tableau
+            created_by: user.id,
+            responsables: responsables
         };
 
         try {
