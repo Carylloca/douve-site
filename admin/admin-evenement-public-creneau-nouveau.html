@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <title>Nouveau créneau – Admin</title>
     <link rel="icon" type="image/png" href="../favicon.png">
-    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <!-- PocketBase centralisé -->
+    <script src="../js/pocketbase.umd.js"></script>
+    <script src="../js/hebergement_pb.js"></script>
 
     <style>
         body {
@@ -189,7 +192,7 @@
 </div>
 
 <script>
-const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+const pb = new PocketBase(window.PB_URL);
 
 const params = new URLSearchParams(window.location.search);
 const eventId = params.get("event");
