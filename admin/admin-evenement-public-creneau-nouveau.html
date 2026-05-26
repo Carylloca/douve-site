@@ -48,7 +48,7 @@
             background: rgba(255,255,255,0.95);
             padding: 25px;
             border-radius: 10px;
-            max-width: 500px; /* Réduction de 30% */
+            max-width: 500px;
             margin: 30px auto;
             box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }
@@ -59,7 +59,6 @@
             margin-top: 15px;
         }
 
-        /* Heures côte à côte */
         .time-row {
             display: flex;
             justify-content: space-between;
@@ -86,7 +85,6 @@
             font-weight: bold;
         }
 
-        /* Postes */
         .poste-list {
             margin-top: 10px;
             padding: 10px;
@@ -99,7 +97,6 @@
             margin: 5px 0;
         }
 
-        /* Boutons */
         .btn {
             background: #8b0000;
             color: white;
@@ -147,7 +144,6 @@
 
     <h2 id="jourTitre" style="text-align:center; margin-top:0;"></h2>
 
-    <!-- HEURES SUR UNE SEULE LIGNE -->
     <div class="time-row">
         <div>
             <label>Heure de début :</label>
@@ -184,7 +180,6 @@
         <button onclick="toggleTous()" class="btn-small" style="margin-bottom:10px;">Tous</button>
     </div>
 
-    <!-- BOUTONS EN BAS -->
     <div style="display:flex; gap:15px; margin-top:20px;">
         <button class="btn" style="flex:1;" onclick="creerCreneau()">Enregistrer</button>
         <button class="btn" style="flex:1;" onclick="memoriserEtDupliquer()">Mémoriser et Dupliquer</button>
@@ -208,7 +203,7 @@ if (user.role !== "comite" && user.role !== "responsable") {
     window.location.href = "../index.html";
 }
 
-/* Navigation : retour vers la page Détails du jour */
+/* Navigation */
 document.getElementById("retourPlanning").href =
     "admin-evenement-public-jour-details.html?id=" + jourId + "&event=" + eventId;
 
