@@ -299,6 +299,8 @@
 <script>
     requireComite();
 
+    const pb = new PocketBase(window.PB_URL);
+
     const url = new URL(window.location.href);
     const id = url.searchParams.get("id");
 
@@ -388,6 +390,11 @@
             console.error(err);
             alert("Erreur lors de l'enregistrement.");
         }
+    }
+
+    function logout() {
+        pb.authStore.clear();
+        window.location.href = "../index.html";
     }
 
     chargerCompagnon();
