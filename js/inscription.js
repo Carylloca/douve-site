@@ -1,9 +1,5 @@
-// =====================================
-//  INSCRIPTION – PUBLIC / COMPAGNON
-// =====================================
-
-// PocketBase centralisé
-const pb = new PocketBase(window.PB_URL);
+// Initialisation PocketBase
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
 // Vérifier que le compagnon est connecté
 if (!pb.authStore.model) {
@@ -13,7 +9,7 @@ if (!pb.authStore.model) {
 
 // Récupération des infos du compagnon connecté
 const user = pb.authStore.model;
-const initiales = user.initiales;
+const initiales = user.initiales;   // Ton champ existant dans companions
 const nomCompagnon = user.nom;
 const prenomCompagnon = user.prenom;
 
@@ -36,13 +32,13 @@ async function inscrirePersonne(event) {
 
     // Construction de l'objet à envoyer
     const data = {
-        planning_event: eventId,
+        planning_event: eventId,          // récupéré depuis l’URL ou la page
         planning_jour: jourId,
         planning_creneau: creneauId,
         nom_personne: nom,
         prenom_personne: prenom,
         inscrit_par: initiales,
-        companion: estCompagnon ? user.id : null,
+        compagnon: estCompagnon ? user.id : null,
         poste_souhaite: posteId,
         commentaire: commentaire
     };

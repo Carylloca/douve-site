@@ -5,9 +5,7 @@
     <title>Modifier un événement public – Admin</title>
     <link rel="icon" type="image/png" href="../favicon.png">
 
-    <!-- PocketBase centralisé -->
-    <script src="../js/pocketbase.umd.js"></script>
-    <script src="../js/hebergement_pb.js"></script>
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
@@ -189,7 +187,7 @@
 </div>
 
 <script>
-const pb = new PocketBase(window.PB_URL);
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 const eventId = new URLSearchParams(window.location.search).get("id");
 
 if (!pb.authStore.isValid) {
@@ -201,10 +199,10 @@ let responsablesExistants = [];
 /* ⭐ Nettoyage des dates PocketBase → input type="date" */
 function cleanDate(d) {
     if (!d) return "";
-    return d.split(" ")[0];
+    return d.split(" ")[0]; // coupe avant l'heure
 }
 
-/* ⭐ Charger l'événement */
+/* ⭐ Charger l'événement AVANT tout */
 async function loadEvent() {
     const ev = await pb.collection("planning_events").getOne(eventId, {
         expand: "responsable"
@@ -219,7 +217,7 @@ async function loadEvent() {
     responsablesExistants = ev.responsable || [];
 }
 
-/* ⭐ Charger les responsables */
+/* ⭐ Charger les responsables APRÈS que les dates soient posées */
 async function loadResponsables() {
     const companions = await pb.collection("companions").getFullList({ sort: "nom" });
     const list = document.getElementById("responsablesList");
@@ -233,8 +231,11 @@ async function loadResponsables() {
         list.appendChild(item);
     });
 
+    // Cocher les responsables existants
     document.querySelectorAll("#responsablesList input").forEach(cb => {
-        if (responsablesExistants.includes(cb.value)) cb.checked = true;
+        if (responsablesExistants.includes(cb.value)) {
+            cb.checked = true;
+        }
     });
 }
 
@@ -274,7 +275,7 @@ async function modifierEvenement() {
     }
 }
 
-/* ⭐ Initialisation */
+/* ⭐ Ordre CORRECT : on charge l'événement → puis les responsables */
 (async () => {
     await loadEvent();
     await loadResponsables();

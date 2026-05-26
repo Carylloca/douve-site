@@ -5,10 +5,7 @@
     <title>Événements publics</title>
 
     <link rel="icon" type="image/png" href="favicon.png">
-
-    <!-- ⭐ PocketBase centralisé -->
-    <script src="js/pocketbase.umd.js"></script>
-    <script src="js/hebergement_pb.js"></script>
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
@@ -79,60 +76,61 @@
 </div>
 
 <script>
-    const pb = new PocketBase(window.PB_URL);
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-    /* 🔐 Sécurité : accès réservé aux compagnons, comité et responsables */
-    const user = pb.authStore.model;
+/* 🔐 Sécurité : accès réservé aux compagnons, comité et responsables */
+const user = pb.authStore.model;
 
-    if (!user || !["compagnon", "comite", "responsable"].includes(user.role)) {
-        window.location.href = "login.html";
-    }
+if (!user || !["compagnon", "comite", "responsable"].includes(user.role)) {
+    window.location.href = "login.html";
+}
 
-    /* 🔽 Chargement des événements */
-    async function loadManifestations() {
-        const container = document.getElementById("eventsContainer");
+/* 🔽 Chargement des événements */
+async function loadManifestations() {
+    const container = document.getElementById("eventsContainer");
 
-        container.innerHTML = "<p class='no-events'>Chargement...</p>";
+    container.innerHTML = "<p class='no-events'>Chargement...</p>";
 
-        try {
-            const events = await pb.collection("planning_events").getFullList({
-                sort: "-date_debut"
-            });
+    try {
+        const events = await pb.collection("planning_events").getFullList({
+            // pas de filtre
+            sort: "-date_debut"
+        });
 
-            if (events.length === 0) {
-                container.innerHTML = "<p class='no-events'>Aucun événement public pour le moment.</p>";
-                return;
-            }
-
-            container.innerHTML = "";
-
-            events.forEach(ev => {
-                const date = new Date(ev.date_debut).toLocaleDateString("fr-FR", {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric"
-                });
-
-                container.innerHTML += `
-                    <div class="event-card">
-                        <div class="event-info">
-                            <h2>${ev.titre}</h2>
-                            <p><strong>Date :</strong> ${date}</p>
-                            <p>${ev.description || ""}</p>
-                            <a href="public-manifestation-details.html?id=${ev.id}" class="btn">Voir</a>
-                        </div>
-                    </div>
-                `;
-            });
-
-        } catch (err) {
-            console.error(err);
-            container.innerHTML = "<p class='no-events'>Erreur lors du chargement.</p>";
+        if (events.length === 0) {
+            container.innerHTML = "<p class='no-events'>Aucun événement public pour le moment.</p>";
+            return;
         }
-    }
 
-    loadManifestations();
+        container.innerHTML = "";
+
+        events.forEach(ev => {
+            const date = new Date(ev.date_debut).toLocaleDateString("fr-FR", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric"
+            });
+
+            container.innerHTML += `
+                <div class="event-card">
+                    <div class="event-info">
+                        <h2>${ev.titre}</h2>
+                        <p><strong>Date :</strong> ${date}</p>
+                        <p>${ev.description || ""}</p>
+                        <a href="public-manifestation-details.html?id=${ev.id}" class="btn">Voir</a>
+                    </div>
+                </div>
+            `;
+        });
+
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = "<p class='no-events'>Erreur lors du chargement.</p>";
+    }
+}
+
+loadManifestations();
 </script>
 
 </body>

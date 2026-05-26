@@ -5,9 +5,7 @@
     <title>Nouvel événement public – Admin</title>
     <link rel="icon" type="image/png" href="../favicon.png">
 
-    <!-- PocketBase centralisé -->
-    <script src="../js/pocketbase.umd.js"></script>
-    <script src="../js/hebergement_pb.js"></script>
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
@@ -88,6 +86,10 @@
 
         .dates-row div {
             flex: 1;
+        }
+
+        .dates-row input {
+            width: 140px;
         }
 
         .responsables-box {
@@ -188,71 +190,71 @@
 </div>
 
 <script>
-const pb = new PocketBase(window.PB_URL);
+    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-if (!pb.authStore.isValid) {
-    window.location.href = "../login.html";
-}
+    if (!pb.authStore.isValid) {
+        window.location.href = "../login.html";
+    }
 
-async function loadResponsables() {
-    try {
-        const companions = await pb.collection("companions").getFullList({
-            sort: "nom"
-        });
+    async function loadResponsables() {
+        try {
+            const companions = await pb.collection("companions").getFullList({
+                sort: "nom"
+            });
+
+            const list = document.getElementById("responsablesList");
+
+            companions.forEach(c => {
+                const item = document.createElement("label");
+                item.innerHTML = `
+                    <input type="checkbox" name="responsables" value="${c.id}">
+                    ${c.nom} ${c.prenom}
+                `;
+                list.appendChild(item);
+            });
+
+        } catch (error) {
+            console.error("Erreur chargement responsables :", error);
+        }
+    }
+
+    loadResponsables();
+
+    document.getElementById("responsablesBox").addEventListener("click", (e) => {
+        if (e.target.tagName === "INPUT") return;
 
         const list = document.getElementById("responsablesList");
+        list.style.display = (list.style.display === "grid") ? "none" : "grid";
+    });
 
-        companions.forEach(c => {
-            const item = document.createElement("label");
-            item.innerHTML = `
-                <input type="checkbox" name="responsables" value="${c.id}">
-                ${c.nom} ${c.prenom}
-            `;
-            list.appendChild(item);
-        });
+    async function creerEvenement() {
+        const feedback = document.getElementById("feedback");
+        feedback.textContent = "";
 
-    } catch (error) {
-        console.error("Erreur chargement responsables :", error);
+        const responsables = Array.from(
+            document.querySelectorAll("input[name='responsables']:checked")
+        ).map(cb => cb.value);
+
+        const data = {
+            titre: document.getElementById("titre").value,
+            description: document.getElementById("description").value,
+            description_longue: document.getElementById("description").value,
+            date_debut: document.getElementById("date_debut").value,
+            date_fin: document.getElementById("date_fin").value,
+            responsable: responsables
+        };
+
+        try {
+            await pb.collection("planning_events").create(data);
+            feedback.textContent = "Événement public mémorisé !";
+            feedback.className = "success";
+
+        } catch (error) {
+            console.error(error);
+            feedback.textContent = "Erreur lors de la mémorisation.";
+            feedback.className = "error";
+        }
     }
-}
-
-loadResponsables();
-
-document.getElementById("responsablesBox").addEventListener("click", (e) => {
-    if (e.target.tagName === "INPUT") return;
-
-    const list = document.getElementById("responsablesList");
-    list.style.display = (list.style.display === "grid") ? "none" : "grid";
-});
-
-async function creerEvenement() {
-    const feedback = document.getElementById("feedback");
-    feedback.textContent = "";
-
-    const responsables = Array.from(
-        document.querySelectorAll("input[name='responsables']:checked")
-    ).map(cb => cb.value);
-
-    const data = {
-        titre: document.getElementById("titre").value,
-        description: document.getElementById("description").value,
-        description_longue: document.getElementById("description").value,
-        date_debut: document.getElementById("date_debut").value,
-        date_fin: document.getElementById("date_fin").value,
-        responsable: responsables
-    };
-
-    try {
-        await pb.collection("planning_events").create(data);
-        feedback.textContent = "Événement public mémorisé !";
-        feedback.className = "success";
-
-    } catch (error) {
-        console.error(error);
-        feedback.textContent = "Erreur lors de la mémorisation.";
-        feedback.className = "error";
-    }
-}
 </script>
 
 </body>

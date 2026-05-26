@@ -4,10 +4,7 @@
     <meta charset="UTF-8">
     <title>Nouveau jour – Admin</title>
     <link rel="icon" type="image/png" href="../favicon.png">
-
-    <!-- PocketBase centralisé -->
-    <script src="../js/pocketbase.umd.js"></script>
-    <script src="../js/hebergement_pb.js"></script>
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
@@ -103,6 +100,7 @@
             margin: 4px 0;
         }
 
+        /* ⭐ Alerte élégante */
         .alert-duplicate {
             background: #ffdddd;
             border-left: 5px solid #cc0000;
@@ -159,11 +157,13 @@
     <label>Date du jour :</label>
     <input type="date" id="date" required>
 
+    <!-- ⭐ Liste des jours existants -->
     <div id="joursExistants" class="jours-list">
         <strong>Jours déjà créés :</strong>
         <div id="listeJours"></div>
     </div>
 
+    <!-- ⭐ Alerte doublon -->
     <div id="alertDuplicate" class="alert-duplicate">
         ⚠️ Cette date existe déjà pour cet événement.
         <div class="alert-buttons">
@@ -178,7 +178,7 @@
 </div>
 
 <script>
-const pb = new PocketBase(window.PB_URL);
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
 const eventId = new URLSearchParams(window.location.search).get("event");
 
@@ -273,6 +273,7 @@ async function creerJour() {
         nom_jour: nomDuJour(date)
     };
 
+    /* 🔎 Vérifier doublon (version fiable) */
     const dateMin = date + " 00:00:00";
     const dateMax = date + " 23:59:59";
 

@@ -157,6 +157,7 @@
             font-size: 12px;
         }
 
+        /* SELECT STANDARD */
         #selectCompanion {
             background: white;
             color: black;
@@ -219,16 +220,11 @@
     </table>
 </div>
 
-<!-- PocketBase centralisé -->
-<script src="js/pocketbase.umd.js"></script>
-<script src="js/hebergement_pb.js"></script>
-
-<!-- Auth -->
+<!-- PocketBase -->
+<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 <script src="js/auth.js"></script>
 
 <script>
-    const pb = new PocketBase(window.PB_URL);
-
     const url = new URL(window.location.href);
     const manifestationId = url.searchParams.get("id");
 
@@ -253,6 +249,7 @@
                 expand: "responsables"
             });
 
+            // Vérification responsable
             const responsables = manifestation.expand?.responsables || [];
             const estResponsable = responsables.some(r => r.id === user.id);
 
@@ -262,6 +259,7 @@
                 return;
             }
 
+            // Titre
             const d = new Date(manifestation.date);
             const dateAff = d.toLocaleDateString("fr-CH");
             const heureAff = manifestation.date.split(" ")[1].slice(0,5);
@@ -269,6 +267,7 @@
             document.getElementById("manifestTitle").textContent =
                 `Inscrits – ${manifestation.title} le ${dateAff} à ${heureAff}`;
 
+            // Charger les inscrits
             inscrits = await pb.collection("inscriptions").getFullList({
                 filter: `manifestation = "${manifestationId}"`,
                 expand: "companion"
@@ -305,7 +304,7 @@
             row.innerHTML = `
                 <td>${c?.nom || "-"}</td>
                 <td>${c?.prenom || "-"}</td>
-                <td>${c?.email_public || "-"}</td>
+                <td>${c?.email || "-"}</td>
                 <td>
                     <div class="inline-controls">
                         <button class="btn small-btn" onclick="modifierNb('${i.id}', -1)">–</button>
@@ -436,7 +435,7 @@
         filtered.forEach(i => {
             const c = i.expand?.companion;
             doc.text(
-                `${c?.nom || "-"} ${c?.prenom || "-"} – ${c?.email_public || "-"} – ${i.nb_personnes || 1} pers.`,
+                `${c?.nom || "-"} ${c?.prenom || "-"} – ${c?.email || "-"} – ${i.nb_personnes || 1} pers.`,
                 10,
                 y
             );
@@ -454,7 +453,7 @@
             return {
                 Nom: c?.nom || "-",
                 Prénom: c?.prenom || "-",
-                Email: c?.email_public || "-",
+                Email: c?.email || "-",
                 "Nb personnes": i.nb_personnes || 1
             };
         });

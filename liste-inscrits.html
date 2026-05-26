@@ -10,15 +10,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <!-- ⭐ PocketBase centralisé -->
-    <script src="js/pocketbase.umd.js"></script>
-    <script src="js/hebergement_pb.js"></script>
-
-    <!-- ⭐ Initialisation PocketBase -->
-    <script>
-        const pb = new PocketBase(window.PB_URL);
-    </script>
-
     <style>
         body {
             margin: 0;
@@ -152,7 +143,11 @@
 
 </div>
 
+<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
 <script>
+    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
     const urlParams = new URLSearchParams(window.location.search);
     const manifestationId = urlParams.get("id");
 
@@ -167,8 +162,11 @@
             document.getElementById("manifestTitle").textContent = manifest.title;
 
             const user = pb.authStore.model;
+
+            // Normalisation email
             const userEmail = (user.email || "").trim().toLowerCase();
 
+            // Vérification responsable
             let isResponsable = false;
 
             if (manifest.expand?.responsables?.length > 0) {
@@ -184,6 +182,7 @@
                 });
             }
 
+            // Affichage du bouton
             if (isResponsable) {
                 const btn = document.getElementById("btnAdminEdit");
                 btn.href = `../admin/admin-inscrits.html?id=${manifestationId}`;

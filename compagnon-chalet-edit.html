@@ -5,15 +5,7 @@
     <title>Modifier ma réservation – Chalet</title>
 
     <link rel="icon" type="image/png" href="../favicon.png">
-
-    <!-- 1) PocketBase -->
-<script src="../js/pocketbase.umd.js"></script>
-
-<!-- 2) Configuration de l’hébergement PocketBase -->
-<script src="../js/hebergement_pb.js"></script>
-
-<!-- 3) Authentification (restaure la session, charge les cookies) -->
-<script src="../js/auth.js"></script>
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
@@ -209,6 +201,8 @@
 </div>
 
 <script>
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
 let currentUser = null;
 let reservation = null;
 

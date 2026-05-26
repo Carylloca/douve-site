@@ -5,10 +5,7 @@
     <title>Événements publics – Dashboard Admin</title>
 
     <link rel="icon" type="image/png" href="../favicon.png">
-
-    <!-- PocketBase centralisé -->
-    <script src="../js/pocketbase.umd.js"></script>
-    <script src="../js/hebergement_pb.js"></script>
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
@@ -123,7 +120,7 @@
 </div>
 
 <script>
-const pb = new PocketBase(window.PB_URL);
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
 function formatDate(d) {
     if (!d) return "—";
@@ -132,7 +129,7 @@ function formatDate(d) {
 
 async function loadDashboard() {
     const events = await pb.collection("planning_events").getFullList({
-        expand: "responsable",
+        expand: "responsable",   // ⭐ correspond EXACTEMENT à ta base
         sort: "date_debut"
     });
 
@@ -146,6 +143,7 @@ async function loadDashboard() {
 
     events.forEach(ev => {
 
+        // ⭐ correspond EXACTEMENT à ta base
         const responsables = Array.isArray(ev.expand?.responsable)
             ? ev.expand.responsable.map(r => r.nom + " " + r.prenom).join(", ")
             : "—";
@@ -159,6 +157,8 @@ async function loadDashboard() {
                 <strong>Responsables :</strong> ${responsables}<br>
                 <strong>Du :</strong> ${formatDate(ev.date_debut)}  
                 <strong>au :</strong> ${formatDate(ev.date_fin)}<br>
+
+                <!-- ⭐ correspond EXACTEMENT à ta base -->
                 <strong>Description :</strong> ${ev.description || "—"}
             </div>
 
@@ -166,6 +166,7 @@ async function loadDashboard() {
                 <a class="btn btn-small" href="admin-evenement-public-modifier.html?id=${ev.id}">Modifier</a>
                 <a class="btn btn-small" href="admin-evenement-public-postes.html?event=${ev.id}">Postes</a>
                 <a class="btn btn-small" href="admin-evenement-public-planning.html?event=${ev.id}">Planning</a>
+
             </div>
         `;
 

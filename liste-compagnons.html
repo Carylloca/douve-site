@@ -12,11 +12,6 @@
     <!-- SheetJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <!-- ⭐ PocketBase centralisé -->
-    <script src="js/pocketbase.umd.js"></script>
-    <script src="js/hebergement_pb.js"></script>
-    <script src="js/auth.js"></script> <!-- ⭐ OBLIGATOIRE -->
-
     <style>
         body {
             margin: 0;
@@ -135,8 +130,12 @@
         </table>
     </div>
 
+    <!-- PocketBase -->
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
     <script>
-        // 🔐 Vérification de session
+        const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
         if (!pb.authStore.isValid) {
             window.location.href = "login.html";
         }

@@ -72,16 +72,12 @@
     </div>
 </div>
 
-<!-- ⭐ PocketBase centralisé -->
-<script src="js/pocketbase.umd.js"></script>
-<script src="js/hebergement_pb.js"></script>
-
-<!-- Auth + API -->
+<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/api.js"></script>
 
 <script>
-    const pb = new PocketBase(window.PB_URL);
+    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
     /* --- Format date sans heure --- */
     function formatDateOnly(dt) {
@@ -117,7 +113,7 @@
             for (const m of list) {
 
                 // 🔥 Nombre d'inscrits
-                const inscrits = await pb.collection("inscriptions").getFullList({
+                const inscrits = await pb.collection("inscrits").getFullList({
                     filter: `manifestation = "${m.id}"`
                 });
 

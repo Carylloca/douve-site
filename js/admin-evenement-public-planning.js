@@ -1,7 +1,6 @@
 // js/admin-evenement-public-planning.js
 
 (function () {
-
   // -----------------------------
   // SÉCURITÉ : CALENDRIER DISPONIBLE ?
   // -----------------------------
@@ -12,10 +11,10 @@
 
   const calendar = window.adminPlanning.calendar;
 
-  // -----------------------------
-  // POCKETBASE CENTRALISÉ
-  // -----------------------------
-  const pb = window.pb || new PocketBase(window.PB_URL);
+  // PocketBase
+  const pbClient =
+    window.pb || (window.PocketBase && new PocketBase("https://pocketbase-site-douve.onrender.com"));
+  const pb = window.pb || pbClient;
 
   // -----------------------------
   // ÉTAT GLOBAL
@@ -35,11 +34,17 @@
   // -----------------------------
   // HELPERS DOM
   // -----------------------------
-  const $ = (id) => document.getElementById(id);
+  function $(id) {
+    return document.getElementById(id);
+  }
 
-  const findById = (list, id) => list.find((x) => x.id === id) || null;
+  function findById(list, id) {
+    return list.find((x) => x.id === id) || null;
+  }
 
-  const formatHeure = (h) => h || "—";
+  function formatHeure(h) {
+    return h || "—";
+  }
 
   function getJourLabel(jourRecord) {
     if (!jourRecord) return "—";
@@ -51,27 +56,29 @@
           day: "2-digit",
           month: "2-digit",
         });
-      } catch {
+      } catch (e) {
         return jourRecord.date;
       }
     }
     return jourRecord.id;
   }
 
-  const getPosteLabel = (p) => p?.nom || p?.code || p?.id || "—";
+  function getPosteLabel(posteRecord) {
+    if (!posteRecord) return "—";
+    return posteRecord.nom || posteRecord.code || posteRecord.id;
+  }
 
-  function getCompagnonLabel(c) {
-    if (!c) return "—";
-    if (c.prenom || c.nom) {
-      return `${c.prenom || ""} ${c.nom || ""}`.trim() || c.id;
+  function getCompagnonLabel(compagnonRecord) {
+    if (!compagnonRecord) return "—";
+    if (compagnonRecord.prenom || compagnonRecord.nom) {
+      return `${compagnonRecord.prenom || ""} ${compagnonRecord.nom || ""}`.trim() || compagnonRecord.id;
     }
-    return c.id;
+    return compagnonRecord.id;
   }
 
   function setStatusBadge(etat) {
     const badge = $("planningStatusBadge");
     if (!badge) return;
-
     if (etat === "finalise") {
       badge.textContent = "Finalisé";
       badge.classList.remove("status-edition");
@@ -93,18 +100,15 @@
 
     const select = $("selectEvenementPublic");
     if (!select) return;
-
     select.innerHTML = "";
 
     state.manifestations.forEach((m) => {
       const opt = document.createElement("option");
       opt.value = m.id;
-
       const labelDate =
         m.date_debut || m.date_fin
-          ? `(${(m.date_debut || m.date_fin).substring(0, 10)}) `
+          ? `(${(m.date_debut || m.date_fin || "").substring(0, 10)}) `
           : "";
-
       opt.textContent = `${labelDate}${m.nom || m.id}`;
       select.appendChild(opt);
     });
@@ -125,15 +129,13 @@
 
     const select = $("selectPlanningEvent");
     if (!select) return;
-
     select.innerHTML = "";
 
     state.planningEvents.forEach((p) => {
       const labelDate =
         p.date_debut || p.date_fin
-          ? `(${(p.date_debut || p.date_fin).substring(0, 10)}) `
+          ? `(${(p.date_debut || p.date_fin || "").substring(0, 10)}) `
           : "";
-
       const opt = document.createElement("option");
       opt.value = p.id;
       opt.textContent = `${labelDate}${p.titre || p.id}`;
@@ -145,7 +147,7 @@
       select.value = state.currentPlanningEventId;
 
       const pe = findById(state.planningEvents, state.currentPlanningEventId);
-      setStatusBadge(pe?.etat || "edition");
+      setStatusBadge(pe ? pe.etat : "edition");
     } else {
       state.currentPlanningEventId = null;
       setStatusBadge("edition");
@@ -153,7 +155,7 @@
   }
 
   async function loadCompanions() {
-    state.companions = await pb.collection("companions").getFullList({
+    state.companions = await pb.collection("compagnons").getFullList({
       sort: "nom,prenom",
     });
   }
@@ -185,11 +187,11 @@
     calendar.removeAllEvents();
 
     state.planningCreneaux.forEach((c) => {
-      const jour = c.expand?.planning_jour;
-      const poste = c.expand?.poste;
-      const compagnon = c.expand?.compagnon_assigne;
+      const jour = c.expand && c.expand.planning_jour;
+      const poste = c.expand && c.expand.poste;
+      const compagnon = c.expand && c.expand.compagnon_assigne;
 
-      if (!jour?.date) return;
+      if (!jour || !jour.date) return;
 
       const dateStr = jour.date.substring(0, 10);
       const start = `${dateStr}T${c.heure_debut || "00:00"}:00`;
@@ -197,11 +199,12 @@
 
       let title = "";
       if (poste) title += getPosteLabel(poste);
-      if (compagnon) title += (title ? " – " : "") + getCompagnonLabel(compagnon);
+      if (compagnon) title += title ? " – " : "";
+      if (compagnon) title += getCompagnonLabel(compagnon);
       if (!title) title = "Créneau";
 
       let backgroundColor = "#7A0010";
-      if (poste?.code) {
+      if (poste && poste.code) {
         const code = poste.code.toLowerCase();
         if (code.includes("vb")) backgroundColor = "#0078d4";
         else if (code.includes("c")) backgroundColor = "#107c10";
@@ -226,22 +229,21 @@
   function refreshTable() {
     const table = $("tableCreneaux");
     if (!table) return;
-
     const tbody = table.querySelector("tbody");
     if (!tbody) return;
 
     tbody.innerHTML = "";
 
     state.planningCreneaux.forEach((c) => {
-      const jour = c.expand?.planning_jour;
-      const poste = c.expand?.poste;
-      const compagnon = c.expand?.compagnon_assigne;
+      const jour = c.expand && c.expand.planning_jour;
+      const poste = c.expand && c.expand.poste;
+      const compagnon = c.expand && c.expand.compagnon_assigne;
+
+      const tr = document.createElement("tr");
 
       const dispoCount = state.planningDisponibilites.filter(
         (d) => d.planning_creneau === c.id
       ).length;
-
-      const tr = document.createElement("tr");
 
       tr.innerHTML = `
         <td>${getJourLabel(jour)}</td>
@@ -269,9 +271,9 @@
 
     state.currentCreneauId = creneauId;
 
-    const jour = c.expand?.planning_jour;
-    const poste = c.expand?.poste;
-    const compagnon = c.expand?.compagnon_assigne;
+    const jour = c.expand && c.expand.planning_jour;
+    const poste = c.expand && c.expand.poste;
+    const compagnon = c.expand && c.expand.compagnon_assigne;
 
     $("fieldJour").textContent = getJourLabel(jour);
     $("fieldHeure").textContent = `${formatHeure(c.heure_debut)} – ${formatHeure(c.heure_fin)}`;
@@ -290,12 +292,12 @@
 
       dispoForCreneau
         .sort((a, b) => {
-          const ca = a.expand?.compagnon;
-          const cb = b.expand?.compagnon;
+          const ca = a.expand && a.expand.compagnon;
+          const cb = b.expand && b.expand.compagnon;
           return getCompagnonLabel(ca).localeCompare(getCompagnonLabel(cb));
         })
         .forEach((d) => {
-          const comp = d.expand?.compagnon;
+          const comp = d.expand && d.expand.compagnon;
 
           const li = document.createElement("li");
           li.className = "side-list-item";
@@ -368,7 +370,7 @@
     state.currentPlanningEventId = planningEventId;
 
     const pe = findById(state.planningEvents, planningEventId);
-    setStatusBadge(pe?.etat || "edition");
+    setStatusBadge(pe ? pe.etat : "edition");
 
     await reloadPlanning();
   }
@@ -376,13 +378,11 @@
   async function reloadPlanning() {
     if (!state.currentPlanningEventId) {
       calendar.removeAllEvents();
-
       const table = $("tableCreneaux");
       if (table) {
         const tbody = table.querySelector("tbody");
         if (tbody) tbody.innerHTML = "";
       }
-
       state.currentCreneauId = null;
       return;
     }
@@ -398,7 +398,9 @@
     }
   }
 
-  const onCreneauSelected = (id) => refreshSidePanel(id);
+  async function onCreneauSelected(creneauId) {
+    refreshSidePanel(creneauId);
+  }
 
   async function setPlanningFinalise() {
     if (!state.currentPlanningEventId) return;
@@ -503,6 +505,7 @@
     }
 
     const compId = select.value;
+
     if (!compId) {
       alert("Choisis un compagnon.");
       return;
@@ -524,4 +527,88 @@
   }
 
   async function clearCreneau() {
-    if (!
+    if (!state.currentCreneauId) return;
+
+    if (!confirm("Libérer ce créneau ?")) return;
+
+    await pb.collection("planning_creneaux").update(state.currentCreneauId, {
+      compagnon_assigne: null,
+      etat: "disponible",
+    });
+
+    await reloadPlanning();
+    onCreneauSelected(state.currentCreneauId);
+  }
+
+  async function deleteCreneau() {
+    if (!state.currentCreneauId) return;
+
+    if (!confirm("Supprimer ce créneau ?")) return;
+
+    await pb.collection("planning_creneaux").delete(state.currentCreneauId);
+
+    await reloadPlanning();
+  }
+
+  async function editCreneau() {
+    if (!state.currentCreneauId) {
+      alert("Sélectionne un créneau.");
+      return;
+    }
+
+    const c = findById(state.planningCreneaux, state.currentCreneauId);
+    if (!c) return;
+
+    const newDebut = prompt("Nouvelle heure début (HH:MM) :", c.heure_debut || "18:00");
+    if (!newDebut) return;
+
+    const newFin = prompt("Nouvelle heure fin (HH:MM) :", c.heure_fin || "21:00");
+    if (!newFin) return;
+
+    await pb.collection("planning_creneaux").update(c.id, {
+      heure_debut: newDebut,
+      heure_fin: newFin,
+    });
+
+    await reloadPlanning();
+    onCreneauSelected(c.id);
+  }
+
+  // -----------------------------
+  // INIT
+  // -----------------------------
+  async function init() {
+    try {
+      await loadManifestations();
+      await loadPlanningEvents();
+      await loadCompanions();
+      await reloadPlanning();
+    } catch (e) {
+      console.error("Erreur init admin-evenement-public-planning :", e);
+      alert("Erreur lors du chargement du planning.");
+    }
+  }
+
+  // -----------------------------
+  // EXPORT API
+  // -----------------------------
+  window.adminPlanning = {
+    ...window.adminPlanning,
+    init,
+    onManifestationChange,
+    onPlanningEventChange,
+    onCreneauSelected,
+    setPlanningFinalise,
+    setPlanningEdition,
+    addJour,
+    addCreneau,
+    assignCompagnon,
+    clearCreneau,
+    deleteCreneau,
+    editCreneau,
+    calendar,
+  };
+
+  // Lancer l'init immédiatement (le DOM et le calendrier sont déjà prêts)
+  init();
+})();

@@ -4,10 +4,7 @@
     <meta charset="UTF-8">
     <title>Créneaux du jour – Admin</title>
     <link rel="icon" type="image/png" href="../favicon.png">
-
-    <!-- PocketBase centralisé -->
-    <script src="../js/pocketbase.umd.js"></script>
-    <script src="../js/hebergement_pb.js"></script>
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
@@ -135,12 +132,12 @@
 </div>
 
 <script>
-const pb = new PocketBase(window.PB_URL);
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
 const eventId = new URLSearchParams(window.location.search).get("event");
 const jourId = new URLSearchParams(window.location.search).get("jour");
 
-/* Sécurité */
+/* 🔐 Sécurité */
 const user = pb.authStore.model;
 
 if (!user) {

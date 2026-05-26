@@ -4,10 +4,7 @@
     <meta charset="UTF-8">
     <title>Planning – Admin</title>
     <link rel="icon" type="image/png" href="../favicon.png">
-
-    <!-- PocketBase centralisé -->
-    <script src="../js/pocketbase.umd.js"></script>
-    <script src="../js/hebergement_pb.js"></script>
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
@@ -159,7 +156,7 @@
 </div>
 
 <script>
-const pb = new PocketBase(window.PB_URL);
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
 const eventId = new URLSearchParams(window.location.search).get("event");
 let jourSelectionne = null;
@@ -251,6 +248,51 @@ async function voirCreneaux(jourId, date) {
 
                 <td>
                     <a class="btn" href="admin-evenement-public-creneau-modifier.html?id=${c.id}&jour=${jourId}&event=${eventId}">Modifier</a>
+                    <button class="btn" onclick="dupliquerCreneau('${c.id}')">Dupliquer</button>
+                    <button class="btn btn-red" onclick="supprimerCreneau('${c.id}')">Supprimer</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+/* Voir les créneaux d’un jour */
+async function voirCreneaux(jourId, date) {
+    jourSelectionne = jourId;
+
+    document.getElementById("titreJour").textContent = formatDateFr(date);
+    document.getElementById("creneauxSection").style.display = "block";
+
+    const creneaux = await pb.collection("planning_creneaux").getFullList({
+        filter: `planning_jour = "${jourId}"`,
+        expand: "poste,compagnon_assigne",
+        sort: "heure_debut"
+    });
+
+    const tbody = document.getElementById("creneauxTable");
+    tbody.innerHTML = "";
+
+    creneaux.forEach(c => {
+        const assign = c.expand?.compagnon_assigne
+            ? c.expand.companon_assigne.nom + " " + c.expand.companon_assigne.prenom
+            : "—";
+
+        const posteTitre = c.expand?.poste?.titre || "—";
+
+        tbody.innerHTML += `
+            <tr>
+                <td>${c.heure_debut} → ${c.heure_fin}</td>
+
+                <td>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span>${posteTitre}</span>
+                    </div>
+                </td>
+
+                <td>${assign}</td>
+
+                <td>
+                    <a class="btn" href="admin-evenement-public-creneau-modifier.html?id=${c.id}&event=${eventId}">Modifier</a>
                     <button class="btn" onclick="dupliquerCreneau('${c.id}')">Dupliquer</button>
                     <button class="btn btn-red" onclick="supprimerCreneau('${c.id}')">Supprimer</button>
                 </td>

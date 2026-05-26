@@ -5,10 +5,7 @@
     <title>Inscription à l'événement</title>
 
     <link rel="icon" type="image/png" href="favicon.png">
-
-    <!-- ⭐ PocketBase centralisé -->
-    <script src="js/pocketbase.umd.js"></script>
-    <script src="js/hebergement_pb.js"></script>
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
@@ -129,11 +126,10 @@
 
 </div>
 
-<!-- Script métier -->
 <script src="js/inscription.js"></script>
 
 <script>
-    const pb = new PocketBase(window.PB_URL);
+    // pb est déjà déclaré dans inscription.js
 
     const urlParams = new URLSearchParams(window.location.search);
     const eventId = urlParams.get("id");
@@ -141,6 +137,7 @@
     document.getElementById("backBtn").href =
         "public-manifestation-details.html?id=" + eventId;
 
+    // Charger le titre de l'événement
     async function chargerTitre() {
         const ev = await pb.collection("planning_events").getOne(eventId, {
             requestKey: null
@@ -148,6 +145,7 @@
         document.getElementById("eventTitle").textContent = ev.titre;
     }
 
+    // Charger les jours (triés par date + affichage FR)
     async function chargerJours() {
         const jours = await pb.collection("planning_jours").getFullList({
             filter: `planning_event = "${eventId}"`,
@@ -175,8 +173,10 @@
         });
     }
 
+    // Mémoire locale des créneaux
     let creneauxParJour = [];
 
+    // Charger les créneaux du jour sélectionné
     async function chargerCreneaux() {
         const jourId = document.getElementById("jour").value;
         if (!jourId) return;
@@ -187,6 +187,7 @@
             requestKey: null
         });
 
+        // Déduplication + regroupement par créneau
         const uniques = {};
         creneaux.forEach(c => {
             const key = c.heure_debut + "|" + c.heure_fin;
@@ -218,6 +219,7 @@
         chargerPostesPourCreneau();
     }
 
+    // Quand on change de créneau → mettre à jour les postes
     document.getElementById("creneau").addEventListener("change", chargerPostesPourCreneau);
 
     async function chargerPostesPourCreneau() {
@@ -227,6 +229,7 @@
         const creneau = creneauxParJour.find(c => c.id === creneauId);
         if (!creneau) return;
 
+        // Construire un filtre OR pour PocketBase
         const conditions = creneau.postes.map(id => `id = "${id}"`).join(" || ");
 
         const postes = await pb.collection("planning_postes").getFullList({
@@ -246,8 +249,10 @@
         });
     }
 
+    // Quand on change de jour → recharger les créneaux
     document.getElementById("jour").addEventListener("change", chargerCreneaux);
 
+    // Charger tout dans le bon ordre
     (async () => {
         await chargerTitre();
         await chargerJours();

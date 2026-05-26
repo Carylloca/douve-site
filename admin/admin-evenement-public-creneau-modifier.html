@@ -4,10 +4,7 @@
     <meta charset="UTF-8">
     <title>Modifier un créneau – Admin</title>
     <link rel="icon" type="image/png" href="../favicon.png">
-
-    <!-- PocketBase centralisé -->
-    <script src="../js/pocketbase.umd.js"></script>
-    <script src="../js/hebergement_pb.js"></script>
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
@@ -191,12 +188,12 @@
 </div>
 
 <script>
-const pb = new PocketBase(window.PB_URL);
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
 const params = new URLSearchParams(window.location.search);
 const eventId = params.get("event");
 const creneauId = params.get("id");
-const jourId = params.get("jour");
+const jourId = params.get("jour");   // ⭐ NOUVEAU : identifiant du jour
 
 let creneauOriginal = null;
 

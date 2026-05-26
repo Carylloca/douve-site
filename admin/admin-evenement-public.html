@@ -5,10 +5,7 @@
     <title>Gestion des événements publics – Admin</title>
 
     <link rel="icon" type="image/png" href="../favicon.png">
-
-    <!-- PocketBase centralisé -->
-    <script src="../js/pocketbase.umd.js"></script>
-    <script src="../js/hebergement_pb.js"></script>
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
         body {
@@ -134,7 +131,7 @@
 </div>
 
 <script>
-const pb = new PocketBase(window.PB_URL);
+const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
 async function loadEvenements() {
     try {
@@ -149,6 +146,7 @@ async function loadEvenements() {
         evenements.forEach(ev => {
             const tr = document.createElement("tr");
 
+            // Responsables multiples
             let responsables = "—";
             if (Array.isArray(ev.expand?.responsable)) {
                 responsables = ev.expand.responsable

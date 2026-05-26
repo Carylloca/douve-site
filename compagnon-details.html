@@ -8,16 +8,6 @@
     <!-- jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-   <!-- 1) PocketBase -->
-<script src="../js/pocketbase.umd.js"></script>
-
-<!-- 2) Configuration de l’hébergement PocketBase -->
-<script src="../js/hebergement_pb.js"></script>
-
-<!-- 3) Authentification (restaure la session, charge les cookies) -->
-<script src="../js/auth.js"></script>
-
-
     <style>
         body {
             margin: 0;
@@ -42,6 +32,7 @@
             text-shadow: 0 0 10px black;
         }
 
+        /* BOUTONS EN HAUT */
         .top-buttons {
             text-align: center;
             margin-bottom: 25px;
@@ -69,6 +60,7 @@
             background: #7a0000;
         }
 
+        /* BLOC RÉDUIT À 50% */
         .card {
             width: 50%;
             margin: 0 auto;
@@ -89,6 +81,7 @@
             color: #7A0010;
         }
 
+        /* PHOTO */
         .photo {
             width: 208px;
             height: 208px;
@@ -110,6 +103,7 @@
 
         <h1>Détails du compagnon</h1>
 
+        <!-- BOUTONS EN HAUT -->
         <div class="top-buttons">
             <a href="index.html" class="btn">Menu</a>
             <a href="liste-compagnons.html" class="btn">← Retour</a>
@@ -124,7 +118,12 @@
 
     </div>
 
+    <!-- PocketBase -->
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
     <script>
+        const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+
         if (!pb.authStore.isValid) {
             window.location.href = "login.html";
         }
@@ -134,6 +133,7 @@
 
         let compagnonData = null;
 
+        /* FORMATAGE DATE COMPATIBLE AVEC "YYYY-MM-DD HH:MM:SS" */
         function formatDate(d) {
             if (!d) return "";
             const onlyDate = d.split(" ")[0];
@@ -156,6 +156,7 @@
                 document.getElementById("details").innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:30px;">
 
+                        <!-- TEXTE -->
                         <div style="flex:1;">
                             <div class="row"><span class="label">Nom :</span> ${c.nom}</div>
                             <div class="row"><span class="label">Prénom :</span> ${c.prenom}</div>
@@ -179,6 +180,7 @@
                             <div class="row"><span class="label">Email professionnel :</span> ${c.email_prof || ""}</div>
                         </div>
 
+                        <!-- PHOTO + BOUTON ADMIN -->
                         <div class="photo-container">
                             ${photoHTML}
                             <div id="photoBtnContainer"></div>

@@ -5,10 +5,6 @@
     <title>Ajouter un compagnon</title>
     <link rel="icon" type="image/png" href="../favicon.png">
 
-    <!-- PocketBase centralisé -->
-    <script src="../js/pocketbase.umd.js"></script>
-    <script src="../js/hebergement_pb.js"></script>
-
     <style>
         body {
             margin: 0;
@@ -292,13 +288,14 @@
     </div>
 </div>
 
+<!-- PocketBase -->
+<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
 <!-- Auth -->
 <script src="../js/auth.js"></script>
 
 <script>
     requireComite();
-
-    const pb = new PocketBase(window.PB_URL);
 
     document.getElementById("photoInput").addEventListener("change", function () {
         const file = this.files[0];
@@ -356,11 +353,6 @@
             console.error(err);
             alert("Erreur lors de la création du compagnon.");
         }
-    }
-
-    function logout() {
-        pb.authStore.clear();
-        window.location.href = "../index.html";
     }
 </script>
 

@@ -4,15 +4,7 @@
   <meta charset="UTF-8">
   <title>Modifier le mot de passe</title>
   <link rel="icon" type="image/png" href="favicon.png">
-
-  <!-- ⭐ PocketBase centralisé -->
-  <script src="js/pocketbase.umd.js"></script>
-  <script src="js/hebergement_pb.js"></script>
-
-  <!-- ⭐ Initialisation PocketBase -->
-  <script>
-    const pb = new PocketBase(window.PB_URL);
-  </script>
+  <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
   <style>
     body {
@@ -89,6 +81,7 @@
   </div>
 
   <script>
+    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
     const msg = document.getElementById("message");
 
     if (!pb.authStore.isValid || !pb.authStore.model) {
@@ -124,7 +117,7 @@
 
       try {
         const user = pb.authStore.model;
-        const collectionName = user.collectionName;
+        const collectionName = user.collectionName; // "users" ou "companions"
 
         // Ré-authentifier
         await pb.collection(collectionName).authWithPassword(user.email, currentPassword);
@@ -153,6 +146,7 @@
 
       } catch (err) {
         console.error("Erreur PocketBase :", err);
+        console.error("Détails :", err.data);
         msg.style.color = "#ffdddd";
         msg.textContent = "Erreur : vérifiez l'ancien mot de passe ou les champs requis.";
       }
