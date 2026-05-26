@@ -5,8 +5,20 @@
     <title>Inscription</title>
 
     <link rel="icon" type="image/png" href="favicon.png">
+
+    <!-- ⭐ URL PocketBase centralisée -->
+    <script src="js/hebergement_pb.js"></script>
+
+    <!-- PocketBase -->
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <!-- Auth -->
     <script src="js/auth.js"></script>
+
+    <!-- ⭐ Initialisation PocketBase -->
+    <script>
+        const pb = new PocketBase(window.PB_URL);
+    </script>
 
     <style>
         body {
