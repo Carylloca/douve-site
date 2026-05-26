@@ -137,7 +137,7 @@ const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 const eventId = new URLSearchParams(window.location.search).get("event");
 const jourId = new URLSearchParams(window.location.search).get("jour");
 
-/* 🔐 Sécurité */
+/* Sécurité */
 const user = pb.authStore.model;
 
 if (!user) {
