@@ -12,6 +12,10 @@
     <!-- SheetJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
+    <!-- PocketBase centralisé -->
+    <script src="../js/pocketbase.umd.js"></script>
+    <script src="../js/hebergement_pb.js"></script>
+
     <style>
         body {
             margin: 0;
@@ -130,11 +134,7 @@
 <div class="header">
     <div class="header-left">
         <a href="../index.html" class="btn">🏠 Menu</a>
-
-        <!-- ⭐ Nouveau bouton demandé -->
         <a href="admin-menu.html" class="btn">📋 Menu admin</a>
-
-        <!-- ⭐ Renommage du bouton existant -->
         <a href="admin-manifestations.html" class="btn">↩ Retour à Gestion</a>
     </div>
 
@@ -169,12 +169,13 @@
     </table>
 </div>
 
-<!-- PocketBase -->
-<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+<!-- Auth -->
 <script src="../js/auth.js"></script>
 
 <script>
     requireComite();
+
+    const pb = new PocketBase(window.PB_URL);
 
     let manifestation = null;
     let inscrits = [];
