@@ -10,11 +10,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <!-- ⭐ URL PocketBase centralisée -->
+    <!-- ⭐ PocketBase centralisé -->
+    <script src="js/pocketbase.umd.js"></script>
     <script src="js/hebergement_pb.js"></script>
-
-    <!-- PocketBase -->
-    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <!-- ⭐ Initialisation PocketBase -->
     <script>
@@ -169,7 +167,6 @@
             document.getElementById("manifestTitle").textContent = manifest.title;
 
             const user = pb.authStore.model;
-
             const userEmail = (user.email || "").trim().toLowerCase();
 
             let isResponsable = false;
