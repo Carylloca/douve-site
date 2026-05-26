@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <title>Détails de la manifestation</title>
 
+    <!-- ⭐ URL PocketBase centralisée -->
+    <script src="js/hebergement_pb.js"></script>
+
+    <!-- PocketBase -->
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <!-- Auth -->
+    <script src="js/auth.js"></script>
+
+    <!-- ⭐ Initialisation PocketBase -->
+    <script>
+        const pb = new PocketBase(window.PB_URL);
+    </script>
+
     <style>
         body {
             margin: 0;
@@ -110,15 +124,7 @@
 
 </div>
 
-<!-- PocketBase -->
-<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
-
-<!-- Auth -->
-<script src="js/auth.js"></script>
-
 <script>
-    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
-
     if (!isLoggedIn()) {
         window.location.href = "login.html";
     }
@@ -131,7 +137,6 @@
     let manifestation = null;
     let inscrits = [];
 
-    /* --- Format date + heure --- */
     function formatDateTime(dt) {
         if (!dt) return "-";
         const [date, time] = dt.split(" ");
@@ -150,12 +155,10 @@
             document.getElementById("description").textContent = manifestation.description || "-";
             document.getElementById("limite").textContent = manifestation.date_limite || "-";
 
-            // Responsables
             const resp = manifestation.expand?.responsables || [];
             document.getElementById("responsables").innerHTML =
                 resp.map(r => `${r.nom} ${r.prenom} (${r.initiales})`).join("<br>");
 
-            // Charger inscrits
             inscrits = await pb.collection("inscrits").getFullList({
                 filter: `manifestation = "${id}"`,
                 expand: "companion"
@@ -171,15 +174,12 @@
         }
     }
 
-    /* --- Compteur dynamique --- */
     function afficherCompteur() {
         const total = inscrits.length;
         const max = manifestation.places_max || "∞";
-
         document.getElementById("compteur").textContent = `${total} / ${max}`;
     }
 
-    /* --- Liste des inscrits --- */
     function afficherListeInscrits() {
         const container = document.getElementById("listeInscrits");
 
@@ -200,7 +200,6 @@
         container.innerHTML = html;
     }
 
-    /* --- Bouton contacter responsables --- */
     function contacterResponsables() {
         const resp = manifestation.expand?.responsables || [];
 
@@ -216,7 +215,6 @@
         window.location.href = `mailto:${emails}?subject=${subject}&body=${body}`;
     }
 
-    /* --- Gestion inscription / désinscription --- */
     function updateActions() {
         const actions = document.getElementById("actions");
         actions.innerHTML = "";
@@ -281,7 +279,6 @@
         }
     }
 
-    /* --- Format nom fichier --- */
     function formatFileName() {
         const cleanTitle = manifestation.title
             .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -290,7 +287,6 @@
         return `${cleanTitle}_${manifestation.date.replace(" ", "_")}`;
     }
 
-    /* --- Export PDF --- */
     function exportPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
@@ -319,7 +315,6 @@
         doc.save(formatFileName() + ".pdf");
     }
 
-    /* --- Export Excel --- */
     function exportExcel() {
         const data = inscrits.map(i => {
             const c = i.expand?.companion;
