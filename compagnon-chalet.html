@@ -10,8 +10,16 @@
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
+    <!-- ⭐ URL PocketBase centralisée -->
+    <script src="../js/hebergement_pb.js"></script>
+
     <!-- PocketBase -->
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <!-- ⭐ Initialisation PocketBase -->
+    <script>
+        const pb = new PocketBase(window.PB_URL);
+    </script>
 
     <style>
         body {
@@ -155,7 +163,6 @@
             margin-right: 4px;
         }
 
-        /* Légendes */
         .legend-container {
             display: flex;
             gap: 15px;
@@ -206,12 +213,10 @@
 
     <div class="panel">
 
-        <!-- FILTRE -->
         <div class="filter-box">
             <button id="filterBtn" class="filter-toggle">Afficher uniquement mes réservations</button>
         </div>
 
-        <!-- LÉGENDES -->
         <div class="legend-container">
 
             <div class="legend-box">
@@ -257,8 +262,6 @@
 </div>
 
 <script>
-const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
-
 let currentUser = null;
 let reservationsList = [];
 let filterMineOnly = false;
