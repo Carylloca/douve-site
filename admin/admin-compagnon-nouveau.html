@@ -297,6 +297,8 @@
 <script>
     requireComite();
 
+    const pb = new PocketBase(window.PB_URL);
+
     document.getElementById("photoInput").addEventListener("change", function () {
         const file = this.files[0];
         const preview = document.getElementById("photoPreview");
@@ -353,6 +355,11 @@
             console.error(err);
             alert("Erreur lors de la création du compagnon.");
         }
+    }
+
+    function logout() {
+        pb.authStore.clear();
+        window.location.href = "../index.html";
     }
 </script>
 
