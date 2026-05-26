@@ -129,7 +129,7 @@ function formatDate(d) {
 
 async function loadDashboard() {
     const events = await pb.collection("planning_events").getFullList({
-        expand: "responsable",   // ⭐ correspond EXACTEMENT à ta base
+        expand: "responsable",
         sort: "date_debut"
     });
 
@@ -143,7 +143,6 @@ async function loadDashboard() {
 
     events.forEach(ev => {
 
-        // ⭐ correspond EXACTEMENT à ta base
         const responsables = Array.isArray(ev.expand?.responsable)
             ? ev.expand.responsable.map(r => r.nom + " " + r.prenom).join(", ")
             : "—";
@@ -157,8 +156,6 @@ async function loadDashboard() {
                 <strong>Responsables :</strong> ${responsables}<br>
                 <strong>Du :</strong> ${formatDate(ev.date_debut)}  
                 <strong>au :</strong> ${formatDate(ev.date_fin)}<br>
-
-                <!-- ⭐ correspond EXACTEMENT à ta base -->
                 <strong>Description :</strong> ${ev.description || "—"}
             </div>
 
@@ -166,7 +163,6 @@ async function loadDashboard() {
                 <a class="btn btn-small" href="admin-evenement-public-modifier.html?id=${ev.id}">Modifier</a>
                 <a class="btn btn-small" href="admin-evenement-public-postes.html?event=${ev.id}">Postes</a>
                 <a class="btn btn-small" href="admin-evenement-public-planning.html?event=${ev.id}">Planning</a>
-
             </div>
         `;
 
