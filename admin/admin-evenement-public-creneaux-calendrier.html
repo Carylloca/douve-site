@@ -49,7 +49,6 @@
             font-weight: 600;
         }
 
-        /* ⭐ Conteneur du bouton sous le header */
         .top-actions {
             max-width: 1100px;
             margin: 15px auto 0 auto;
@@ -92,7 +91,6 @@
     <h1>Calendrier des créneaux</h1>
 </header>
 
-<!-- ⭐ Bouton sous le header -->
 <div class="top-actions">
     <a id="btnNewCreneau" class="btn">+ Nouveau créneau</a>
 </div>
@@ -104,7 +102,7 @@ const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
 const eventId = new URLSearchParams(window.location.search).get("event");
 
-/* 🔐 Sécurité */
+/* Sécurité */
 const user = pb.authStore.model;
 
 if (!user) {
@@ -123,7 +121,6 @@ document.getElementById("retourEvent").href =
 document.getElementById("retourJours").href =
     "admin-evenement-public-jours.html?event=" + eventId;
 
-/* ⭐ Nouveau créneau → renvoie vers la page des jours */
 document.getElementById("btnNewCreneau").href =
     "admin-evenement-public-jours.html?event=" + eventId;
 
@@ -139,7 +136,7 @@ function colorFromString(str) {
     return "#" + "00000".substring(0, 6 - c.length) + c;
 }
 
-/* Charger tous les créneaux de l’événement */
+/* Charger tous les créneaux */
 async function loadCreneaux() {
     const jours = await pb.collection("planning_jours").getFullList({
         filter: `manifestation = "${eventId}"`,
