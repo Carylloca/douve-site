@@ -5,6 +5,9 @@
     <title>Détails de l'événement public</title>
 
     <link rel="icon" type="image/png" href="favicon.png">
+
+    <!-- PocketBase + config -->
+    <script src="js/hebergement_pb.js"></script>
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
     <style>
@@ -89,7 +92,7 @@
 </div>
 
 <script>
-    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
+    const pb = new PocketBase(window.PB_URL);
 
     // 🔒 Protection d’accès
     if (!pb.authStore.isValid) {
