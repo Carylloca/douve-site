@@ -4,26 +4,26 @@
     <meta charset="UTF-8">
     <title>Chalet – Espace Compagnon</title>
 
-    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="icon" type="image/png" href="favicon.png">
 
     <!-- FullCalendar -->
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
 
     <!-- 1) PocketBase -->
-<script src="../js/pocketbase.umd.js"></script>
+    <script src="js/pocketbase.umd.js"></script>
 
-<!-- 2) Configuration de l’hébergement PocketBase -->
-<script src="../js/hebergement_pb.js"></script>
+    <!-- 2) Configuration PocketBase -->
+    <script src="js/hebergement_pb.js"></script>
 
-<!-- 3) Authentification (restaure la session, charge les cookies) -->
-<script src="../js/auth.js"></script>
+    <!-- 3) Authentification -->
+    <script src="js/auth.js"></script>
 
     <style>
         body {
             font-family: Arial;
             margin: 0;
-            background: url("../img/page-compagnon-chalet.jpg") no-repeat center center fixed;
+            background: url("img/page-compagnon-chalet.jpg") no-repeat center center fixed;
             background-size: cover;
         }
 
@@ -136,10 +136,6 @@
             font-size: 18px;
         }
 
-        th.type-col {
-            font-size: 16px !important;
-        }
-
         td {
             padding: 10px;
             border-bottom: 1px solid #ddd;
@@ -160,47 +156,13 @@
             border-radius: 50%;
             margin-right: 4px;
         }
-
-        .legend-container {
-            display: flex;
-            gap: 15px;
-            font-size: 12px;
-            margin-bottom: 15px;
-        }
-
-        .legend-box {
-            background: #f7f7f7;
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            flex: 1;
-        }
-
-        .legend-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4px 10px;
-        }
-
-        @media (max-width: 900px) {
-            .layout {
-                flex-direction: column;
-                align-items: center;
-            }
-            #calendar, .panel {
-                width: 90%;
-            }
-            .legend-container {
-                flex-direction: column;
-            }
-        }
     </style>
 </head>
 
 <body>
 
 <header>
-    <a class="btn" href="../index.html">Menu</a>
+    <a class="btn" href="index.html">Menu</a>
     <h1>Réservations du Chalet – Espace Compagnon</h1>
     <button class="btn" onclick="logout()">⏻ Déconnexion</button>
 </header>
@@ -213,32 +175,6 @@
 
         <div class="filter-box">
             <button id="filterBtn" class="filter-toggle">Afficher uniquement mes réservations</button>
-        </div>
-
-        <div class="legend-container">
-
-            <div class="legend-box">
-                <strong>Statuts :</strong><br><br>
-                <div class="legend-grid">
-                    <div><span class="status-dot" style="background:#1E90FF;"></span> En cours</div>
-                    <div><span class="status-dot" style="background:#32CD32;"></span> Confirmée</div>
-                    <div><span class="status-dot" style="background:#8B4513;"></span> Terminée</div>
-                    <div><span class="status-dot" style="background:#B22222;"></span> Annulée</div>
-                </div>
-            </div>
-
-            <div class="legend-box">
-                <strong>Types :</strong><br><br>
-                <div class="legend-grid">
-                    <div>🍷🍽️ Repas</div>
-                    <div>👤 Interne</div>
-                    <div>🧹 Nettoyage</div>
-                    <div>🧑‍🤝‍🧑 Frairie</div>
-                    <div>↗️ Externe</div>
-                    <div>🛠️ Travaux</div>
-                </div>
-            </div>
-
         </div>
 
         <h3>Liste des réservations</h3>
@@ -282,7 +218,7 @@ const typeIcons = {
 
 function logout() {
     pb.authStore.clear();
-    window.location.href = "../index.html";
+    window.location.href = "index.html";
 }
 
 function formatDate(d) {
@@ -294,7 +230,7 @@ async function init() {
 
     if (!currentUser) {
         alert("Veuillez vous connecter.");
-        window.location.href = "../login.html";
+        window.location.href = "login.html";
         return;
     }
 
@@ -316,23 +252,12 @@ async function loadReservations() {
         status: r.status,
         startDate: r.startDate,
         endDate: r.endDate,
-        description: r.description,
+        description: r.description || "",
         companionId: r.expand?.compagnon?.id,
         companionName: r.expand?.compagnon
             ? r.expand.compagnon.nom + " " + r.expand.compagnon.prenom
-            : null
+            : "-"
     }));
-
-    const today = new Date().toISOString().substring(0, 10);
-
-    for (const r of reservationsList) {
-        if (r.endDate < today && r.status !== "annulée" && r.status !== "terminée") {
-            await pb.collection("chalet_reservations").update(r.id, {
-                status: "terminée"
-            });
-            r.status = "terminée";
-        }
-    }
 
     reservationsList.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 }
@@ -362,18 +287,9 @@ function populateTable() {
     }
 
     list.forEach(r => {
-        const shortDesc = r.description
-            ? r.description.substring(0, 80) + (r.description.length > 80 ? "…" : "")
-            : "-";
+        const shortDesc = r.description.substring(0, 80) + (r.description.length > 80 ? "…" : "");
 
         const tr = document.createElement("tr");
-
-        if (r.companionId === currentUser.id) {
-            tr.onclick = () => {
-                window.location.href = "compagnon-chalet-edit.html?id=" + r.id;
-            };
-            tr.style.cursor = "pointer";
-        }
 
         tr.innerHTML = `
             <td class="desc-col">
@@ -382,7 +298,7 @@ function populateTable() {
                 ${shortDesc}
             </td>
             <td class="type-col">${typeIcons[r.type] || ""}</td>
-            <td>${r.companionName || "-"}</td>
+            <td>${r.companionName}</td>
             <td class="date-col">${formatDate(r.startDate)}</td>
             <td class="date-col">${formatDate(r.endDate)}</td>
         `;
@@ -400,20 +316,25 @@ function loadCalendar() {
         list = list.filter(r => r.companionId === currentUser.id);
     }
 
+    const events = list.map(r => {
+        const desc = r.description || "";
+        const short = desc.substring(0, 40) + (desc.length > 40 ? "…" : "");
+
+        return {
+            id: r.id,
+            title: `${typeIcons[r.type] || ""} ${short}`,
+            start: r.startDate,
+            end: r.endDate,
+            backgroundColor: statusColors[r.status] || "#555"
+        };
+    });
+
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: "dayGridMonth",
         locale: "fr",
         height: 450,
         displayEventTime: false,
-        events: list.map(r => ({
-            id: r.id,
-            title: `${typeIcons[r.type] || ""} ` +
-                   r.description.substring(0, 40) +
-                   (r.description.length > 40 ? "…" : ""),
-            start: r.startDate,
-            end: r.endDate,
-            backgroundColor: statusColors[r.status] || "#555"
-        }))
+        events
     });
 
     calendar.render();
