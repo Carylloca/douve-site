@@ -1,13 +1,29 @@
 // ===============================
-//  LOGIN (uniquement companions)
+//  LOGIN (users → companions)
 // ===============================
 async function login(email, password) {
+
+    // 1️⃣ ESSAYER DE CONNECTER COMME ADMIN (collection users)
     try {
-        const auth = await pb.collection("companions").authWithPassword(email, password);
+        const authUser = await pb.collection("users").authWithPassword(email, password);
 
-        console.log("Connecté :", auth);
+        console.log("Connecté comme ADMIN :", authUser);
 
-        // Redirection universelle
+        // Redirection admin
+        window.location.href = "admin/index.html";
+        return true;
+
+    } catch (e) {
+        console.log("Pas un admin, on tente companion…");
+    }
+
+    // 2️⃣ ESSAYER DE CONNECTER COMME COMPANION
+    try {
+        const authComp = await pb.collection("companions").authWithPassword(email, password);
+
+        console.log("Connecté comme COMPANION :", authComp);
+
+        // Redirection compagnon
         window.location.href = "index.html";
         return true;
 
@@ -18,18 +34,16 @@ async function login(email, password) {
 }
 
 // ===============================
-//  LOGOUT (DÉCONNEXION UNIVERSELLE)
+//  LOGOUT
 // ===============================
 function logout() {
     pb.authStore.clear();
     document.cookie = "";
-
-    // Redirection universelle
     window.location.href = "index.html";
 }
 
 // ===============================
-//  OBTENIR L'UTILISATEUR CONNECTÉ
+//  UTILISATEUR CONNECTÉ
 // ===============================
 function getUser() {
     return pb.authStore.model;
