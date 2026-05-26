@@ -8,14 +8,15 @@
     <!-- jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <!-- ⭐ PocketBase centralisé -->
-    <script src="js/pocketbase.umd.js"></script>
-    <script src="js/hebergement_pb.js"></script>
+   <!-- 1) PocketBase -->
+<script src="../js/pocketbase.umd.js"></script>
 
-    <!-- ⭐ Initialisation PocketBase -->
-    <script>
-        const pb = new PocketBase(window.PB_URL);
-    </script>
+<!-- 2) Configuration de l’hébergement PocketBase -->
+<script src="../js/hebergement_pb.js"></script>
+
+<!-- 3) Authentification (restaure la session, charge les cookies) -->
+<script src="../js/auth.js"></script>
+
 
     <style>
         body {
