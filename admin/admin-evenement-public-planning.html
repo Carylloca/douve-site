@@ -18,14 +18,15 @@
 
         header.admin-header {
             background: rgba(44, 62, 80, 0.90);
-            padding: 10px 20px;
+            padding: 18px 25px;
             color: white;
             display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
+            align-items: center; /* centre verticalement */
+            justify-content: space-between; /* espace entre boutons et titre */
+            flex-wrap: nowrap; /* 🔥 empêche le titre de descendre */
             box-shadow: 0 3px 10px rgba(0,0,0,0.4);
         }
+
 
         .header-btn {
             background: #7A0010;
@@ -36,12 +37,11 @@
             font-size: 15px;
         }
 
-        header h1 {
-            width: 100%;
+        header.admin-header h1 {
+            margin: 0;
+            font-size: 24px;
+            flex: 1;
             text-align: center;
-            margin: 10px 0 0 0;
-            font-size: 28px;
-            font-weight: 600;
         }
 
         .card {
