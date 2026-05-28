@@ -132,7 +132,6 @@
     </div>
 
 </div>
-
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
@@ -255,6 +254,13 @@
 
         const user = pb.authStore.model;
 
+        // 🔥 Vérification de l'état de l'événement AVANT l'inscription
+        const ev = await pb.collection("planning_events").getOne(eventId);
+        if (ev.etat !== "edition") {
+            alert("Cet événement n'est plus en édition. Les inscriptions sont fermées.");
+            return;
+        }
+
         const nom = document.getElementById("nom").value.trim();
         const prenom = document.getElementById("prenom").value.trim();
         const jourId = document.getElementById("jour").value;
@@ -263,18 +269,6 @@
         const commentaire = document.getElementById("commentaire").value.trim();
 
         try {
-            console.log("📦 Données envoyées à PB :", {
-    planning_event: eventId,
-    planning_jour: jourId,
-    planning_creneau: creneauId,
-    compagnon: user.id,
-    nom_personne: nom,
-    prenom_personne: prenom,
-    poste_souhaite: posteId,
-    commentaire: commentaire,
-    inscrit_par: user.email || user.id
-});
-
             await pb.collection("planning_disponibilites").create({
                 planning_event: eventId,
                 planning_jour: jourId,
@@ -297,7 +291,6 @@
 
         } catch (err) {
 
-            // 🔥🔥🔥 NOUVEAU CATCH COMPLET 🔥🔥🔥
             console.error("🔥 ERREUR PB COMPLÈTE :", JSON.stringify(err, null, 2));
             console.error("🔥 ERR.DATA :", JSON.stringify(err.data, null, 2));
             console.error("🔥 ERR.RESPONSE :", JSON.stringify(err.response, null, 2));
@@ -314,6 +307,7 @@
         await chargerCreneaux();
     })();
 </script>
+
 
 </body>
 </html>
