@@ -103,6 +103,22 @@
             margin-top: 25px;
             margin-bottom: 10px;
         }
+
+        /* Filtres par postes */
+        #filtrePostes {
+            margin: 10px 0 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        #filtrePostes label {
+            font-size: 14px;
+        }
+
+        .filtre-poste {
+            accent-color: #7A0010;
+        }
     </style>
 </head>
 
@@ -136,6 +152,9 @@
     <div id="creneauxSection" style="display:none;">
         <div class="subtitle" id="titreJour"></div>
 
+        <!-- Filtres par postes -->
+        <div id="filtrePostes"></div>
+
         <div class="top-actions">
             <button class="btn" onclick="ouvrirNouveauCreneau()">+ Nouveau créneau</button>
         </div>
@@ -144,8 +163,9 @@
             <thead>
                 <tr>
                     <th>Heure</th>
-                    <th>Postes</th>
+                    <th>Poste</th>
                     <th>Assigné</th>
+                    <th>Inscrits</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -160,6 +180,8 @@ const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
 const eventId = new URLSearchParams(window.location.search).get("event");
 let jourSelectionne = null;
+let postesFiltres = [];
+let creneauxCourants = [];
 
 /* Sécurité */
 const user = pb.authStore.model;
@@ -224,101 +246,110 @@ async function voirCreneaux(jourId, date) {
         sort: "heure_debut"
     });
 
-    const tbody = document.getElementById("creneauxTable");
-    tbody.innerHTML = "";
+    creneauxCourants = creneaux;
 
-    creneaux.forEach(c => {
-        const assign = c.expand?.compagnon_assigne
-            ? c.expand.companon_assigne.nom + " " + c.expand.companon_assigne.prenom
-            : "—";
+    // Générer les filtres de postes
+    const postes = [...new Set(creneaux.map(c => c.expand?.poste?.titre).filter(Boolean))];
+    const filtreDiv = document.getElementById("filtrePostes");
+    filtreDiv.innerHTML = "";
 
-        const posteTitre = c.expand?.poste?.titre || "—";
+    if (postes.length > 0) {
+        postes.forEach(p => {
+            const id = "poste_" + p.replace(/\W+/g, "_");
+            filtreDiv.innerHTML += `
+                <label for="${id}">
+                    <input type="checkbox" id="${id}" class="filtre-poste" value="${p}" checked>
+                    ${p}
+                </label>
+            `;
+        });
+        postesFiltres = [...postes];
+        document.querySelectorAll(".filtre-poste").forEach(cb => {
+            cb.addEventListener("change", filtrerCreneaux);
+        });
+    } else {
+        filtreDiv.innerHTML = "<em>Aucun poste pour ce jour.</em>";
+        postesFiltres = [];
+    }
 
-        tbody.innerHTML += `
-            <tr>
-                <td>${c.heure_debut} → ${c.heure_fin}</td>
-
-                <td>
-                    <div style="display:flex; flex-direction:column; gap:4px;">
-                        <span>${posteTitre}</span>
-                    </div>
-                </td>
-
-                <td>${assign}</td>
-
-                <td>
-                    <a class="btn" href="admin-evenement-public-creneau-modifier.html?id=${c.id}&jour=${jourId}&event=${eventId}">Modifier</a>
-                    <button class="btn" onclick="dupliquerCreneau('${c.id}')">Dupliquer</button>
-                    <button class="btn btn-red" onclick="supprimerCreneau('${c.id}')">Supprimer</button>
-                </td>
-            </tr>
-        `;
-    });
+    afficherCreneaux();
 }
 
-/* Voir les créneaux d’un jour */
-async function voirCreneaux(jourId, date) {
-    jourSelectionne = jourId;
+/* Met à jour la liste des postes filtrés et réaffiche */
+function filtrerCreneaux() {
+    const cochés = Array.from(document.querySelectorAll(".filtre-poste:checked"))
+        .map(cb => cb.value);
+    postesFiltres = cochés;
+    afficherCreneaux();
+}
 
-    document.getElementById("titreJour").textContent = formatDateFr(date);
-    document.getElementById("creneauxSection").style.display = "block";
-
-    const creneaux = await pb.collection("planning_creneaux").getFullList({
-        filter: `planning_jour = "${jourId}"`,
-        expand: "poste,compagnon_assigne",
-        sort: "heure_debut"
-    });
-
+/* Afficher les créneaux (en tenant compte des filtres) */
+async function afficherCreneaux() {
     const tbody = document.getElementById("creneauxTable");
     tbody.innerHTML = "";
 
-    creneaux.forEach(c => {
+    for (const c of creneauxCourants) {
+        const posteTitre = c.expand?.poste?.titre || "—";
+
+        if (postesFiltres.length > 0 && !postesFiltres.includes(posteTitre)) {
+            continue;
+        }
+
         const assign = c.expand?.compagnon_assigne
             ? c.expand.companon_assigne.nom + " " + c.expand.companon_assigne.prenom
             : "—";
 
-        const posteTitre = c.expand?.poste?.titre || "—";
+        // Nombre de personnes inscrites pour ce créneau
+        let totalInscrits = 0;
+        try {
+            const dispo = await pb.collection("planning_disponibilites").getFullList({
+                filter: `planning_creneau = "${c.id}"`
+            });
+            totalInscrits = dispo.length; // 1 inscription = 1 personne
+        } catch (e) {
+            console.error("Erreur chargement disponibilités pour créneau", c.id, e);
+        }
 
         tbody.innerHTML += `
             <tr>
                 <td>${c.heure_debut} → ${c.heure_fin}</td>
-
-                <td>
-                    <div style="display:flex; flex-direction:column; gap:4px;">
-                        <span>${posteTitre}</span>
-                    </div>
-                </td>
-
+                <td>${posteTitre}</td>
                 <td>${assign}</td>
-
+                <td>${totalInscrits}</td>
                 <td>
-                    <a class="btn" href="admin-evenement-public-creneau-modifier.html?id=${c.id}&event=${eventId}">Modifier</a>
+                    <a class="btn" href="admin-evenement-public-creneau-modifier.html?id=${c.id}&jour=${jourSelectionne}&event=${eventId}">Modifier</a>
                     <button class="btn" onclick="dupliquerCreneau('${c.id}')">Dupliquer</button>
                     <button class="btn btn-red" onclick="supprimerCreneau('${c.id}')">Supprimer</button>
                 </td>
             </tr>
         `;
-    });
+    }
 }
 
 /* Nouveau créneau */
 function ouvrirNouveauCreneau() {
+    if (!jourSelectionne) return;
     window.location.href =
         "admin-evenement-public-creneau-nouveau.html?event=" + eventId +
         "&jour=" + jourSelectionne;
 }
 
-/* Suppression */
+/* Suppression jour */
 async function supprimerJour(id) {
     if (!confirm("Supprimer ce jour ?")) return;
     await pb.collection("planning_jours").delete(id);
     loadJours();
 }
 
+/* Suppression créneau */
 async function supprimerCreneau(id) {
     if (!confirm("Supprimer ce créneau ?")) return;
     await pb.collection("planning_creneaux").delete(id);
-    voirCreneaux(jourSelectionne);
+    if (jourSelectionne) {
+        // On recharge les créneaux du jour courant
+        const jour = await pb.collection("planning_jours").getOne(jourSelectionne);
+        voirCreneaux(jourSelectionne, jour.date);
+    }
 }
 
 /* DUPLIQUER UN CRÉNEAU */
@@ -385,7 +416,8 @@ async function dupliquerCreneau(id) {
         }
 
         alert("Créneau dupliqué !");
-        voirCreneaux(jourId);
+        const jour = await pb.collection("planning_jours").getOne(jourSelectionne);
+        voirCreneaux(jourSelectionne, jour.date);
 
     } catch (error) {
         console.error(error);
