@@ -13,39 +13,42 @@
             background-position: center;
             background-attachment: fixed;
             font-family: Arial, sans-serif;
+            overflow-x: hidden; /* évite tout scroll horizontal */
         }
 
-        /* ⭐ Fond plus sombre */
+        /* ⭐ Fond moins sombre */
         .overlay {
-            background: rgba(0, 0, 0, 0.20); /* avant 0.35 */
+            background: rgba(0, 0, 0, 0.15);
             min-height: 100vh;
             padding: 40px 20px;
         }
 
-        /* ⭐ Header */
+        /* ⭐ Header corrigé */
         header {
             width: 100%;
-            padding: 15px 25px;
+            padding: 10px 15px; /* réduit pour éviter que le bouton sorte */
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(0, 0, 0, 0.55);
+            background: rgba(0, 0, 0, 0.45);
             box-shadow: 0 3px 8px rgba(0,0,0,0.4);
             position: fixed;
             top: 0;
             left: 0;
             z-index: 10;
+            box-sizing: border-box;
         }
 
         .header-left a {
-            margin-right: 15px;
-            padding: 10px 15px;
+            margin-right: 10px;
+            padding: 8px 12px;
             background: #7A0010;
             color: white;
             text-decoration: none;
             border-radius: 5px;
             font-weight: bold;
             box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+            white-space: nowrap;
         }
 
         .header-left a:hover {
@@ -53,13 +56,14 @@
         }
 
         .logout-btn {
-            padding: 10px 15px;
+            padding: 8px 12px;
             background: #444;
             color: white;
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
             border: none;
+            white-space: nowrap;
         }
 
         .logout-btn:hover {
@@ -69,7 +73,7 @@
         h1 {
             text-align: center;
             color: white;
-            margin-top: 120px;
+            margin-top: 110px; /* ajusté pour éviter le scroll */
             margin-bottom: 40px;
             text-shadow: 0 0 10px black;
             font-size: 32px;
@@ -103,7 +107,6 @@
     <header>
         <div class="header-left">
             <a href="../index.html">🏠 Menu</a>
-            <!-- ❌ Bouton Menu admin supprimé -->
         </div>
 
         <button class="logout-btn" onclick="logout()">⏻ Déconnexion</button>
@@ -113,19 +116,11 @@
 
         <h1>Menu Administrateur</h1>
 
-        <!-- ⭐ Activités -->
         <a href="admin-manifestations.html" class="btn">📘 Activités</a>
-
-        <!-- ⭐ Événements publics -->
         <a href="admin-evenement-public-dashboard.html" class="btn">📅 Événements publics</a>
-
-        <!-- ⭐ Gestion du Bon Laron -->
         <a href="admin-chalet-liste.html" class="btn">🧾 Gestion du Bon Laron</a>
-
-        <!-- ⭐ Gestion des compagnons -->
         <a href="admin-compagnons.html" class="btn">👥 Gestion des compagnons</a>
 
-        <!-- ❌ Gestion des postes supprimé -->
     </div>
 
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
