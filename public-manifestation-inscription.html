@@ -17,7 +17,6 @@
             background-attachment: fixed;
         }
 
-        /* Header public harmonisé */
         header {
             height: 70px;
             background: rgba(44, 62, 80, 0.90);
@@ -137,10 +136,8 @@
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
-    // 🔥 Restaure la session PocketBase depuis les cookies
     pb.authStore.loadFromCookie(document.cookie);
 
-    // 🔥 Si pas connecté → redirection
     if (!pb.authStore.isValid || !pb.authStore.model) {
         alert("Vous devez être connecté pour inscrire quelqu'un.");
         window.location.href = "login.html";
@@ -152,13 +149,11 @@
     document.getElementById("backBtn").href =
         "public-manifestation-details.html?id=" + eventId;
 
-    /* Charger le titre */
     async function chargerTitre() {
         const ev = await pb.collection("planning_events").getOne(eventId);
         document.getElementById("eventTitle").textContent = ev.titre;
     }
 
-    /* Charger les jours */
     async function chargerJours() {
         const jours = await pb.collection("planning_jours").getFullList({
             filter: `planning_event = "${eventId}"`,
@@ -186,7 +181,6 @@
 
     let creneauxParJour = [];
 
-    /* Charger les créneaux */
     async function chargerCreneaux() {
         const jourId = document.getElementById("jour").value;
         if (!jourId) return;
@@ -227,7 +221,6 @@
 
     document.getElementById("creneau").addEventListener("change", chargerPostesPourCreneau);
 
-    /* Charger les postes */
     async function chargerPostesPourCreneau() {
         const creneauId = document.getElementById("creneau").value;
         if (!creneauId) return;
@@ -257,16 +250,10 @@
 
     document.getElementById("jour").addEventListener("change", chargerCreneaux);
 
-    /* INSCRIPTION */
     async function inscrirePersonne(e) {
         e.preventDefault();
 
         const user = pb.authStore.model;
-
-        if (!user) {
-            alert("Vous devez être connecté pour inscrire quelqu'un.");
-            return;
-        }
 
         const nom = document.getElementById("nom").value.trim();
         const prenom = document.getElementById("prenom").value.trim();
@@ -280,17 +267,11 @@
                 planning_event: eventId,
                 planning_jour: jourId,
                 planning_creneau: creneauId,
-
-                // ID du compagnon connecté
                 compagnon: user.id,
-
-                // Personne inscrite (lui-même ou quelqu’un d’autre)
                 nom_personne: nom,
                 prenom_personne: prenom,
-
                 poste_souhaite: posteId,
                 commentaire: commentaire,
-
                 inscrit_par: user.email || user.id
             });
 
@@ -303,7 +284,12 @@
             await chargerCreneaux();
 
         } catch (err) {
-            console.error("Erreur PocketBase :", err);
+
+            // 🔥🔥🔥 NOUVEAU CATCH COMPLET 🔥🔥🔥
+            console.error("🔥 ERREUR PB COMPLÈTE :", JSON.stringify(err, null, 2));
+            console.error("🔥 ERR.DATA :", JSON.stringify(err.data, null, 2));
+            console.error("🔥 ERR.RESPONSE :", JSON.stringify(err.response, null, 2));
+
             const fb = document.getElementById("feedback");
             fb.textContent = "Erreur lors de l’enregistrement.";
             fb.className = "error";
