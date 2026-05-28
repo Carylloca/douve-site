@@ -137,6 +137,15 @@
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
+    // 🔥 Restaure la session PocketBase depuis les cookies
+    pb.authStore.loadFromCookie(document.cookie);
+
+    // 🔥 Si pas connecté → redirection
+    if (!pb.authStore.isValid || !pb.authStore.model) {
+        alert("Vous devez être connecté pour inscrire quelqu'un.");
+        window.location.href = "login.html";
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const eventId = urlParams.get("id");
 
@@ -272,10 +281,10 @@
                 planning_jour: jourId,
                 planning_creneau: creneauId,
 
-                // 🔥 Toujours l’ID du compagnon connecté
+                // ID du compagnon connecté
                 compagnon: user.id,
 
-                // 🔥 Nom/prénom de la personne inscrite (lui-même ou quelqu’un d’autre)
+                // Personne inscrite (lui-même ou quelqu’un d’autre)
                 nom_personne: nom,
                 prenom_personne: prenom,
 
