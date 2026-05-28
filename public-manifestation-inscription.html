@@ -143,20 +143,17 @@
     document.getElementById("backBtn").href =
         "public-manifestation-details.html?id=" + eventId;
 
-    // Charger le titre de l'événement
+    /* Charger le titre */
     async function chargerTitre() {
-        const ev = await pb.collection("planning_events").getOne(eventId, {
-            requestKey: null
-        });
+        const ev = await pb.collection("planning_events").getOne(eventId);
         document.getElementById("eventTitle").textContent = ev.titre;
     }
 
-    // Charger les jours
+    /* Charger les jours */
     async function chargerJours() {
         const jours = await pb.collection("planning_jours").getFullList({
             filter: `planning_event = "${eventId}"`,
-            sort: "date",
-            requestKey: null
+            sort: "date"
         });
 
         const select = document.getElementById("jour");
@@ -180,15 +177,14 @@
 
     let creneauxParJour = [];
 
-    // Charger les créneaux du jour sélectionné
+    /* Charger les créneaux */
     async function chargerCreneaux() {
         const jourId = document.getElementById("jour").value;
         if (!jourId) return;
 
         const creneaux = await pb.collection("planning_creneaux").getFullList({
             filter: `planning_jour = "${jourId}"`,
-            sort: "heure_debut",
-            requestKey: null
+            sort: "heure_debut"
         });
 
         const uniques = {};
@@ -222,6 +218,7 @@
 
     document.getElementById("creneau").addEventListener("change", chargerPostesPourCreneau);
 
+    /* Charger les postes */
     async function chargerPostesPourCreneau() {
         const creneauId = document.getElementById("creneau").value;
         if (!creneauId) return;
@@ -230,11 +227,11 @@
         if (!creneau) return;
 
         const conditions = creneau.postes.map(id => `id = "${id}"`).join(" || ");
+
         const postes = conditions
             ? await pb.collection("planning_postes").getFullList({
                   filter: conditions,
-                  sort: "ordre",
-                  requestKey: null
+                  sort: "ordre"
               })
             : [];
 
@@ -251,9 +248,16 @@
 
     document.getElementById("jour").addEventListener("change", chargerCreneaux);
 
-    // Inscription
+    /* INSCRIPTION */
     async function inscrirePersonne(e) {
         e.preventDefault();
+
+        const user = pb.authStore.model;
+
+        if (!user) {
+            alert("Vous devez être connecté pour inscrire quelqu'un.");
+            return;
+        }
 
         const nom = document.getElementById("nom").value.trim();
         const prenom = document.getElementById("prenom").value.trim();
@@ -262,32 +266,37 @@
         const posteId = document.getElementById("poste").value || null;
         const commentaire = document.getElementById("commentaire").value.trim();
 
-        const user = pb.authStore.model;
-
         try {
             await pb.collection("planning_disponibilites").create({
                 planning_event: eventId,
                 planning_jour: jourId,
                 planning_creneau: creneauId,
-                compagnon: user ? user.id : null,
-                poste_souhaite: posteId, // null si aucun poste
+
+                // 🔥 Toujours l’ID du compagnon connecté
+                compagnon: user.id,
+
+                // 🔥 Nom/prénom de la personne inscrite (lui-même ou quelqu’un d’autre)
                 nom_personne: nom,
                 prenom_personne: prenom,
+
+                poste_souhaite: posteId,
                 commentaire: commentaire,
-                inscrit_par: user ? (user.email || user.id) : "public"
+
+                inscrit_par: user.email || user.id
             });
 
             const fb = document.getElementById("feedback");
-            fb.textContent = "✅ Inscription enregistrée avec succès !";
+            fb.textContent = "Inscription enregistrée avec succès !";
             fb.className = "success";
 
             document.getElementById("inscriptionForm").reset();
             await chargerJours();
             await chargerCreneaux();
+
         } catch (err) {
             console.error("Erreur PocketBase :", err);
             const fb = document.getElementById("feedback");
-            fb.textContent = "❌ Erreur lors de l’enregistrement de l’inscription.";
+            fb.textContent = "Erreur lors de l’enregistrement.";
             fb.className = "error";
         }
     }
