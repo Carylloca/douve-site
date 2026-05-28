@@ -6,6 +6,9 @@
     <link rel="icon" type="image/png" href="../favicon.png">
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
     <style>
         body {
             margin: 0;
@@ -16,7 +19,6 @@
             background-attachment: fixed;
         }
 
-        /* 🔥 Header centré */
         header.admin-header {
             background: rgba(44, 62, 80, 0.90);
             height: 70px;
@@ -114,7 +116,6 @@
             margin-bottom: 10px;
         }
 
-        /* Filtres par postes */
         #filtrePostes {
             margin: 10px 0 20px 0;
             display: flex;
@@ -150,7 +151,6 @@
 
 <div class="card">
 
-    <!-- BLOC 1 : Liste des jours -->
     <div class="top-actions">
         <a id="btnNewJour" class="btn">+ Nouveau jour</a>
     </div>
@@ -165,11 +165,9 @@
         <tbody id="joursTable"></tbody>
     </table>
 
-    <!-- BLOC 2 : Créneaux du jour sélectionné -->
     <div id="creneauxSection" style="display:none;">
         <div class="subtitle" id="titreJour"></div>
 
-        <!-- Filtres par postes -->
         <div id="filtrePostes"></div>
 
         <div class="top-actions">
@@ -188,6 +186,10 @@
             </thead>
             <tbody id="creneauxTable"></tbody>
         </table>
+
+        <div class="subtitle">Calendrier</div>
+        <div id="calendar" style="margin-top:20px;"></div>
+
     </div>
 
 </div>
@@ -200,7 +202,6 @@ let jourSelectionne = null;
 let postesFiltres = [];
 let creneauxCourants = [];
 
-/* Sécurité */
 const user = pb.authStore.model;
 if (!user) window.location.href = "../login.html";
 if (user.role !== "comite" && user.role !== "responsable") {
@@ -208,14 +209,12 @@ if (user.role !== "comite" && user.role !== "responsable") {
     window.location.href = "../index.html";
 }
 
-/* Navigation */
 document.getElementById("retourEvent").href =
     "admin-evenement-public-dashboard.html?id=" + eventId;
 
 document.getElementById("btnNewJour").href =
     "admin-evenement-public-jour-nouveau.html?event=" + eventId;
 
-/* Format date FR */
 function formatDateFr(dateStr) {
     const d = new Date(dateStr);
     return d.toLocaleDateString("fr-FR", {
@@ -226,7 +225,6 @@ function formatDateFr(dateStr) {
     });
 }
 
-/* Charger les jours */
 async function loadJours() {
     const jours = await pb.collection("planning_jours").getFullList({
         filter: `planning_event = "${eventId}"`,
@@ -250,7 +248,6 @@ async function loadJours() {
     });
 }
 
-/* Voir les créneaux d’un jour */
 async function voirCreneaux(jourId, date) {
     jourSelectionne = jourId;
 
@@ -265,7 +262,6 @@ async function voirCreneaux(jourId, date) {
 
     creneauxCourants = creneaux;
 
-    // Générer les filtres de postes
     const postes = [...new Set(creneaux.map(c => c.expand?.poste?.titre).filter(Boolean))];
     const filtreDiv = document.getElementById("filtrePostes");
     filtreDiv.innerHTML = "";
@@ -292,7 +288,6 @@ async function voirCreneaux(jourId, date) {
     afficherCreneaux();
 }
 
-/* Met à jour la liste des postes filtrés et réaffiche */
 function filtrerCreneaux() {
     const cochés = Array.from(document.querySelectorAll(".filtre-poste:checked"))
         .map(cb => cb.value);
@@ -300,7 +295,14 @@ function filtrerCreneaux() {
     afficherCreneaux();
 }
 
-/* Afficher les créneaux (en tenant compte des filtres) */
+async function chargerInscritsPourCreneau(creneauId) {
+    return await pb.collection("planning_disponibilites").getFullList({
+        filter: `planning_creneau = "${creneauId}"`,
+        expand: "poste_souhaite,compagnon",
+        sort: "created"
+    });
+}
+
 async function afficherCreneaux() {
     const tbody = document.getElementById("creneauxTable");
     tbody.innerHTML = "";
@@ -316,30 +318,33 @@ async function afficherCreneaux() {
             ? c.expand.companon_assigne.nom + " " + c.expand.companon_assigne.prenom
             : "—";
 
-        // Nombre de personnes inscrites pour ce créneau
-        let totalInscrits = 0;
-        try {
-            const dispo = await pb.collection("planning_disponibilites").getFullList({
-                filter: `planning_creneau = "${c.id}"`
+        const inscrits = await chargerInscritsPourCreneau(c.id);
+
+        let listeInscritsHTML = "";
+        if (inscrits.length === 0) {
+            listeInscritsHTML = "<em>Aucun inscrit</em>";
+        } else {
+            listeInscritsHTML = "<ul style='margin:0; padding-left:18px;'>";
+            inscrits.forEach(i => {
+                listeInscritsHTML += `
+                    <li>
+                        <strong>${i.nom_personne} ${i.prenom_personne}</strong>
+                        ${i.expand?.poste_souhaite ? `— ${i.expand.poste_souhaite.titre}` : ""}
+                        <br>
+                        <small>Inscrit par : ${i.expand?.compagnon?.prenom} ${i.expand?.compagnon?.nom}</small>
+                        ${i.commentaire ? `<br><em>${i.commentaire}</em>` : ""}
+                    </li>
+                `;
             });
-            totalInscrits = dispo.length;
-        } catch (e) {
-            console.error("Erreur chargement disponibilités pour créneau", c.id, e);
+            listeInscritsHTML += "</ul>";
         }
 
         tbody.innerHTML += `
             <tr>
                 <td>${c.heure_debut} → ${c.heure_fin}</td>
-
-                <td>
-                    ${(!posteTitre || posteTitre === "-aucun-")
-                        ? "Pas de préférence"
-                        : posteTitre}
-                </td>
-
+                <td>${posteTitre || "Pas de préférence"}</td>
                 <td>${assign}</td>
-                <td>${totalInscrits}</td>
-
+                <td>${listeInscritsHTML}</td>
                 <td>
                     <a class="btn" href="admin-evenement-public-creneau-modifier.html?id=${c.id}&jour=${jourSelectionne}&event=${eventId}">Modifier</a>
                     <button class="btn" onclick="dupliquerCreneau('${c.id}')">Dupliquer</button>
@@ -350,7 +355,6 @@ async function afficherCreneaux() {
     }
 }
 
-/* Nouveau créneau */
 function ouvrirNouveauCreneau() {
     if (!jourSelectionne) return;
     window.location.href =
@@ -358,14 +362,12 @@ function ouvrirNouveauCreneau() {
         "&jour=" + jourSelectionne;
 }
 
-/* Suppression jour */
 async function supprimerJour(id) {
     if (!confirm("Supprimer ce jour ?")) return;
     await pb.collection("planning_jours").delete(id);
     loadJours();
 }
 
-/* Suppression créneau */
 async function supprimerCreneau(id) {
     if (!confirm("Supprimer ce créneau ?")) return;
     await pb.collection("planning_creneaux").delete(id);
@@ -375,7 +377,6 @@ async function supprimerCreneau(id) {
     }
 }
 
-/* DUPLIQUER UN CRÉNEAU */
 async function dupliquerCreneau(id) {
     if (!confirm("Dupliquer ce créneau ?")) return;
 
@@ -448,6 +449,84 @@ async function dupliquerCreneau(id) {
     }
 }
 
+async function chargerEvenementsCalendrier() {
+
+    const jours = await pb.collection("planning_jours").getFullList({
+        filter: `planning_event = "${eventId}"`,
+        sort: "date"
+    });
+
+    const creneaux = await pb.collection("planning_creneaux").getFullList({
+        filter: `planning_event = "${eventId}"`,
+        expand: "poste",
+        sort: "heure_debut"
+    });
+
+    const events = [];
+
+    for (const c of creneaux) {
+        const jour = jours.find(j => j.id === c.planning_jour);
+        if (!jour) continue;
+
+        const date = jour.date;
+
+        const color = c.expand?.poste?.couleur || "#2980b9";
+
+        events.push({
+            id: c.id,
+            title: c.expand?.poste?.titre || "Créneau",
+            start: `${date}T${c.heure_debut}`,
+            end: `${date}T${c.heure_fin}`,
+            backgroundColor: color,
+            borderColor: color
+        });
+    }
+
+    return events;
+}
+
+async function afficherCalendrier() {
+
+    const events = await chargerEvenementsCalendrier();
+
+    const calendarEl = document.getElementById("calendar");
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "timeGridWeek",
+        locale: "fr",
+        slotMinTime: "06:00:00",
+        slotMaxTime: "23:00:00",
+        allDaySlot: false,
+        events: events,
+
+        eventClick: async function(info) {
+            const creneauId = info.event.id;
+            const inscrits = await chargerInscritsPourCreneau(creneauId);
+
+            let message = `Créneau : ${info.event.title}\n`;
+            message += `${info.event.start.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} → `;
+            message += `${info.event.end.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}\n\n`;
+
+            if (inscrits.length === 0) {
+                message += "Aucun inscrit.";
+            } else {
+                inscrits.forEach(i => {
+                    message += `• ${i.nom_personne} ${i.prenom_personne}`;
+                    if (i.expand?.poste_souhaite) {
+                        message += ` (${i.expand.poste_souhaite.titre})`;
+                    }
+                    message += "\n";
+                });
+            }
+
+            alert(message);
+        }
+    });
+
+    calendar.render();
+}
+
+afficherCalendrier();
 loadJours();
 </script>
 
