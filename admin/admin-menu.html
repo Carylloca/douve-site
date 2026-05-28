@@ -13,27 +13,26 @@
             background-position: center;
             background-attachment: fixed;
             font-family: Arial, sans-serif;
-            overflow-x: hidden; /* évite tout scroll horizontal */
-            overflow-y: hidden; /* supprime l'ascenseur vertical */
+            overflow: hidden; /* supprime tout ascenseur */
         }
 
         /* ⭐ Fond moins sombre */
         .overlay {
             background: rgba(0, 0, 0, 0.15);
-            min-height: calc(100vh - 70px); /* ajuste pour éviter le dépassement */
+            height: calc(100vh - 70px);
             padding: 40px 20px;
+            padding-top: 140px;
             box-sizing: border-box;
-            padding-top: 140px; /* espace sous le header */
         }
 
-        /* ⭐ Header original avec titre ajouté */
+        /* ⭐ Header original mais titre plus voyant */
         header {
             width: 100%;
             padding: 15px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(0, 0, 0, 0.55);
+            background: rgba(0, 0, 0, 0.35); /* header moins sombre */
             box-shadow: 0 3px 8px rgba(0,0,0,0.4);
             position: fixed;
             top: 0;
@@ -42,15 +41,15 @@
             box-sizing: border-box;
         }
 
-        /* ⭐ Titre dans le header */
+        /* ⭐ Titre plus clair et plus lisible */
         .header-title {
             flex: 1;
             text-align: center;
-            color: white;
-            font-size: 26px;
+            color: #ffffff;
+            font-size: 28px;
             font-weight: bold;
-            text-shadow: 0 0 8px black;
-            margin-right: 60px; /* compense la largeur du bouton logout */
+            text-shadow: 0 0 12px rgba(0,0,0,0.9); /* renforce la lisibilité */
+            margin-right: 60px;
         }
 
         .header-left a {
@@ -108,7 +107,7 @@
 
 <body>
 
-    <!-- ⭐ HEADER ORIGINAL + TITRE -->
+    <!-- ⭐ HEADER AVEC TITRE PLUS VOYANT -->
     <header>
         <div class="header-left">
             <a href="../index.html">🏠 Menu</a>
@@ -121,140 +120,7 @@
 
     <div class="overlay">
 
-        <a href="admin-manifestations.html" class="btn">📘 Activités</a>
-        <a href="admin-evenement-public-dashboard.html" class="btn">📅 Événements publics</a>
-        <a href="admin-chalet-liste.html" class="btn">🧾 Gestion du Bon Laron</a>
-        <a href="admin-compagnons.html" class="btn">👥 Gestion des compagnons</a>
-
-    </div>
-
-    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
-    <script src="../js/auth.js"></script>
-
-    <script>
-        requireComite();
-    </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin – Menu</title>
-
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-image: url("../img/page-admin-menu.jpg");
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            font-family: Arial, sans-serif;
-            overflow-x: hidden; /* évite tout scroll horizontal */
-        }
-
-        /* ⭐ Fond moins sombre */
-        .overlay {
-            background: rgba(0, 0, 0, 0.20);
-            min-height: 100vh;
-            padding: 40px 20px;
-            box-sizing: border-box;
-        }
-
-        /* ⭐ Header remis comme avant */
-        header {
-            width: 100%;
-            padding: 15px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.55);
-            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 10;
-            box-sizing: border-box;
-        }
-
-        .header-left a {
-            margin-right: 15px;
-            padding: 10px 15px;
-            background: #7A0010;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
-            white-space: nowrap;
-        }
-
-        .header-left a:hover {
-            background: #5A000C;
-        }
-
-        .logout-btn {
-            padding: 10px 15px;
-            background: #444;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            border: none;
-            white-space: nowrap;
-        }
-
-        .logout-btn:hover {
-            background: #222;
-        }
-
-        /* ⭐ Ajustement pour supprimer l’ascenseur */
-        h1 {
-            text-align: center;
-            color: white;
-            margin-top: 110px; /* espace sous le header */
-            margin-bottom: 40px;
-            text-shadow: 0 0 10px black;
-            font-size: 32px;
-        }
-
-        .btn {
-            display: block;
-            width: 260px;
-            margin: 15px auto;
-            padding: 15px 20px;
-            background: #7A0010;
-            color: white;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: bold;
-            text-align: center;
-            font-size: 18px;
-            transition: 0.2s;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
-        }
-
-        .btn:hover {
-            background: #5A000C;
-        }
-    </style>
-</head>
-
-<body>
-
-    <!-- ⭐ HEADER ORIGINAL -->
-    <header>
-        <div class="header-left">
-            <a href="../index.html">🏠 Menu</a>
-        </div>
-
-        <button class="logout-btn" onclick="logout()">⏻ Déconnexion</button>
-    </header>
-
-    <div class="overlay">
-
-        <h1>Menu Administrateur</h1>
+        <!-- ❌ Titre supprimé ici -->
 
         <a href="admin-manifestations.html" class="btn">📘 Activités</a>
         <a href="admin-evenement-public-dashboard.html" class="btn">📅 Événements publics</a>
