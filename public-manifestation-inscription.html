@@ -17,14 +17,22 @@
             background-attachment: fixed;
         }
 
+        /* Header public harmonisé */
         header {
+            height: 70px;
             background: rgba(44, 62, 80, 0.90);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
-            padding: 20px;
-            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.4);
         }
 
-        h1 { margin: 0; font-size: 28px; }
+        header h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: bold;
+        }
 
         .container {
             max-width: 600px;
@@ -126,10 +134,8 @@
 
 </div>
 
-<script src="js/inscription.js"></script>
-
 <script>
-    // pb est déjà déclaré dans inscription.js
+    const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
     const urlParams = new URLSearchParams(window.location.search);
     const eventId = urlParams.get("id");
@@ -145,7 +151,7 @@
         document.getElementById("eventTitle").textContent = ev.titre;
     }
 
-    // Charger les jours (triés par date + affichage FR)
+    // Charger les jours
     async function chargerJours() {
         const jours = await pb.collection("planning_jours").getFullList({
             filter: `planning_event = "${eventId}"`,
@@ -158,7 +164,6 @@
 
         jours.forEach(j => {
             const d = new Date(j.date);
-
             const texte = d.toLocaleDateString("fr-CH", {
                 weekday: "long",
                 day: "numeric",
@@ -173,7 +178,6 @@
         });
     }
 
-    // Mémoire locale des créneaux
     let creneauxParJour = [];
 
     // Charger les créneaux du jour sélectionné
@@ -187,11 +191,9 @@
             requestKey: null
         });
 
-        // Déduplication + regroupement par créneau
         const uniques = {};
         creneaux.forEach(c => {
             const key = c.heure_debut + "|" + c.heure_fin;
-
             if (!uniques[key]) {
                 uniques[key] = {
                     id: c.id,
@@ -200,7 +202,6 @@
                     postes: []
                 };
             }
-
             uniques[key].postes.push(c.poste);
         });
 
@@ -219,7 +220,6 @@
         chargerPostesPourCreneau();
     }
 
-    // Quand on change de créneau → mettre à jour les postes
     document.getElementById("creneau").addEventListener("change", chargerPostesPourCreneau);
 
     async function chargerPostesPourCreneau() {
@@ -229,14 +229,14 @@
         const creneau = creneauxParJour.find(c => c.id === creneauId);
         if (!creneau) return;
 
-        // Construire un filtre OR pour PocketBase
         const conditions = creneau.postes.map(id => `id = "${id}"`).join(" || ");
-
-        const postes = await pb.collection("planning_postes").getFullList({
-            filter: conditions,
-            sort: "ordre",
-            requestKey: null
-        });
+        const postes = conditions
+            ? await pb.collection("planning_postes").getFullList({
+                  filter: conditions,
+                  sort: "ordre",
+                  requestKey: null
+              })
+            : [];
 
         const select = document.getElementById("poste");
         select.innerHTML = '<option value="">— Aucun —</option>';
@@ -249,10 +249,49 @@
         });
     }
 
-    // Quand on change de jour → recharger les créneaux
     document.getElementById("jour").addEventListener("change", chargerCreneaux);
 
-    // Charger tout dans le bon ordre
+    // Inscription
+    async function inscrirePersonne(e) {
+        e.preventDefault();
+
+        const nom = document.getElementById("nom").value.trim();
+        const prenom = document.getElementById("prenom").value.trim();
+        const jourId = document.getElementById("jour").value;
+        const creneauId = document.getElementById("creneau").value;
+        const posteId = document.getElementById("poste").value || null;
+        const commentaire = document.getElementById("commentaire").value.trim();
+
+        const user = pb.authStore.model;
+
+        try {
+            await pb.collection("planning_disponibilites").create({
+                planning_event: eventId,
+                planning_jour: jourId,
+                planning_creneau: creneauId,
+                compagnon: user ? user.id : null,
+                poste_souhaite: posteId, // null si aucun poste
+                nom_personne: nom,
+                prenom_personne: prenom,
+                commentaire: commentaire,
+                inscrit_par: user ? (user.email || user.id) : "public"
+            });
+
+            const fb = document.getElementById("feedback");
+            fb.textContent = "✅ Inscription enregistrée avec succès !";
+            fb.className = "success";
+
+            document.getElementById("inscriptionForm").reset();
+            await chargerJours();
+            await chargerCreneaux();
+        } catch (err) {
+            console.error("Erreur PocketBase :", err);
+            const fb = document.getElementById("feedback");
+            fb.textContent = "❌ Erreur lors de l’enregistrement de l’inscription.";
+            fb.className = "error";
+        }
+    }
+
     (async () => {
         await chargerTitre();
         await chargerJours();
