@@ -130,11 +130,7 @@
 <div class="header">
     <div class="header-left">
         <a href="../index.html" class="btn">🏠 Menu</a>
-
-        <!-- ⭐ Nouveau bouton demandé -->
         <a href="admin-menu.html" class="btn">📋 Menu admin</a>
-
-        <!-- ⭐ Renommage du bouton existant -->
         <a href="admin-manifestations.html" class="btn">↩ Retour à Gestion</a>
     </div>
 
@@ -218,12 +214,12 @@
         }
     }
 
+    /* 🔥 Correction : afficher uniquement le total de personnes */
     function updateTotal() {
         const totalPersonnes = filtered.reduce((sum, i) => sum + (i.nb_personnes || 1), 0);
 
         document.getElementById("totalInscrits").innerHTML =
-            `Total inscrits : ${filtered.length}<br>
-             Total personnes : <strong>${totalPersonnes}</strong>`;
+            `Total inscrits : <strong>${totalPersonnes}</strong>`;
     }
 
     function displayTable() {
