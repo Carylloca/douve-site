@@ -18,21 +18,21 @@
 
         /* ⭐ Fond moins sombre */
         .overlay {
-            background: rgba(0, 0, 0, 0.15);
+            background: rgba(0, 0, 0, 0.20);
             height: calc(100vh - 70px);
             padding: 40px 20px;
-            padding-top: 140px;
+            padding-top: 140px; /* espace sous le header */
             box-sizing: border-box;
         }
 
-        /* ⭐ Header original mais titre plus voyant */
+        /* ⭐ HEADER IDENTIQUE AUX AUTRES PAGES */
         header {
             width: 100%;
             padding: 15px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(0, 0, 0, 0.35); /* header moins sombre */
+            background: rgba(0, 0, 0, 0.55);
             box-shadow: 0 3px 8px rgba(0,0,0,0.4);
             position: fixed;
             top: 0;
@@ -41,21 +41,10 @@
             box-sizing: border-box;
         }
 
-        /* ⭐ Titre plus clair et plus lisible */
-        .header-title {
-            flex: 1;
-            text-align: center;
-            color: #ffffff;
-            font-size: 28px;
-            font-weight: bold;
-            text-shadow: 0 0 12px rgba(0,0,0,0.9); /* renforce la lisibilité */
-            margin-right: 60px;
-        }
-
         .header-left a {
             margin-right: 15px;
             padding: 10px 15px;
-            background: #7A0010;
+            background: #7A0010; /* bordeaux */
             color: white;
             text-decoration: none;
             border-radius: 5px;
@@ -68,19 +57,32 @@
             background: #5A000C;
         }
 
+        /* ⭐ Titre centré comme sur les autres pages */
+        .header-title {
+            flex: 1;
+            text-align: center;
+            color: white;
+            font-size: 26px;
+            font-weight: bold;
+            text-shadow: 0 0 10px black;
+            margin-right: 60px; /* compense la largeur du bouton logout */
+        }
+
+        /* ⭐ Déconnexion en bordeaux */
         .logout-btn {
             padding: 10px 15px;
-            background: #444;
+            background: #7A0010; /* bordeaux */
             color: white;
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
             border: none;
             white-space: nowrap;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
         }
 
         .logout-btn:hover {
-            background: #222;
+            background: #5A000C;
         }
 
         .btn {
@@ -107,7 +109,7 @@
 
 <body>
 
-    <!-- ⭐ HEADER AVEC TITRE PLUS VOYANT -->
+    <!-- ⭐ HEADER IDENTIQUE AUX AUTRES PAGES -->
     <header>
         <div class="header-left">
             <a href="../index.html">🏠 Menu</a>
