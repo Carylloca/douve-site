@@ -16,17 +16,34 @@
             background-attachment: fixed;
         }
 
+        /* 🔥 Nouveau header centré */
         header.admin-header {
             background: rgba(44, 62, 80, 0.90);
-            padding: 18px 25px;
+            height: 70px;
+            padding: 0 20px;
             color: white;
             display: flex;
-            align-items: center; /* centre verticalement */
-            justify-content: space-between; /* espace entre boutons et titre */
-            flex-wrap: nowrap; /* 🔥 empêche le titre de descendre */
+            align-items: center;
+            justify-content: space-between;
             box-shadow: 0 3px 10px rgba(0,0,0,0.4);
         }
 
+        .header-left,
+        .header-right {
+            width: 33%;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .header-title {
+            width: 34%;
+            text-align: center;
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
 
         .header-btn {
             background: #7A0010;
@@ -35,13 +52,6 @@
             border-radius: 6px;
             text-decoration: none;
             font-size: 15px;
-        }
-
-        header.admin-header h1 {
-            margin: 0;
-            font-size: 24px;
-            flex: 1;
-            text-align: center;
         }
 
         .card {
@@ -125,10 +135,17 @@
 <body>
 
 <header class="admin-header">
-    <a href="../index.html" class="header-btn">Menu</a>
-    <a href="admin-menu.html" class="header-btn">Menu admin</a>
-    <a id="retourEvent" class="header-btn">Retour à l’événement</a>
-    <h1>Planning de l’événement</h1>
+
+    <div class="header-left">
+        <a href="../index.html" class="header-btn">Menu</a>
+        <a href="admin-menu.html" class="header-btn">Menu admin</a>
+        <a id="retourEvent" class="header-btn">Retour à l’événement</a>
+    </div>
+
+    <h1 class="header-title">Planning de l’événement</h1>
+
+    <div class="header-right"></div>
+
 </header>
 
 <div class="card">
