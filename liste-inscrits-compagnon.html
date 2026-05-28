@@ -57,7 +57,7 @@
 
         /* PAGE */
         .overlay {
-            background: rgba(0, 0, 0, 0.55);
+            background: rgba(0, 0, 0, 0.15);
             min-height: 100vh;
             padding: 120px 20px 40px 20px;
         }
@@ -234,7 +234,8 @@ async function loadInscrits() {
         inscritsData = inscrits;
         displayTable(inscrits);
 
-        document.getElementById("totalInscrits").textContent = inscrits.length;
+        const total = inscrits.reduce((sum, i) => sum + (i.nb_personnes || 1), 0);
+        document.getElementById("totalInscrits").textContent = total;
 
     } catch (err) {
         console.error("ERREUR loadInscrits :", err);
