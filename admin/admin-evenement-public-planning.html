@@ -16,7 +16,7 @@
             background-attachment: fixed;
         }
 
-        /* 🔥 Nouveau header centré */
+        /* 🔥 Header centré */
         header.admin-header {
             background: rgba(44, 62, 80, 0.90);
             height: 70px;
@@ -306,9 +306,9 @@ async function afficherCreneaux() {
     tbody.innerHTML = "";
 
     for (const c of creneauxCourants) {
-        const posteTitre = c.expand?.poste?.titre || "—";
+        const posteTitre = c.expand?.poste?.titre || null;
 
-        if (postesFiltres.length > 0 && !postesFiltres.includes(posteTitre)) {
+        if (postesFiltres.length > 0 && posteTitre && !postesFiltres.includes(posteTitre)) {
             continue;
         }
 
@@ -322,7 +322,7 @@ async function afficherCreneaux() {
             const dispo = await pb.collection("planning_disponibilites").getFullList({
                 filter: `planning_creneau = "${c.id}"`
             });
-            totalInscrits = dispo.length; // 1 inscription = 1 personne
+            totalInscrits = dispo.length;
         } catch (e) {
             console.error("Erreur chargement disponibilités pour créneau", c.id, e);
         }
@@ -330,9 +330,16 @@ async function afficherCreneaux() {
         tbody.innerHTML += `
             <tr>
                 <td>${c.heure_debut} → ${c.heure_fin}</td>
-                <td>${posteTitre}</td>
+
+                <td>
+                    ${(!posteTitre || posteTitre === "-aucun-")
+                        ? "Pas de préférence"
+                        : posteTitre}
+                </td>
+
                 <td>${assign}</td>
                 <td>${totalInscrits}</td>
+
                 <td>
                     <a class="btn" href="admin-evenement-public-creneau-modifier.html?id=${c.id}&jour=${jourSelectionne}&event=${eventId}">Modifier</a>
                     <button class="btn" onclick="dupliquerCreneau('${c.id}')">Dupliquer</button>
@@ -363,7 +370,6 @@ async function supprimerCreneau(id) {
     if (!confirm("Supprimer ce créneau ?")) return;
     await pb.collection("planning_creneaux").delete(id);
     if (jourSelectionne) {
-        // On recharge les créneaux du jour courant
         const jour = await pb.collection("planning_jours").getOne(jourSelectionne);
         voirCreneaux(jourSelectionne, jour.date);
     }
