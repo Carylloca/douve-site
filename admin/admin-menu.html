@@ -15,15 +15,61 @@
             font-family: Arial, sans-serif;
         }
 
+        /* ⭐ Fond plus clair */
         .overlay {
-            background: rgba(0, 0, 0, 0.55);
+            background: rgba(0, 0, 0, 0.35); /* avant 0.55 */
             min-height: 100vh;
             padding: 40px 20px;
+        }
+
+        /* ⭐ Header */
+        header {
+            width: 100%;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.55);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+
+        .header-left a {
+            margin-right: 15px;
+            padding: 10px 15px;
+            background: #7A0010;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+        }
+
+        .header-left a:hover {
+            background: #5A000C;
+        }
+
+        .logout-btn {
+            padding: 10px 15px;
+            background: #444;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+        }
+
+        .logout-btn:hover {
+            background: #222;
         }
 
         h1 {
             text-align: center;
             color: white;
+            margin-top: 120px; /* espace sous le header */
             margin-bottom: 40px;
             text-shadow: 0 0 10px black;
             font-size: 32px;
@@ -56,25 +102,26 @@
         .btn-grey:hover {
             background: #333;
         }
-
-        .btn-logout {
-            background: #444;
-        }
-
-        .btn-logout:hover {
-            background: #222;
-        }
     </style>
 </head>
 
 <body>
+
+    <!-- ⭐ HEADER ADMIN -->
+    <header>
+        <div class="header-left">
+            <a href="../index.html">🏠 Menu</a>
+            <a href="admin-menu.html">🛠️ Menu admin</a>
+        </div>
+
+        <button class="logout-btn" onclick="logout()">⏻ Déconnexion</button>
+    </header>
+
     <div class="overlay">
+
         <h1>Menu Administrateur</h1>
 
-        <!-- ⭐ Menu principal -->
-        <a href="../index.html" class="btn btn-grey">🏠 Menu principal</a>
-
-        <!-- ⭐ Activités (ancien Manifestations) -->
+        <!-- ⭐ Activités -->
         <a href="admin-manifestations.html" class="btn">📘 Activités</a>
 
         <!-- ⭐ Événements publics -->
@@ -86,11 +133,7 @@
         <!-- ⭐ Gestion des compagnons -->
         <a href="admin-compagnons.html" class="btn">👥 Gestion des compagnons</a>
 
-        <!-- ⭐ Gestion des postes -->
-        <a href="admin-stand-postes.html" class="btn">🛠️ Gestion des postes</a>
-
-        <!-- ⭐ Déconnexion -->
-        <button onclick="logout()" class="btn btn-logout">⏻ Déconnexion</button>
+        <!-- ❌ Gestion des postes supprimé -->
     </div>
 
     <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
