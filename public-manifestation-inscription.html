@@ -263,6 +263,18 @@
         const commentaire = document.getElementById("commentaire").value.trim();
 
         try {
+            console.log("📦 Données envoyées à PB :", {
+    planning_event: eventId,
+    planning_jour: jourId,
+    planning_creneau: creneauId,
+    compagnon: user.id,
+    nom_personne: nom,
+    prenom_personne: prenom,
+    poste_souhaite: posteId,
+    commentaire: commentaire,
+    inscrit_par: user.email || user.id
+});
+
             await pb.collection("planning_disponibilites").create({
                 planning_event: eventId,
                 planning_jour: jourId,
