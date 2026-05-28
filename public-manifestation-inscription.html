@@ -132,6 +132,7 @@
     </div>
 
 </div>
+
 <script>
     const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 
@@ -254,7 +255,6 @@
 
         const user = pb.authStore.model;
 
-        // 🔥 Vérification de l'état de l'événement AVANT l'inscription
         const ev = await pb.collection("planning_events").getOne(eventId);
         if (ev.etat !== "edition") {
             alert("Cet événement n'est plus en édition. Les inscriptions sont fermées.");
@@ -290,11 +290,6 @@
             await chargerCreneaux();
 
         } catch (err) {
-
-            console.error("🔥 ERREUR PB COMPLÈTE :", JSON.stringify(err, null, 2));
-            console.error("🔥 ERR.DATA :", JSON.stringify(err.data, null, 2));
-            console.error("🔥 ERR.RESPONSE :", JSON.stringify(err.response, null, 2));
-
             const fb = document.getElementById("feedback");
             fb.textContent = "Erreur lors de l’enregistrement.";
             fb.className = "error";
@@ -307,7 +302,6 @@
         await chargerCreneaux();
     })();
 </script>
-
 
 </body>
 </html>
