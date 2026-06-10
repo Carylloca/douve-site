@@ -221,134 +221,238 @@
 <script src="../js/auth.js"></script>
 
 <script>
-    requireComite();
+requireComite();
 
-    let currentEventId = null;
+let currentEventId = null;
+let reservation = null;
 
-    function updateStatusColor() {
-        const panel = document.getElementById("panel");
-        const statusValue = document.getElementById("status").value;
+// Raccourcir le nom affiché
+function shortenFilename(name, max = 40) {
+    return name.length > max ? name.substring(0, max) + "…" : name;
+}
 
-        const colors = {
-            "réservation en cours": "#1E90FF",
-            "confirmée": "#32CD32",
-            "terminée": "#8B4513",
-            "annulée": "#B22222"
-        };
+function updateStatusColor() {
+    const panel = document.getElementById("panel");
+    const statusValue = document.getElementById("status").value;
 
-        panel.style.borderLeftColor = colors[statusValue] || "transparent";
+    const colors = {
+        "réservation en cours": "#1E90FF",
+        "confirmée": "#32CD32",
+        "terminée": "#8B4513",
+        "annulée": "#B22222"
+    };
+
+    panel.style.borderLeftColor = colors[statusValue] || "transparent";
+}
+
+async function loadCompagnons() {
+    const list = await pb.collection("companions").getFullList();
+    const select = document.getElementById("compagnon");
+    select.innerHTML = "<option value=''>Aucun</option>";
+
+    list.forEach(c => {
+        select.innerHTML += `<option value="${c.id}">${c.nom} ${c.prenom}</option>`;
+    });
+}
+
+/* ---------------------------------------------------------
+   SUPPRESSION IMMÉDIATE D’UN FICHIER (ADMIN)
+--------------------------------------------------------- */
+async function deleteFileAdmin(filename) {
+    if (!confirm("Voulez-vous vraiment supprimer ce fichier ?")) return;
+
+    // Retirer localement
+    reservation.files = reservation.files.filter(f => f !== filename);
+
+    // Préparer FormData pour mise à jour immédiate
+    const formData = new FormData();
+
+    // Champs requis
+    formData.append("status", reservation.status);
+    formData.append("type", reservation.type);
+    formData.append("compagnon", reservation.compagnon || "");
+    formData.append("startDate", reservation.startDate);
+    formData.append("endDate", reservation.endDate);
+    formData.append("description", reservation.description);
+    formData.append("electricityStart", reservation.electricityStart ?? "");
+    formData.append("electricityEnd", reservation.electricityEnd ?? "");
+    formData.append("gasStart", reservation.gasStart ?? "");
+    formData.append("gasEnd", reservation.gasEnd ?? "");
+    if (reservation.created_by) {
+        formData.append("created_by", reservation.created_by);
     }
 
-    async function loadCompagnons() {
-        const list = await pb.collection("companions").getFullList();
-        const select = document.getElementById("compagnon");
-        select.innerHTML = "<option value=''>Aucun</option>";
+    // Ajouter les fichiers restants
+    reservation.files.forEach(f => {
+        formData.append("files", f);
+    });
 
-        list.forEach(c => {
-            select.innerHTML += `<option value="${c.id}">${c.nom} ${c.prenom}</option>`;
+    try {
+        await pb.collection("chalet_reservations").update(currentEventId, formData);
+        showExistingFilesAdmin();
+        alert("Fichier supprimé.");
+    } catch (e) {
+        console.error(e);
+        alert("Erreur PocketBase : " + JSON.stringify(e.data));
+    }
+}
+
+/* ---------------------------------------------------------
+   AFFICHAGE DES FICHIERS AVEC VIGNETTES + SUPPRESSION
+--------------------------------------------------------- */
+function showExistingFilesAdmin() {
+    const container = document.getElementById("existingFilesAdmin");
+    container.innerHTML = "";
+
+    if (reservation.files && reservation.files.length > 0) {
+        container.innerHTML = "<h4>Fichiers existants :</h4>";
+
+        reservation.files.forEach(f => {
+            const url = pb.files.getUrl(reservation, f);
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "file-preview";
+
+            const left = document.createElement("div");
+            left.className = "file-left";
+
+            let preview;
+            if (f.match(/\.(png|jpg|jpeg|webp|gif)$/i)) {
+                preview = document.createElement("img");
+                preview.src = url;
+            } else {
+                preview = document.createElement("span");
+                preview.textContent = "📄";
+                preview.style.fontSize = "32px";
+            }
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.target = "_blank";
+            link.textContent = shortenFilename(f);
+
+            left.appendChild(preview);
+            left.appendChild(link);
+
+            const btn = document.createElement("button");
+            btn.className = "delete-file";
+            btn.textContent = "Supprimer";
+            btn.onclick = () => deleteFileAdmin(f);
+
+            wrapper.appendChild(left);
+            wrapper.appendChild(btn);
+
+            container.appendChild(wrapper);
+        });
+    }
+}
+
+/* ---------------------------------------------------------
+   SAUVEGARDE (AJOUT DE NOUVEAUX FICHIERS)
+--------------------------------------------------------- */
+async function saveReservation() {
+    const description = document.getElementById("description").value.trim();
+    if (!description) {
+        alert("La description est obligatoire.");
+        return;
+    }
+
+    const formData = new FormData();
+
+    formData.append("status", document.getElementById("status").value);
+    formData.append("type", document.getElementById("type").value);
+    formData.append("compagnon", document.getElementById("compagnon").value || "");
+    formData.append("startDate", document.getElementById("startDate").value);
+    formData.append("endDate", document.getElementById("endDate").value);
+    formData.append("description", description);
+    formData.append("electricityStart", document.getElementById("electricityStart").value || "");
+    formData.append("electricityEnd", document.getElementById("electricityEnd").value || "");
+    formData.append("gasStart", document.getElementById("gasStart").value || "");
+    formData.append("gasEnd", document.getElementById("gasEnd").value || "");
+    formData.append("created_by", pb.authStore.model?.id || "");
+
+    // Ajouter fichiers existants
+    if (reservation?.files) {
+        reservation.files.forEach(f => {
+            formData.append("files", f);
         });
     }
 
-    async function saveReservation() {
-        const description = document.getElementById("description").value.trim();
-        if (!description) {
-            alert("La description est obligatoire.");
-            return;
-        }
-
-        const formData = new FormData();
-
-        formData.append("status", document.getElementById("status").value);
-        formData.append("type", document.getElementById("type").value);
-        formData.append("compagnon", document.getElementById("compagnon").value || "");
-        formData.append("startDate", document.getElementById("startDate").value);
-        formData.append("endDate", document.getElementById("endDate").value);
-        formData.append("description", description);
-        formData.append("electricityStart", document.getElementById("electricityStart").value || "");
-        formData.append("electricityEnd", document.getElementById("electricityEnd").value || "");
-        formData.append("gasStart", document.getElementById("gasStart").value || "");
-        formData.append("gasEnd", document.getElementById("gasEnd").value || "");
-        formData.append("created_by", pb.authStore.model?.id || "");
-
-        const files = document.getElementById("files").files;
-        for (let i = 0; i < files.length; i++) {
-            formData.append("files", files[i]);
-        }
-
-        try {
-            if (currentEventId) {
-                await pb.collection("chalet_reservations").update(currentEventId, formData);
-            } else {
-                await pb.collection("chalet_reservations").create(formData);
-            }
-
-            alert("Réservation enregistrée !");
-            window.location.href = "admin-chalet-liste.html";
-
-        } catch (e) {
-            console.error(e);
-            alert("Erreur PocketBase : " + JSON.stringify(e.data));
-        }
+    // Ajouter nouveaux fichiers
+    const newFiles = document.getElementById("files").files;
+    for (let i = 0; i < newFiles.length; i++) {
+        formData.append("files", newFiles[i]);
     }
 
-    async function deleteReservation() {
-        if (!currentEventId) return;
-        if (!confirm("Supprimer définitivement cette réservation ?")) return;
+    try {
+        if (currentEventId) {
+            await pb.collection("chalet_reservations").update(currentEventId, formData);
+        } else {
+            await pb.collection("chalet_reservations").create(formData);
+        }
 
-        await pb.collection("chalet_reservations").delete(currentEventId);
-        alert("Réservation supprimée !");
+        alert("Réservation enregistrée !");
         window.location.href = "admin-chalet-liste.html";
+
+    } catch (e) {
+        console.error(e);
+        alert("Erreur PocketBase : " + JSON.stringify(e.data));
     }
+}
 
-    async function loadReservation(id) {
-        const r = await pb.collection("chalet_reservations").getOne(id);
+/* ---------------------------------------------------------
+   SUPPRESSION DE LA RÉSERVATION
+--------------------------------------------------------- */
+async function deleteReservation() {
+    if (!currentEventId) return;
+    if (!confirm("Supprimer définitivement cette réservation ?")) return;
 
-        currentEventId = id;
+    await pb.collection("chalet_reservations").delete(currentEventId);
+    alert("Réservation supprimée !");
+    window.location.href = "admin-chalet-liste.html";
+}
 
-        document.getElementById("status").value = r.status;
-        document.getElementById("type").value = r.type;
-        document.getElementById("compagnon").value = r.compagnon || "";
-        document.getElementById("startDate").value = r.startDate.substring(0, 10);
-        document.getElementById("endDate").value = r.endDate.substring(0, 10);
-        document.getElementById("description").value = r.description;
+/* ---------------------------------------------------------
+   CHARGEMENT DE LA RÉSERVATION
+--------------------------------------------------------- */
+async function loadReservation(id) {
+    reservation = await pb.collection("chalet_reservations").getOne(id);
+    currentEventId = id;
 
-        document.getElementById("electricityStart").value = r.electricityStart || "";
-        document.getElementById("electricityEnd").value = r.electricityEnd || "";
-        document.getElementById("gasStart").value = r.gasStart || "";
-        document.getElementById("gasEnd").value = r.gasEnd || "";
+    document.getElementById("status").value = reservation.status;
+    document.getElementById("type").value = reservation.type;
+    document.getElementById("compagnon").value = reservation.companon || "";
+    document.getElementById("startDate").value = reservation.startDate.substring(0, 10);
+    document.getElementById("endDate").value = reservation.endDate.substring(0, 10);
+    document.getElementById("description").value = reservation.description;
 
-        if (r.files && r.files.length > 0) {
-            const container = document.createElement("div");
-            container.innerHTML = "<h4>Fichiers existants :</h4>";
+    document.getElementById("electricityStart").value = reservation.electricityStart || "";
+    document.getElementById("electricityEnd").value = reservation.electricityEnd || "";
+    document.getElementById("gasStart").value = reservation.gasStart || "";
+    document.getElementById("gasEnd").value = reservation.gasEnd || "";
 
-            r.files.forEach(f => {
-                const url = pb.files.getUrl(r, f);
-                container.innerHTML += `<a href="${url}" target="_blank">${f}</a><br>`;
-            });
+    showExistingFilesAdmin();
 
-            document.getElementById("panel").appendChild(container);
-        }
+    document.getElementById("deleteBtn").style.display = "inline-block";
+    updateStatusColor();
+}
 
-        document.getElementById("deleteBtn").style.display = "inline-block";
-        updateStatusColor();
+function logout() {
+    pb.authStore.clear();
+    window.location.href = "../index.html";
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadCompagnons();
+    updateStatusColor();
+
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+
+    if (id) {
+        await loadReservation(id);
     }
-
-    function logout() {
-        pb.authStore.clear();
-        window.location.href = "../index.html";
-    }
-
-    document.addEventListener("DOMContentLoaded", async () => {
-        await loadCompagnons();
-        updateStatusColor();
-
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get("id");
-
-        if (id) {
-            await loadReservation(id);
-        }
-    });
+});
 </script>
 
 </body>
