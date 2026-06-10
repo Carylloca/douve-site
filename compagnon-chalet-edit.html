@@ -182,14 +182,21 @@
             </div>
 
             <div>
-                <label>Eau – début</label>
-                <input type="number" id="waterStart">
+                <label>Gaz – début</label>
+                <input type="number" id="gasStart">
             </div>
 
             <div>
-                <label>Eau – fin</label>
-                <input type="number" id="waterEnd">
+                <label>Gaz – fin</label>
+                <input type="number" id="gasEnd">
             </div>
+
+            <div class="full">
+                <label>Ajouter des fichiers (images, PDF…)</label>
+                <input type="file" id="files" multiple>
+            </div>
+
+            <div class="full" id="existingFiles"></div>
 
             <div class="full" style="text-align:center;">
                 <button class="save-btn" onclick="save()">Enregistrer</button>
@@ -254,22 +261,37 @@ async function init() {
 
     document.getElementById("electricityStart").value = reservation.electricityStart || "";
     document.getElementById("electricityEnd").value = reservation.electricityEnd || "";
-    document.getElementById("waterStart").value = reservation.waterStart || "";
-    document.getElementById("waterEnd").value = reservation.waterEnd || "";
+    document.getElementById("gasStart").value = reservation.gasStart || "";
+    document.getElementById("gasEnd").value = reservation.gasEnd || "";
 
     document.getElementById("panel").style.borderLeftColor =
         statusColors[reservation.status] || "#1E90FF";
+
+    if (reservation.files && reservation.files.length > 0) {
+        const container = document.getElementById("existingFiles");
+        container.innerHTML = "<h4>Fichiers existants :</h4>";
+
+        reservation.files.forEach(f => {
+            const url = pb.files.getUrl(reservation, f);
+            container.innerHTML += `<a href="${url}" target="_blank">${f}</a><br>`;
+        });
+    }
 }
 
 async function save() {
-    const data = {
-        electricityStart: document.getElementById("electricityStart").value,
-        electricityEnd: document.getElementById("electricityEnd").value,
-        waterStart: document.getElementById("waterStart").value,
-        waterEnd: document.getElementById("waterEnd").value
-    };
+    const formData = new FormData();
 
-    await pb.collection("chalet_reservations").update(reservation.id, data);
+    formData.append("electricityStart", document.getElementById("electricityStart").value);
+    formData.append("electricityEnd", document.getElementById("electricityEnd").value);
+    formData.append("gasStart", document.getElementById("gasStart").value);
+    formData.append("gasEnd", document.getElementById("gasEnd").value);
+
+    const files = document.getElementById("files").files;
+    for (let i = 0; i < files.length; i++) {
+        formData.append("files", files[i]);
+    }
+
+    await pb.collection("chalet_reservations").update(reservation.id, formData);
 
     alert("Modifications enregistrées.");
     window.location.href = "compagnon-chalet.html";
