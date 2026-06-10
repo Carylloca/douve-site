@@ -286,9 +286,15 @@ async function save() {
     formData.append("gasStart", document.getElementById("gasStart").value);
     formData.append("gasEnd", document.getElementById("gasEnd").value);
 
-    const files = document.getElementById("files").files;
-    for (let i = 0; i < files.length; i++) {
-        formData.append("files", files[i]);
+    if (reservation.files && reservation.files.length > 0) {
+        reservation.files.forEach(f => {
+            formData.append("files", f);
+        });
+    }
+
+    const newFiles = document.getElementById("files").files;
+    for (let i = 0; i < newFiles.length; i++) {
+        formData.append("files", newFiles[i]);
     }
 
     await pb.collection("chalet_reservations").update(reservation.id, formData);
