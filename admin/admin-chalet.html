@@ -226,11 +226,16 @@ requireComite();
 let currentEventId = null;
 let reservation = null;
 
-// Raccourcir le nom affiché
+/* ---------------------------------------------------------
+   UTILITAIRE : raccourcir le nom d’un fichier
+--------------------------------------------------------- */
 function shortenFilename(name, max = 40) {
     return name.length > max ? name.substring(0, max) + "…" : name;
 }
 
+/* ---------------------------------------------------------
+   COULEUR DU STATUT
+--------------------------------------------------------- */
 function updateStatusColor() {
     const panel = document.getElementById("panel");
     const statusValue = document.getElementById("status").value;
@@ -245,6 +250,9 @@ function updateStatusColor() {
     panel.style.borderLeftColor = colors[statusValue] || "transparent";
 }
 
+/* ---------------------------------------------------------
+   CHARGER LISTE COMPAGNONS
+--------------------------------------------------------- */
 async function loadCompagnons() {
     const list = await pb.collection("companions").getFullList();
     const select = document.getElementById("compagnon");
@@ -270,7 +278,7 @@ async function deleteFileAdmin(filename) {
     // Champs requis
     formData.append("status", reservation.status);
     formData.append("type", reservation.type);
-    formData.append("compagnon", reservation.compagnon || "");
+    formData.append("compagnon", reservation.companion || "");
     formData.append("startDate", reservation.startDate);
     formData.append("endDate", reservation.endDate);
     formData.append("description", reservation.description);
@@ -421,7 +429,7 @@ async function loadReservation(id) {
 
     document.getElementById("status").value = reservation.status;
     document.getElementById("type").value = reservation.type;
-    document.getElementById("compagnon").value = reservation.companon || "";
+    document.getElementById("compagnon").value = reservation.companion || "";
     document.getElementById("startDate").value = reservation.startDate.substring(0, 10);
     document.getElementById("endDate").value = reservation.endDate.substring(0, 10);
     document.getElementById("description").value = reservation.description;
@@ -432,11 +440,14 @@ async function loadReservation(id) {
     document.getElementById("gasEnd").value = reservation.gasEnd || "";
 
     showExistingFilesAdmin();
+    updateStatusColor();
 
     document.getElementById("deleteBtn").style.display = "inline-block";
-    updateStatusColor();
 }
 
+/* ---------------------------------------------------------
+   INIT
+--------------------------------------------------------- */
 function logout() {
     pb.authStore.clear();
     window.location.href = "../index.html";
