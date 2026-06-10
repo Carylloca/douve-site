@@ -321,22 +321,52 @@ function showExistingFiles() {
     }
 }
 
-function deleteFile(filename) {
-    // Boîte de confirmation
+async function deleteFile(filename) {
+    // Confirmation
     if (!confirm("Voulez-vous vraiment supprimer ce fichier ?")) {
-        return; // Annulé → on ne supprime rien
+        return;
     }
 
-    // Ajout à la liste des fichiers supprimés
-    if (!deletedFiles.includes(filename)) {
-        deletedFiles.push(filename);
-    }
-
-    // Mise à jour de la liste interne
+    // Retirer le fichier de la liste locale
     reservation.files = reservation.files.filter(f => f !== filename);
 
-    // Rafraîchir l'affichage
-    showExistingFiles();
+    // Préparer FormData pour mise à jour immédiate
+    const formData = new FormData();
+
+    // Champs requis (on les renvoie tels quels)
+    formData.append("status", reservation.status);
+    formData.append("type", reservation.type);
+    formData.append("description", reservation.description);
+    formData.append("startDate", reservation.startDate);
+    formData.append("endDate", reservation.endDate);
+    formData.append("compagnon", reservation.compagnon);
+    if (reservation.created_by) {
+        formData.append("created_by", reservation.created_by);
+    }
+
+    // Champs modifiables (on renvoie les valeurs actuelles)
+    formData.append("electricityStart", reservation.electricityStart ?? "");
+    formData.append("electricityEnd", reservation.electricityEnd ?? "");
+    formData.append("gasStart", reservation.gasStart ?? "");
+    formData.append("gasEnd", reservation.gasEnd ?? "");
+
+    // Ajouter les fichiers restants
+    reservation.files.forEach(f => {
+        formData.append("files", f);
+    });
+
+    try {
+        // Mise à jour immédiate dans PocketBase
+        await pb.collection("chalet_reservations").update(reservation.id, formData);
+
+        // Rafraîchir l'affichage
+        showExistingFiles();
+
+        alert("Fichier supprimé.");
+    } catch (e) {
+        console.error(e);
+        alert("Erreur PocketBase : " + JSON.stringify(e.data));
+    }
 }
 
 async function save() {
