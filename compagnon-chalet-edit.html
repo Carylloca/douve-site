@@ -298,6 +298,7 @@ function showExistingFiles() {
             const wrapper = document.createElement("div");
             wrapper.className = "file-preview";
 
+            // Zone gauche : vignette + nom
             const left = document.createElement("div");
             left.className = "file-left";
 
@@ -314,11 +315,12 @@ function showExistingFiles() {
             const link = document.createElement("a");
             link.href = url;
             link.target = "_blank";
-            link.textContent = f;
+            link.textContent = shortenFilename(f); // ← NOM RACCOURCI
 
             left.appendChild(preview);
             left.appendChild(link);
 
+            // Bouton supprimer à droite
             const btn = document.createElement("button");
             btn.className = "delete-file";
             btn.textContent = "Supprimer";
