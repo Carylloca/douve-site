@@ -40,9 +40,7 @@
             cursor: pointer;
         }
 
-        .btn:hover {
-            background: #5A000C;
-        }
+        .btn:hover { background: #5A000C; }
 
         h2 {
             text-align: center;
@@ -74,17 +72,11 @@
             gap: 15px 25px;
         }
 
-        .full {
-            grid-column: span 2;
-        }
+        .full { grid-column: span 2; }
 
         @media (max-width: 700px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            .full {
-                grid-column: span 1;
-            }
+            .form-grid { grid-template-columns: 1fr; }
+            .full { grid-column: span 1; }
         }
 
         label { font-weight: bold; }
@@ -98,14 +90,9 @@
             border: 1px solid #ccc;
         }
 
-        input[readonly], textarea[readonly] {
-            background: #eee;
-        }
+        input[readonly], textarea[readonly] { background: #eee; }
 
-        textarea {
-            height: 80px;
-            resize: vertical;
-        }
+        textarea { height: 80px; resize: vertical; }
 
         .save-btn {
             background: #7A0010;
@@ -119,9 +106,45 @@
             margin-top: 10px;
         }
 
-        .save-btn:hover {
-            background: #5a000c;
+        .save-btn:hover { background: #5a000c; }
+
+        /* --- VIGNETTES FICHIERS --- */
+        .file-preview {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f7f7f7;
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border: 1px solid #ddd;
         }
+
+        .file-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-preview img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .delete-file {
+            background: #7A0010;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .delete-file:hover { background: #5A000C; }
     </style>
 </head>
 
@@ -134,13 +157,10 @@
 </header>
 
 <div class="overlay">
-
     <div class="panel" id="panel">
-
         <h3 style="text-align:center;">Ma réservation</h3>
 
         <div class="form-grid">
-
             <div class="full">
                 <label>Status</label>
                 <input id="status" readonly>
@@ -201,17 +221,15 @@
             <div class="full" style="text-align:center;">
                 <button class="save-btn" onclick="save()">Enregistrer</button>
             </div>
-
         </div>
     </div>
-
 </div>
 
 <script>
 const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
 let currentUser = null;
 let reservation = null;
-let deletedFiles = []; // fichiers à supprimer
+let deletedFiles = [];
 
 const statusColors = {
     "réservation en cours": "#1E90FF",
@@ -280,6 +298,9 @@ function showExistingFiles() {
             const wrapper = document.createElement("div");
             wrapper.className = "file-preview";
 
+            const left = document.createElement("div");
+            left.className = "file-left";
+
             let preview;
             if (f.toLowerCase().match(/\.(png|jpg|jpeg|webp|gif)$/)) {
                 preview = document.createElement("img");
@@ -287,6 +308,7 @@ function showExistingFiles() {
             } else {
                 preview = document.createElement("span");
                 preview.textContent = "📄";
+                preview.style.fontSize = "32px";
             }
 
             const link = document.createElement("a");
@@ -294,13 +316,15 @@ function showExistingFiles() {
             link.target = "_blank";
             link.textContent = f;
 
+            left.appendChild(preview);
+            left.appendChild(link);
+
             const btn = document.createElement("button");
             btn.className = "delete-file";
             btn.textContent = "Supprimer";
             btn.onclick = () => deleteFile(f);
 
-            wrapper.appendChild(preview);
-            wrapper.appendChild(link);
+            wrapper.appendChild(left);
             wrapper.appendChild(btn);
 
             container.appendChild(wrapper);
@@ -312,7 +336,6 @@ function deleteFile(filename) {
     if (!deletedFiles.includes(filename)) {
         deletedFiles.push(filename);
     }
-    // On retire visuellement le fichier
     reservation.files = reservation.files.filter(f => f !== filename);
     showExistingFiles();
 }
@@ -320,31 +343,27 @@ function deleteFile(filename) {
 async function save() {
     const formData = new FormData();
 
-    // Champs modifiables
     formData.append("electricityStart", document.getElementById("electricityStart").value);
     formData.append("electricityEnd", document.getElementById("electricityEnd").value);
     formData.append("gasStart", document.getElementById("gasStart").value);
     formData.append("gasEnd", document.getElementById("gasEnd").value);
 
-    // Champs requis
     formData.append("status", reservation.status);
     formData.append("type", reservation.type);
     formData.append("description", reservation.description);
     formData.append("startDate", reservation.startDate);
     formData.append("endDate", reservation.endDate);
-    formData.append("compagnon", reservation.compagnon); // selon ton schéma (id ou valeur)
+    formData.append("compagnon", reservation.compagnon);
     if (reservation.created_by) {
         formData.append("created_by", reservation.created_by);
     }
 
-    // Fichiers existants NON supprimés
     if (reservation.files && reservation.files.length > 0) {
         reservation.files.forEach(f => {
             formData.append("files", f);
         });
     }
 
-    // Nouveaux fichiers
     const newFiles = document.getElementById("files").files;
     for (let i = 0; i < newFiles.length; i++) {
         formData.append("files", newFiles[i]);
