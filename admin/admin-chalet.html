@@ -193,13 +193,18 @@
             </div>
 
             <div>
-                <label>Eau – début</label>
-                <input type="number" id="waterStart">
+                <label>Gaz – début</label>
+                <input type="number" id="gasStart">
             </div>
 
             <div>
-                <label>Eau – fin</label>
-                <input type="number" id="waterEnd">
+                <label>Gaz – fin</label>
+                <input type="number" id="gasEnd">
+            </div>
+
+            <div class="full">
+                <label>Fichiers (images, PDF…)</label>
+                <input type="file" id="files" multiple>
             </div>
 
             <div class="full" style="text-align:center; margin-top:10px;">
@@ -251,25 +256,30 @@
             return;
         }
 
-        const data = {
-            status: document.getElementById("status").value,
-            type: document.getElementById("type").value,
-            compagnon: document.getElementById("compagnon").value || null,
-            startDate: document.getElementById("startDate").value,
-            endDate: document.getElementById("endDate").value,
-            description: description,
-            electricityStart: document.getElementById("electricityStart").value || null,
-            electricityEnd: document.getElementById("electricityEnd").value || null,
-            waterStart: document.getElementById("waterStart").value || null,
-            waterEnd: document.getElementById("waterEnd").value || null,
-            created_by: pb.authStore.model?.id || null
-        };
+        const formData = new FormData();
+
+        formData.append("status", document.getElementById("status").value);
+        formData.append("type", document.getElementById("type").value);
+        formData.append("compagnon", document.getElementById("compagnon").value || "");
+        formData.append("startDate", document.getElementById("startDate").value);
+        formData.append("endDate", document.getElementById("endDate").value);
+        formData.append("description", description);
+        formData.append("electricityStart", document.getElementById("electricityStart").value || "");
+        formData.append("electricityEnd", document.getElementById("electricityEnd").value || "");
+        formData.append("gasStart", document.getElementById("gasStart").value || "");
+        formData.append("gasEnd", document.getElementById("gasEnd").value || "");
+        formData.append("created_by", pb.authStore.model?.id || "");
+
+        const files = document.getElementById("files").files;
+        for (let i = 0; i < files.length; i++) {
+            formData.append("files", files[i]);
+        }
 
         try {
             if (currentEventId) {
-                await pb.collection("chalet_reservations").update(currentEventId, data);
+                await pb.collection("chalet_reservations").update(currentEventId, formData);
             } else {
-                await pb.collection("chalet_reservations").create(data);
+                await pb.collection("chalet_reservations").create(formData);
             }
 
             alert("Réservation enregistrée !");
@@ -304,8 +314,20 @@
 
         document.getElementById("electricityStart").value = r.electricityStart || "";
         document.getElementById("electricityEnd").value = r.electricityEnd || "";
-        document.getElementById("waterStart").value = r.waterStart || "";
-        document.getElementById("waterEnd").value = r.waterEnd || "";
+        document.getElementById("gasStart").value = r.gasStart || "";
+        document.getElementById("gasEnd").value = r.gasEnd || "";
+
+        if (r.files && r.files.length > 0) {
+            const container = document.createElement("div");
+            container.innerHTML = "<h4>Fichiers existants :</h4>";
+
+            r.files.forEach(f => {
+                const url = pb.files.getUrl(r, f);
+                container.innerHTML += `<a href="${url}" target="_blank">${f}</a><br>`;
+            });
+
+            document.getElementById("panel").appendChild(container);
+        }
 
         document.getElementById("deleteBtn").style.display = "inline-block";
         updateStatusColor();
@@ -317,7 +339,6 @@
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-
         await loadCompagnons();
         updateStatusColor();
 
