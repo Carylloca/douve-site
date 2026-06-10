@@ -322,10 +322,20 @@ function showExistingFiles() {
 }
 
 function deleteFile(filename) {
+    // Boîte de confirmation
+    if (!confirm("Voulez-vous vraiment supprimer ce fichier ?")) {
+        return; // Annulé → on ne supprime rien
+    }
+
+    // Ajout à la liste des fichiers supprimés
     if (!deletedFiles.includes(filename)) {
         deletedFiles.push(filename);
     }
+
+    // Mise à jour de la liste interne
     reservation.files = reservation.files.filter(f => f !== filename);
+
+    // Rafraîchir l'affichage
     showExistingFiles();
 }
 
