@@ -209,9 +209,9 @@
 
 <script>
 const pb = new PocketBase("https://pocketbase-site-douve.onrender.com");
-
 let currentUser = null;
 let reservation = null;
+let deletedFiles = []; // fichiers à supprimer
 
 const statusColors = {
     "réservation en cours": "#1E90FF",
@@ -227,7 +227,6 @@ function logout() {
 
 async function init() {
     currentUser = pb.authStore.model;
-
     if (!currentUser) {
         alert("Veuillez vous connecter.");
         window.location.href = "../login.html";
@@ -241,9 +240,7 @@ async function init() {
         return;
     }
 
-    reservation = await pb.collection("chalet_reservations").getOne(id, {
-        expand: "compagnon"
-    });
+    reservation = await pb.collection("chalet_reservations").getOne(id, { expand: "compagnon" });
 
     if (!reservation.expand?.compagnon || reservation.expand.compagnon.id !== currentUser.id) {
         alert("Vous ne pouvez modifier que vos propres réservations.");
@@ -267,45 +264,87 @@ async function init() {
     document.getElementById("panel").style.borderLeftColor =
         statusColors[reservation.status] || "#1E90FF";
 
+    showExistingFiles();
+}
+
+function showExistingFiles() {
+    const container = document.getElementById("existingFiles");
+    container.innerHTML = "";
+
     if (reservation.files && reservation.files.length > 0) {
-        const container = document.getElementById("existingFiles");
         container.innerHTML = "<h4>Fichiers existants :</h4>";
 
         reservation.files.forEach(f => {
             const url = pb.files.getUrl(reservation, f);
-            container.innerHTML += `<a href="${url}" target="_blank">${f}</a><br>`;
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "file-preview";
+
+            let preview;
+            if (f.toLowerCase().match(/\.(png|jpg|jpeg|webp|gif)$/)) {
+                preview = document.createElement("img");
+                preview.src = url;
+            } else {
+                preview = document.createElement("span");
+                preview.textContent = "📄";
+            }
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.target = "_blank";
+            link.textContent = f;
+
+            const btn = document.createElement("button");
+            btn.className = "delete-file";
+            btn.textContent = "Supprimer";
+            btn.onclick = () => deleteFile(f);
+
+            wrapper.appendChild(preview);
+            wrapper.appendChild(link);
+            wrapper.appendChild(btn);
+
+            container.appendChild(wrapper);
         });
     }
+}
+
+function deleteFile(filename) {
+    if (!deletedFiles.includes(filename)) {
+        deletedFiles.push(filename);
+    }
+    // On retire visuellement le fichier
+    reservation.files = reservation.files.filter(f => f !== filename);
+    showExistingFiles();
 }
 
 async function save() {
     const formData = new FormData();
 
-    // Champs que le compagnon peut modifier
+    // Champs modifiables
     formData.append("electricityStart", document.getElementById("electricityStart").value);
     formData.append("electricityEnd", document.getElementById("electricityEnd").value);
     formData.append("gasStart", document.getElementById("gasStart").value);
     formData.append("gasEnd", document.getElementById("gasEnd").value);
 
-    // Champs requis déjà présents dans la réservation
+    // Champs requis
     formData.append("status", reservation.status);
     formData.append("type", reservation.type);
     formData.append("description", reservation.description);
     formData.append("startDate", reservation.startDate);
     formData.append("endDate", reservation.endDate);
-    formData.append("compagnon", reservation.compagnon); // ou reservation.compagnon.id selon ton schéma
+    formData.append("compagnon", reservation.compagnon); // selon ton schéma (id ou valeur)
     if (reservation.created_by) {
         formData.append("created_by", reservation.created_by);
     }
 
-    // Réajouter les fichiers existants (pour ne pas les perdre)
+    // Fichiers existants NON supprimés
     if (reservation.files && reservation.files.length > 0) {
         reservation.files.forEach(f => {
             formData.append("files", f);
         });
     }
 
-    // Ajouter les nouveaux fichiers
+    // Nouveaux fichiers
     const newFiles = document.getElementById("files").files;
     for (let i = 0; i < newFiles.length; i++) {
         formData.append("files", newFiles[i]);
