@@ -281,26 +281,44 @@ async function init() {
 async function save() {
     const formData = new FormData();
 
+    // Champs que le compagnon peut modifier
     formData.append("electricityStart", document.getElementById("electricityStart").value);
     formData.append("electricityEnd", document.getElementById("electricityEnd").value);
     formData.append("gasStart", document.getElementById("gasStart").value);
     formData.append("gasEnd", document.getElementById("gasEnd").value);
 
+    // Champs requis déjà présents dans la réservation
+    formData.append("status", reservation.status);
+    formData.append("type", reservation.type);
+    formData.append("description", reservation.description);
+    formData.append("startDate", reservation.startDate);
+    formData.append("endDate", reservation.endDate);
+    formData.append("compagnon", reservation.compagnon); // ou reservation.compagnon.id selon ton schéma
+    if (reservation.created_by) {
+        formData.append("created_by", reservation.created_by);
+    }
+
+    // Réajouter les fichiers existants (pour ne pas les perdre)
     if (reservation.files && reservation.files.length > 0) {
         reservation.files.forEach(f => {
             formData.append("files", f);
         });
     }
 
+    // Ajouter les nouveaux fichiers
     const newFiles = document.getElementById("files").files;
     for (let i = 0; i < newFiles.length; i++) {
         formData.append("files", newFiles[i]);
     }
 
-    await pb.collection("chalet_reservations").update(reservation.id, formData);
-
-    alert("Modifications enregistrées.");
-    window.location.href = "compagnon-chalet.html";
+    try {
+        await pb.collection("chalet_reservations").update(reservation.id, formData);
+        alert("Modifications enregistrées.");
+        window.location.href = "compagnon-chalet.html";
+    } catch (e) {
+        console.error(e);
+        alert("Erreur PocketBase : " + JSON.stringify(e.data));
+    }
 }
 
 init();
