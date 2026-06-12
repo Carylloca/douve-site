@@ -8,6 +8,9 @@
     <!-- jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+    <!-- AutoTable (OBLIGATOIRE pour les tableaux PDF) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
     <style>
         body {
             margin: 0;
@@ -32,7 +35,6 @@
             text-shadow: 0 0 10px black;
         }
 
-        /* BOUTONS EN HAUT */
         .top-buttons {
             text-align: center;
             margin-bottom: 25px;
@@ -60,7 +62,6 @@
             background: #7a0000;
         }
 
-        /* BLOC RÉDUIT À 50% */
         .card {
             width: 50%;
             margin: 0 auto;
@@ -81,7 +82,6 @@
             color: #7A0010;
         }
 
-        /* PHOTO */
         .photo {
             width: 208px;
             height: 208px;
@@ -103,7 +103,6 @@
 
         <h1>Détails du compagnon</h1>
 
-        <!-- BOUTONS EN HAUT -->
         <div class="top-buttons">
             <a href="index.html" class="btn">Menu</a>
             <a href="liste-compagnons.html" class="btn">← Retour</a>
@@ -133,7 +132,6 @@
 
         let compagnonData = null;
 
-        /* FORMATAGE DATE COMPATIBLE AVEC "YYYY-MM-DD HH:MM:SS" */
         function formatDate(d) {
             if (!d) return "";
             const onlyDate = d.split(" ")[0];
@@ -155,32 +153,22 @@
 
                 document.getElementById("details").innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:30px;">
-
-                        <!-- TEXTE -->
                         <div style="flex:1;">
                             <div class="row"><span class="label">Nom :</span> ${c.nom}</div>
                             <div class="row"><span class="label">Prénom :</span> ${c.prenom}</div>
                             <div class="row"><span class="label">Initiales :</span> ${c.initiales || ""}</div>
                             <div class="row"><span class="label">Fonction :</span> ${c.fonction || ""}</div>
-
                             <div class="row"><span class="label">Adresse :</span> ${c.adresse || ""}</div>
                             <div class="row"><span class="label">N° postal :</span> ${c.npa || ""}</div>
                             <div class="row"><span class="label">Lieu :</span> ${c.lieu || ""}</div>
-
                             <div class="row"><span class="label">Email :</span> ${c.email_public || ""}</div>
                             <div class="row"><span class="label">Téléphone :</span> ${c.telephone || ""}</div>
-
                             <div class="row"><span class="label">Date de naissance :</span> ${formatDate(c.date_naissance)}</div>
-
-                            <div class="row"><span class="label">Conjoint :</span> 
-                                ${(c.conjoint_prenom || "") + " " + (c.conjoint_nom || "")}
-                            </div>
-
+                            <div class="row"><span class="label">Conjoint :</span> ${(c.conjoint_prenom || "") + " " + (c.conjoint_nom || "")}</div>
                             <div class="row"><span class="label">Téléphone professionnel :</span> ${c.telephone_prof || ""}</div>
                             <div class="row"><span class="label">Email professionnel :</span> ${c.email_prof || ""}</div>
                         </div>
 
-                        <!-- PHOTO + BOUTON ADMIN -->
                         <div class="photo-container">
                             ${photoHTML}
                             <div id="photoBtnContainer"></div>
@@ -220,6 +208,65 @@
                 alert("Erreur lors de la suppression.");
                 console.error(err);
             }
+        }
+
+        /* 📄 EXPORT PDF — VERSION FINALE */
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: "landscape" });
+
+            if (!compagnonData) {
+                alert("Les données ne sont pas encore chargées.");
+                return;
+            }
+
+            const rows = [[
+                compagnonData.nom || "",
+                compagnonData.prenom || "",
+                compagnonData.initiales || "",
+                compagnonData.fonction || "",
+                compagnonData.adresse || "",
+                compagnonData.npa || "",
+                compagnonData.lieu || "",
+                compagnonData.email_public || "",
+                compagnonData.telephone || ""
+            ]];
+
+            doc.autoTable({
+                head: [[
+                    "Nom", "Prénom", "Initiales", "Fonction",
+                    "Adresse", "N° postal", "Lieu", "Email", "Téléphone"
+                ]],
+                body: rows,
+                theme: "grid",
+
+                headStyles: {
+                    fillColor: [122, 0, 16],
+                    textColor: 255,
+                    fontStyle: "bold"
+                },
+
+                styles: {
+                    fontSize: 10,
+                    cellPadding: 3,
+                    lineHeight: 1.2,
+                    overflow: "linebreak"
+                },
+
+                columnStyles: {
+                    0: { cellWidth: 25 },
+                    1: { cellWidth: 25 },
+                    2: { cellWidth: 15 },
+                    3: { cellWidth: 35 }, 
+                    4: { cellWidth: 45 },
+                    5: { cellWidth: 15 },
+                    6: { cellWidth: 30 },
+                    7: { cellWidth: 38 },
+                    8: { cellWidth: 30 }
+                }
+            });
+
+            doc.save("compagnon.pdf");
         }
     </script>
 
