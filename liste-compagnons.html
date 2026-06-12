@@ -215,66 +215,55 @@
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: "landscape" });
 
-    const logo = new Image();
-    logo.src = "favicon.png";
+    const rows = allCompagnons.map(c => [
+        c.nom || "",
+        c.prenom || "",
+        c.initiales || "",
+        c.fonction || "",
+        c.adresse || "",
+        c.npa || "",
+        c.lieu || "",
+        c.email_public || "",
+        c.telephone || ""
+    ]);
 
-    logo.onload = function () {
-        // Logo
-        doc.addImage(logo, "PNG", 10, 6, 12, 12);
+    doc.text("Liste des compagnons", 14, 12);
 
-        // Titre
-        doc.setFontSize(12);
-        doc.text("Liste des compagnons", 25, 12);
+    doc.autoTable({
+        head: [[
+            "Nom", "Prénom", "Initiales", "Fonction",
+            "Adresse", "N° postal", "Lieu", "Email", "Téléphone"
+        ]],
+        body: rows,
+        startY: 18,
+        theme: "grid",
+        pageBreak: "avoid",          // ⬅️ évite les coupures de lignes
+        rowPageBreak: "avoid",       // ⬅️ évite qu’un compagnon soit sur 2 pages
+        headStyles: {
+            fillColor: [122, 0, 16],
+            textColor: 255,
+            fontStyle: "bold"
+        },
+        styles: {
+            fontSize: 8,
+            cellPadding: 2,
+            lineHeight: 1.1,
+            overflow: "linebreak"
+        },
+        columnStyles: {
+            0: { cellWidth: 25 }, // Nom
+            1: { cellWidth: 25 }, // Prénom
+            2: { cellWidth: 15 }, // Initiales
+            3: { cellWidth: 25 }, // Fonction
+            4: { cellWidth: 40 }, // Adresse
+            5: { cellWidth: 15 }, // NPA
+            6: { cellWidth: 25 }, // Lieu
+            7: { cellWidth: 45 }, // Email
+            8: { cellWidth: 35 }  // Téléphone (⬅️ élargi)
+        }
+    });
 
-        const rows = allCompagnons.map(c => [
-            c.nom || "",
-            c.prenom || "",
-            c.initiales || "",
-            c.fonction || "",
-            c.adresse || "",
-            c.npa || "",
-            c.lieu || "",
-            c.email_public || "",
-            c.telephone || ""
-        ]);
-
-        // Tableau juste sous le titre
-        doc.autoTable({
-            head: [[
-                "Nom", "Prénom", "Initiales", "Fonction",
-                "Adresse", "N° postal", "Lieu", "Email", "Téléphone"
-            ]],
-            body: rows,
-            startY: 18, // ⬅️ juste sous le titre
-            theme: "grid",
-            pageBreak: "avoid",
-            rowPageBreak: "avoid",
-            headStyles: {
-                fillColor: [122, 0, 16],
-                textColor: 255,
-                fontStyle: "bold"
-            },
-            styles: {
-                fontSize: 8,
-                cellPadding: 2,
-                lineHeight: 1.1,
-                overflow: "linebreak"
-            },
-            columnStyles: {
-                0: { cellWidth: 22 },
-                1: { cellWidth: 22 },
-                2: { cellWidth: 12 },
-                3: { cellWidth: 22 },
-                4: { cellWidth: 35 },
-                5: { cellWidth: 12 },
-                6: { cellWidth: 22 },
-                7: { cellWidth: 40 },
-                8: { cellWidth: 35 } // Téléphone élargi
-            }
-        });
-
-        doc.save("liste_compagnons.pdf");
-    };
+    doc.save("liste_compagnons.pdf");
 }
 
         /* 📊 Export Excel */
