@@ -215,53 +215,75 @@
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: "landscape" });
 
-    const rows = allCompagnons.map(c => [
-        c.nom || "",
-        c.prenom || "",
-        c.initiales || "",
-        c.fonction || "",
-        c.adresse || "",
-        c.npa || "",
-        c.lieu || "",
-        c.email_public || "",
-        c.telephone || ""
-    ]);
+    const logo = new Image();
+    logo.src = "favicon.png";
 
-    doc.text("Liste des compagnons", 14, 12);
+    logo.onload = function () {
 
-    doc.autoTable({
-        head: [[
-            "Nom", "Prénom", "Initiales", "Fonction",
-            "Adresse", "N° postal", "Lieu", "Email", "Téléphone"
-        ]],
-        body: rows,
-        startY: 22, // ⬅️ > 20, donc reste sur la même page
-        theme: "grid",
-        headStyles: {
-            fillColor: [122, 0, 16],
-            textColor: 255,
-            fontStyle: "bold"
-        },
-        styles: {
-            fontSize: 8,
-            cellPadding: 2,
-            lineHeight: 1.1,
-            overflow: "linebreak"
-        },
-        columnStyles: {
-            0: { cellWidth: 25 },
-            1: { cellWidth: 25 },
-            2: { cellWidth: 15 },
-            3: { cellWidth: 25 },
-            4: { cellWidth: 40 },
-            5: { cellWidth: 15 },
-            6: { cellWidth: 25 },
-            7: { cellWidth: 45 },
-            8: { cellWidth: 35 }
-        }
-    });
+        // --- Logo ---
+        doc.addImage(logo, "PNG", 10, 6, 12, 12);
 
-    doc.save("liste_compagnons.pdf");
+        // --- Titre ---
+        doc.setFontSize(12);
+        doc.text("Liste des compagnons", 25, 12);
+
+        // --- Données ---
+        const rows = allCompagnons.map(c => [
+            c.nom || "",
+            c.prenom || "",
+            c.initiales || "",
+            c.fonction || "",
+            c.adresse || "",
+            c.npa || "",
+            c.lieu || "",
+            c.email_public || "",
+            c.telephone || ""
+        ]);
+
+        // --- Tableau ---
+        doc.autoTable({
+            head: [[
+                "Nom", "Prénom", "Initiales", "Fonction",
+                "Adresse", "N° postal", "Lieu", "Email", "Téléphone"
+            ]],
+            body: rows,
+
+            // ⬅️ Le tableau commence juste sous le titre + logo
+            startY: 18,
+
+            // ⬅️ On réduit la marge haute pour éviter la page blanche
+            margin: { top: 15 },
+
+            theme: "grid",
+            pageBreak: "avoid",
+            rowPageBreak: "avoid",
+
+            headStyles: {
+                fillColor: [122, 0, 16],
+                textColor: 255,
+                fontStyle: "bold"
+            },
+            styles: {
+                fontSize: 8,
+                cellPadding: 2,
+                lineHeight: 1.1,
+                overflow: "linebreak"
+            },
+            columnStyles: {
+                0: { cellWidth: 25 },
+                1: { cellWidth: 25 },
+                2: { cellWidth: 15 },
+                3: { cellWidth: 25 },
+                4: { cellWidth: 40 },
+                5: { cellWidth: 15 },
+                6: { cellWidth: 25 },
+                7: { cellWidth: 45 },
+                8: { cellWidth: 35 }
+            }
+        });
+
+        doc.save("liste_compagnons.pdf");
+    };
 }
 
         /* 📊 Export Excel */
