@@ -215,12 +215,12 @@
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: "landscape" });
 
-    // 🔹 Logo en haut à gauche
+    // Logo
     const logo = new Image();
     logo.src = "favicon.png";
     doc.addImage(logo, "PNG", 10, 6, 12, 12);
 
-    // 🔹 Titre à droite du logo
+    // Titre
     doc.setFontSize(12);
     doc.text("Liste des compagnons", 25, 12);
 
@@ -236,14 +236,13 @@
         c.telephone || ""
     ]);
 
-    // 🔹 Tableau directement sous le titre (startY = 18)
     doc.autoTable({
         head: [[
             "Nom", "Prénom", "Initiales", "Fonction",
             "Adresse", "N° postal", "Lieu", "Email", "Téléphone"
         ]],
         body: rows,
-        startY: 18,
+        startY: 20, // juste sous le titre
         theme: "grid",
         pageBreak: "avoid",
         rowPageBreak: "avoid",
@@ -259,15 +258,15 @@
             overflow: "linebreak"
         },
         columnStyles: {
-            0: { cellWidth: 25 },
-            1: { cellWidth: 25 },
-            2: { cellWidth: 15 },
-            3: { cellWidth: 25 },
-            4: { cellWidth: 40 },
-            5: { cellWidth: 15 },
-            6: { cellWidth: 25 },
-            7: { cellWidth: 45 },
-            8: { cellWidth: 40 } // 📞 Téléphone élargi
+            0: { cellWidth: 22 }, // Nom
+            1: { cellWidth: 22 }, // Prénom
+            2: { cellWidth: 12 }, // Initiales
+            3: { cellWidth: 22 }, // Fonction
+            4: { cellWidth: 35 }, // Adresse
+            5: { cellWidth: 12 }, // NPA
+            6: { cellWidth: 22 }, // Lieu
+            7: { cellWidth: 40 }, // Email
+            8: { cellWidth: 35 }  // Téléphone élargi
         }
     });
 
