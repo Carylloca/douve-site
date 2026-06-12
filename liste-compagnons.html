@@ -215,6 +215,15 @@
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: "landscape" });
 
+    // 🔹 Ajout du logo (favicon) en haut à gauche
+    const logo = new Image();
+    logo.src = "favicon.png";
+    doc.addImage(logo, "PNG", 10, 6, 12, 12); // position et taille du logo
+
+    // 🔹 Titre plus discret
+    doc.setFontSize(12);
+    doc.text("Liste des compagnons", 25, 12);
+
     const rows = allCompagnons.map(c => [
         c.nom || "",
         c.prenom || "",
@@ -227,18 +236,17 @@
         c.telephone || ""
     ]);
 
-    doc.text("Liste des compagnons", 14, 12);
-
+    // 🔹 Tableau compact sans page de titre inutile
     doc.autoTable({
         head: [[
             "Nom", "Prénom", "Initiales", "Fonction",
             "Adresse", "N° postal", "Lieu", "Email", "Téléphone"
         ]],
         body: rows,
-        startY: 18,
+        startY: 20,
         theme: "grid",
-        pageBreak: "avoid",          // ⬅️ évite les coupures de lignes
-        rowPageBreak: "avoid",       // ⬅️ évite qu’un compagnon soit sur 2 pages
+        pageBreak: "avoid",
+        rowPageBreak: "avoid",
         headStyles: {
             fillColor: [122, 0, 16],
             textColor: 255,
@@ -251,15 +259,15 @@
             overflow: "linebreak"
         },
         columnStyles: {
-            0: { cellWidth: 25 }, // Nom
-            1: { cellWidth: 25 }, // Prénom
-            2: { cellWidth: 15 }, // Initiales
-            3: { cellWidth: 25 }, // Fonction
-            4: { cellWidth: 40 }, // Adresse
-            5: { cellWidth: 15 }, // NPA
-            6: { cellWidth: 25 }, // Lieu
-            7: { cellWidth: 45 }, // Email
-            8: { cellWidth: 35 }  // Téléphone (⬅️ élargi)
+            0: { cellWidth: 25 },
+            1: { cellWidth: 25 },
+            2: { cellWidth: 15 },
+            3: { cellWidth: 25 },
+            4: { cellWidth: 40 },
+            5: { cellWidth: 15 },
+            6: { cellWidth: 25 },
+            7: { cellWidth: 45 },
+            8: { cellWidth: 40 } // 📞 Téléphone élargi
         }
     });
 
@@ -282,18 +290,16 @@
 
     const ws = XLSX.utils.json_to_sheet(data, { origin: "A2" });
 
-    /* --- Ligne 1 : Titre --- */
+    // 🔹 Ligne 1 : Titre
     ws["A1"] = { t: "s", v: "Liste des compagnons" };
     ws["A1"].s = {
         font: { bold: true, sz: 18, color: { rgb: "FFFFFF" } },
         fill: { fgColor: { rgb: "7A0010" } },
         alignment: { horizontal: "center", vertical: "center" }
     };
-
-    /* Fusion du titre sur 9 colonnes */
     ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 8 } }];
 
-    /* --- Ligne 2 : En-têtes --- */
+    // 🔹 Ligne 2 : En-têtes
     const headers = Object.keys(data[0]);
     headers.forEach((h, i) => {
         const cell = ws[XLSX.utils.encode_cell({ r: 1, c: i })];
@@ -304,7 +310,7 @@
         };
     });
 
-    /* Largeur des colonnes */
+    // 🔹 Largeur des colonnes
     ws['!cols'] = [
         { wch: 18 }, { wch: 18 }, { wch: 10 }, { wch: 20 },
         { wch: 30 }, { wch: 10 }, { wch: 18 }, { wch: 28 }, { wch: 16 }
