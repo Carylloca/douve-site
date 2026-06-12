@@ -235,10 +235,8 @@
             "Adresse", "N° postal", "Lieu", "Email", "Téléphone"
         ]],
         body: rows,
-        startY: 18,
+        startY: 22, // ⬅️ > 20, donc reste sur la même page
         theme: "grid",
-        pageBreak: "avoid",          // ⬅️ évite les coupures de lignes
-        rowPageBreak: "avoid",       // ⬅️ évite qu’un compagnon soit sur 2 pages
         headStyles: {
             fillColor: [122, 0, 16],
             textColor: 255,
@@ -251,15 +249,15 @@
             overflow: "linebreak"
         },
         columnStyles: {
-            0: { cellWidth: 25 }, // Nom
-            1: { cellWidth: 25 }, // Prénom
-            2: { cellWidth: 15 }, // Initiales
-            3: { cellWidth: 25 }, // Fonction
-            4: { cellWidth: 40 }, // Adresse
-            5: { cellWidth: 15 }, // NPA
-            6: { cellWidth: 25 }, // Lieu
-            7: { cellWidth: 45 }, // Email
-            8: { cellWidth: 35 }  // Téléphone (⬅️ élargi)
+            0: { cellWidth: 25 },
+            1: { cellWidth: 25 },
+            2: { cellWidth: 15 },
+            3: { cellWidth: 25 },
+            4: { cellWidth: 40 },
+            5: { cellWidth: 15 },
+            6: { cellWidth: 25 },
+            7: { cellWidth: 45 },
+            8: { cellWidth: 35 }
         }
     });
 
