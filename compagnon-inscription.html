@@ -181,7 +181,7 @@
 
     async function load() {
         try {
-            const m = await pb.collection("planning_events").getOne(manifestId, {
+            const m = await pb.collection("manifestations").getOne(manifestId, {
                 expand: "responsable"
             });
 
