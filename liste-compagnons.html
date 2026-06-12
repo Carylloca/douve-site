@@ -227,36 +227,87 @@
         c.telephone || ""
     ]);
 
-    doc.autoTable({
-        head: [[
-            "Nom", "Prénom", "Initiales", "Fonction",
-            "Adresse", "N° postal", "Lieu", "Email", "Téléphone"
-        ]],
-        body: rows,
-        theme: "grid",
-        headStyles: {
-            fillColor: [122, 0, 16],
-            textColor: 255,
-            fontStyle: "bold"
-        },
-        styles: {
-            fontSize: 8,
-            cellPadding: 2,
-            lineHeight: 1.1,
-            overflow: "linebreak"
-        },
-        columnStyles: {
-            0: { cellWidth: 25 },
-            1: { cellWidth: 25 },
-            2: { cellWidth: 15 },
-            3: { cellWidth: 25 },
-            4: { cellWidth: 40 },
-            5: { cellWidth: 15 },
-            6: { cellWidth: 25 },
-            7: { cellWidth: 45 },
-            8: { cellWidth: 35 }
+    // Fonction utilitaire pour calculer la hauteur d'une ligne
+    const lineHeight = 8; // hauteur moyenne d'une ligne
+    const pageHeight = doc.internal.pageSize.height - 20; // marge basse
+
+    let currentY = 20; // position de départ
+    const chunk = [];
+
+    rows.forEach((r, i) => {
+        if (currentY + lineHeight > pageHeight) {
+            // ajoute une page avant de dépasser
+            doc.autoTable({
+                head: [[
+                    "Nom", "Prénom", "Initiales", "Fonction",
+                    "Adresse", "N° postal", "Lieu", "Email", "Téléphone"
+                ]],
+                body: chunk,
+                theme: "grid",
+                headStyles: {
+                    fillColor: [122, 0, 16],
+                    textColor: 255,
+                    fontStyle: "bold"
+                },
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 2,
+                    lineHeight: 1.1,
+                    overflow: "linebreak"
+                },
+                columnStyles: {
+                    0: { cellWidth: 25 },
+                    1: { cellWidth: 25 },
+                    2: { cellWidth: 15 },
+                    3: { cellWidth: 25 },
+                    4: { cellWidth: 40 },
+                    5: { cellWidth: 15 },
+                    6: { cellWidth: 25 },
+                    7: { cellWidth: 45 },
+                    8: { cellWidth: 35 }
+                }
+            });
+            doc.addPage();
+            chunk.length = 0;
+            currentY = 20;
         }
+        chunk.push(r);
+        currentY += lineHeight;
     });
+
+    // dernière page
+    if (chunk.length > 0) {
+        doc.autoTable({
+            head: [[
+                "Nom", "Prénom", "Initiales", "Fonction",
+                "Adresse", "N° postal", "Lieu", "Email", "Téléphone"
+            ]],
+            body: chunk,
+            theme: "grid",
+            headStyles: {
+                fillColor: [122, 0, 16],
+                textColor: 255,
+                fontStyle: "bold"
+            },
+            styles: {
+                fontSize: 8,
+                cellPadding: 2,
+                lineHeight: 1.1,
+                overflow: "linebreak"
+            },
+            columnStyles: {
+                0: { cellWidth: 25 },
+                1: { cellWidth: 25 },
+                2: { cellWidth: 15 },
+                3: { cellWidth: 25 },
+                4: { cellWidth: 40 },
+                5: { cellWidth: 15 },
+                6: { cellWidth: 25 },
+                7: { cellWidth: 45 },
+                8: { cellWidth: 35 }
+            }
+        });
+    }
 
     doc.save("liste_compagnons.pdf");
 }
