@@ -8,6 +8,7 @@
 
     <!-- jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
     <!-- SheetJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -211,45 +212,95 @@
 
         /* 📄 Export PDF */
         function exportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: "landscape" });
 
-            doc.text("Liste des compagnons", 10, 10);
+    const rows = allCompagnons.map(c => [
+        c.nom || "",
+        c.prenom || "",
+        c.initiales || "",
+        c.fonction || "",
+        c.adresse || "",
+        c.npa || "",
+        c.lieu || "",
+        c.email_public || "",
+        c.telephone || ""
+    ]);
 
-            let y = 20;
+    doc.text("Liste des compagnons", 14, 12);
 
-            allCompagnons.forEach(c => {
-                doc.text(
-                    `${c.nom} ${c.prenom} | ${c.email_public} | ${c.telephone}`,
-                    10, y
-                );
-                y += 8;
-                if (y > 280) { doc.addPage(); y = 10; }
-            });
-
-            doc.save("liste_compagnons.pdf");
+    doc.autoTable({
+        head: [[
+            "Nom", "Prénom", "Initiales", "Fonction",
+            "Adresse", "N° postal", "Lieu", "Email", "Téléphone"
+        ]],
+        body: rows,
+        startY: 18,
+        theme: "grid",
+        headStyles: {
+            fillColor: [122, 0, 16],
+            textColor: 255,
+            fontStyle: "bold"
+        },
+        styles: {
+            fontSize: 9,
+            cellPadding: 3
+        },
+        columnStyles: {
+            4: { cellWidth: 40 }, // Adresse
+            7: { cellWidth: 45 }  // Email
         }
+    });
+
+    doc.save("liste_compagnons.pdf");
+}
 
         /* 📊 Export Excel */
         function exportExcel() {
-            const data = allCompagnons.map(c => ({
-                Nom: c.nom,
-                Prénom: c.prenom,
-                Initiales: c.initiales,
-                Fonction: c.fonction,
-                Adresse: c.adresse,
-                "N° postal": c.npa,
-                Lieu: c.lieu,
-                Email: c.email_public,
-                Téléphone: c.telephone
-            }));
+    const data = allCompagnons.map(c => ({
+        Nom: c.nom,
+        Prénom: c.prenom,
+        Initiales: c.initiales,
+        Fonction: c.fonction,
+        Adresse: c.adresse,
+        "N° postal": c.npa,
+        Lieu: c.lieu,
+        Email: c.email_public,
+        Téléphone: c.telephone
+    }));
 
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Compagnons");
+    const ws = XLSX.utils.json_to_sheet(data);
 
-            XLSX.writeFile(wb, "liste_compagnons.xlsx");
-        }
+    /* Largeur des colonnes */
+    ws['!cols'] = [
+        { wch: 18 }, // Nom
+        { wch: 18 }, // Prénom
+        { wch: 10 }, // Initiales
+        { wch: 20 }, // Fonction
+        { wch: 30 }, // Adresse
+        { wch: 10 }, // NPA
+        { wch: 18 }, // Lieu
+        { wch: 28 }, // Email
+        { wch: 16 }  // Téléphone
+    ];
+
+    /* Style de l’en-tête */
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    for (let C = range.s.c; C <= range.e.c; C++) {
+        const cell = ws[XLSX.utils.encode_cell({ r: 0, c: C })];
+        cell.s = {
+            fill: { fgColor: { rgb: "7A0010" } },
+            font: { bold: true, color: { rgb: "FFFFFF" } },
+            alignment: { horizontal: "center" }
+        };
+    }
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Compagnons");
+
+    XLSX.writeFile(wb, "liste_compagnons.xlsx");
+}
+
     </script>
 </body>
 </html>
