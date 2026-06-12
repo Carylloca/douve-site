@@ -211,7 +211,7 @@
         }
 
         /* 📄 EXPORT PDF — VERSION FINALE */
-        function exportPDF() {
+        window.exportPDF = function () {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: "landscape" });
 
@@ -267,7 +267,7 @@
             });
 
             doc.save("compagnon.pdf");
-        }
+        };
     </script>
 
 </body>
