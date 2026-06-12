@@ -211,59 +211,59 @@
         }
 
         /* 📄 Export PDF */
-        function exportPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation: "landscape" });
+        function exportExcel() {
+    const data = allCompagnons.map(c => ({
+        Nom: c.nom,
+        Prénom: c.prenom,
+        Initiales: c.initiales,
+        Fonction: c.fonction,
+        Adresse: c.adresse,
+        "N° postal": c.npa,
+        Lieu: c.lieu,
+        Email: c.email_public,
+        Téléphone: c.telephone
+    }));
 
-    const rows = allCompagnons.map(c => [
-        c.nom || "",
-        c.prenom || "",
-        c.initiales || "",
-        c.fonction || "",
-        c.adresse || "",
-        c.npa || "",
-        c.lieu || "",
-        c.email_public || "",
-        c.telephone || ""
-    ]);
+    const ws = XLSX.utils.json_to_sheet(data, { origin: "A2" });
 
-    doc.text("Liste des compagnons", 14, 12);
+    /* Ligne de titre */
+    ws["A1"] = { t: "s", v: "Liste des compagnons" };
+    ws["A1"].s = {
+        font: { bold: true, sz: 16, color: { rgb: "FFFFFF" } },
+        fill: { fgColor: { rgb: "7A0010" } },
+        alignment: { horizontal: "center" }
+    };
 
-    doc.autoTable({
-        head: [[
-            "Nom", "Prénom", "Initiales", "Fonction",
-            "Adresse", "N° postal", "Lieu", "Email", "Téléphone"
-        ]],
-        body: rows,
-        startY: 18,
-        theme: "grid",
-        pageBreak: "avoid",          // ⬅️ évite les coupures de lignes
-        rowPageBreak: "avoid",       // ⬅️ évite qu’un compagnon soit sur 2 pages
-        headStyles: {
-            fillColor: [122, 0, 16],
-            textColor: 255,
-            fontStyle: "bold"
-        },
-        styles: {
-            fontSize: 8,
-            cellPadding: 2,
-            lineHeight: 1.1,
-            overflow: "linebreak"
-        },
-        columnStyles: {
-            0: { cellWidth: 25 }, // Nom
-            1: { cellWidth: 25 }, // Prénom
-            2: { cellWidth: 15 }, // Initiales
-            3: { cellWidth: 25 }, // Fonction
-            4: { cellWidth: 40 }, // Adresse
-            5: { cellWidth: 15 }, // NPA
-            6: { cellWidth: 25 }, // Lieu
-            7: { cellWidth: 45 }, // Email
-            8: { cellWidth: 35 }  // Téléphone (⬅️ élargi)
+    /* Fusion du titre */
+    ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 8 } }];
+
+    /* Largeur des colonnes */
+    ws['!cols'] = [
+        { wch: 18 }, { wch: 18 }, { wch: 10 }, { wch: 20 },
+        { wch: 30 }, { wch: 10 }, { wch: 18 }, { wch: 28 }, { wch: 16 }
+    ];
+
+    /* Style de l’en-tête */
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    for (let C = range.s.c; C <= range.e.c; C++) {
+        const cell = ws[XLSX.utils.encode_cell({ r: 1, c: C })];
+        if (cell) {
+            cell.s = {
+                fill: { fgColor: { rgb: "7A0010" } },
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                alignment: { horizontal: "center" },
+                border: {
+                    top: { style: "thin", color: { rgb: "000000" } },
+                    bottom: { style: "thin", color: { rgb: "000000" } }
+                }
+            };
         }
-    });
+    }
 
-    doc.save("liste_compagnons.pdf");
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Compagnons");
+
+    XLSX.writeFile(wb, "liste_compagnons.xlsx");
 }
 
         /* 📊 Export Excel */
