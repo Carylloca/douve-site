@@ -233,22 +233,28 @@ window.exportPDF = async function () {
     doc.setTextColor(...rouge);
     doc.text("Détails du compagnon", 15, 25);
 
-    // 🖼️ Photo (si présente)
+    // 🖼️ Photo en haut à droite
+    let imageHeight = 50;
+    let imageWidth = 50;
+    let imageTop = 30; // position verticale
+    let imageLeft = 140; // position horizontale
+
     if (compagnonData.photo) {
         const imgUrl = pb.files.getUrl(compagnonData, compagnonData.photo);
-        const img = await fetch(imgUrl).then(r => r.blob()).then(b => {
-            return new Promise(resolve => {
+        const img = await fetch(imgUrl)
+            .then(r => r.blob())
+            .then(b => new Promise(resolve => {
                 const reader = new FileReader();
                 reader.onload = () => resolve(reader.result);
                 reader.readAsDataURL(b);
-            });
-        });
-        doc.addImage(img, "JPEG", 140, 40, 50, 50);
+            }));
+
+        doc.addImage(img, "JPEG", imageLeft, imageTop, imageWidth, imageHeight);
         doc.setDrawColor(...rouge);
-        doc.rect(140, 40, 50, 50);
+        doc.rect(imageLeft, imageTop, imageWidth, imageHeight);
     }
 
-    // 🧾 Données
+    // 🧾 Données (descendues sous la photo)
     const infos = [
         ["Nom", compagnonData.nom],
         ["Prénom", compagnonData.prenom],
@@ -267,13 +273,16 @@ window.exportPDF = async function () {
 
     // 📋 Tableau stylé
     doc.autoTable({
-        startY: 40,
+        startY: imageTop + imageHeight + 15, // ⬅️ décale le texte sous la photo
         margin: { left: 15, right: 15 },
         body: infos,
         theme: "plain",
-        styles: { fontSize: 11, cellPadding: 1.5 },
+        styles: {
+            fontSize: 11,
+            cellPadding: 1.5
+        },
         columnStyles: {
-            0: { textColor: rouge, fontStyle: "bold" },
+            0: { textColor: rouge, fontStyle: "bold", cellWidth: 45 },
             1: { cellWidth: 90 }
         }
     });
