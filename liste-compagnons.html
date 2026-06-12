@@ -215,12 +215,12 @@
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: "landscape" });
 
-    // 🔹 Ajout du logo (favicon) en haut à gauche
+    // 🔹 Logo en haut à gauche
     const logo = new Image();
     logo.src = "favicon.png";
-    doc.addImage(logo, "PNG", 10, 6, 12, 12); // position et taille du logo
+    doc.addImage(logo, "PNG", 10, 6, 12, 12);
 
-    // 🔹 Titre plus discret
+    // 🔹 Titre à droite du logo
     doc.setFontSize(12);
     doc.text("Liste des compagnons", 25, 12);
 
@@ -236,14 +236,14 @@
         c.telephone || ""
     ]);
 
-    // 🔹 Tableau compact sans page de titre inutile
+    // 🔹 Tableau directement sous le titre (startY = 18)
     doc.autoTable({
         head: [[
             "Nom", "Prénom", "Initiales", "Fonction",
             "Adresse", "N° postal", "Lieu", "Email", "Téléphone"
         ]],
         body: rows,
-        startY: 20,
+        startY: 18,
         theme: "grid",
         pageBreak: "avoid",
         rowPageBreak: "avoid",
@@ -306,7 +306,7 @@
         cell.s = {
             font: { bold: true, color: { rgb: "FFFFFF" } },
             fill: { fgColor: { rgb: "7A0010" } },
-            alignment: { horizontal: "center" }
+            alignment: { horizontal: "center", vertical: "center" }
         };
     });
 
