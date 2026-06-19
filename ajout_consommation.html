@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Ajouter / Modifier une consommation</title>
+
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <style>
+        body {
+            font-family: Arial;
+            margin: 0;
+            background: url("img/page-compagnon-consommation.jpg") no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        /* HEADER COMPAGNON */
+        header {
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 22px;
+            text-shadow: 0 0 10px black;
+        }
+
+        .btn {
+            background: #7A0010;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #5a000c;
+        }
+
+        /* PANNEAU CENTRAL */
+        .panel {
+            background: rgba(255,255,255,0.90);
+            padding: 25px;
+            border-radius: 12px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            max-width: 500px;
+            margin: 30px auto;
+        }
+
+        h2 {
+            text-align: center;
+            color: white;
+            text-shadow: 0 0 10px black;
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+            border-radius: 6px;
+            border: 1px solid #aaa;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background: #7A0010;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #5a000c;
+        }
+
+        .btn-secondary {
+            background: #555;
+        }
+
+        .btn-secondary:hover {
+            background: #333;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1 id="titrePageHeader">Ajouter une consommation</h1>
+    <button class="btn" onclick="location.href='mes_consommations.html'">Retour</button>
+</header>
+
+<h2 id="titrePage">Ajouter une consommation</h2>
+
+<div class="panel">
+
+    <label>Type de vin</label>
+    <select id="wine_type"></select>
+
+    <label>Date</label>
+    <input type="date" id="date">
+
+    <label>Quantité (bouteilles)</label>
+    <input type="number" id="quantity" min="1" value="1">
+
+    <label>Prix unitaire (CHF)</label>
+    <input type="number" id="unit_price" step="0.1">
+
+    <label>Total (CHF)</label>
+    <input type="number" id="total" readonly>
+
+    <label>Photo (optionnel)</label>
+    <input type="file" id="image" multiple>
+
+    <button id="btnSave">Enregistrer</button>
+    <button class="btn-secondary" onclick="location.href='mes_consommations.html'">Annuler</button>
+
+</div>
+
+<!-- PocketBase -->
+<script src="js/pocketbase.umd.js"></script>
+<script src="js/hebergement_pb.js"></script>
+<script src="js/auth.js"></script>
+
+<script>
+let consoId = null;
+let prixAuto = null;
+
+// Récupération ID si modification
+const params = new URLSearchParams(window.location.search);
+if (params.has("id")) {
+    consoId = params.get("id");
+    document.getElementById("titrePage").textContent = "Modifier une consommation";
+    document.getElementById("titrePageHeader").textContent = "Modifier une consommation";
+}
+
+// Charger les types de vin
+async function loadWineTypes() {
+    const vins = await pb.collection("wine_types").getFullList({
+        filter: "active = true",
+        sort: "type_de_vin"
+    });
+
+    const select = document.getElementById("wine_type");
+    vins.forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v.id;
+        opt.textContent = v.type_de_vin;
+        opt.dataset.price = v.price_chf ?? "";
+        select.appendChild(opt);
+    });
+
+    select.addEventListener("change", updatePriceFromType);
+}
+
+// Mise à jour du prix depuis wine_types
+function updatePriceFromType() {
+    const select = document.getElementById("wine_type");
+    const price = select.selectedOptions[0].dataset.price;
+
+    if (price !== "") {
+        document.getElementById("unit_price").value = price;
+        prixAuto = true;
+    } else {
+        prixAuto = false;
+    }
+
+    updateTotal();
+}
+
+// Mise à jour du total
+function updateTotal() {
+    const q = parseFloat(document.getElementById("quantity").value) || 0;
+    const p = parseFloat(document.getElementById("unit_price").value) || 0;
+    document.getElementById("total").value = (q * p).toFixed(2);
+}
+
+document.getElementById("quantity").addEventListener("input", updateTotal);
+document.getElementById("unit_price").addEventListener("input", updateTotal);
+
+// Charger données si modification
+async function loadConso() {
+    if (!consoId) return;
+
+    const c = await pb.collection("wine_consumptions").getOne(consoId, {
+        expand: "wine_type"
+    });
+
+    document.getElementById("wine_type").value = c.wine_type;
+    document.getElementById("date").value = c.date.split("T")[0];
+    document.getElementById("quantity").value = c.quantity;
+    document.getElementById("unit_price").value = c.unit_price_chf;
+    document.getElementById("total").value = c.total_chf;
+}
+
+// Enregistrement
+document.getElementById("btnSave").onclick = async () => {
+    const userId = pb.authStore.model?.id;
+
+    if (!userId) {
+        alert("Non connecté.");
+        return;
+    }
+
+    const data = new FormData();
+    data.append("companion", userId);
+    data.append("wine_type", document.getElementById("wine_type").value);
+    data.append("date", document.getElementById("date").value);
+    data.append("quantity", document.getElementById("quantity").value);
+    data.append("unit_price_chf", document.getElementById("unit_price").value);
+    data.append("total_chf", document.getElementById("total").value);
+
+    const files = document.getElementById("image").files;
+    for (let i = 0; i < files.length; i++) {
+        data.append("image", files[i]);
+    }
+
+    if (consoId) {
+        await pb.collection("wine_consumptions").update(consoId, data);
+    } else {
+        await pb.collection("wine_consumptions").create(data);
+    }
+
+    location.href = "mes_consommations.html";
+};
+
+// Initialisation
+(async () => {
+    await loadWineTypes();
+    await loadConso();
+    updatePriceFromType();
+})();
+</script>
+
+</body>
+</html>
