@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Facturation du vin – Admin</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("../img/page-facturation_vin.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.12);
+            min-height: calc(100vh - 70px);
+            padding: 140px 20px 40px 20px;
+            box-sizing: border-box;
+        }
+
+        /* HEADER IDENTIQUE */
+        header {
+            width: 100%;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.55);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            box-sizing: border-box;
+        }
+
+        .header-left a {
+            margin-right: 15px;
+            padding: 10px 15px;
+            background: #7A0010;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+            white-space: nowrap;
+        }
+
+        .header-left a:hover {
+            background: #5A000C;
+        }
+
+        .header-title {
+            flex: 1;
+            text-align: center;
+            color: white;
+            font-size: 26px;
+            font-weight: bold;
+            text-shadow: 0 0 10px black;
+            margin-right: 60px;
+        }
+
+        .logout-btn {
+            padding: 10px 15px;
+            background: #7A0010;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+            white-space: nowrap;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+        }
+
+        .logout-btn:hover {
+            background: #5A000C;
+        }
+
+        /* CONTENU */
+        h2, h3 {
+            color: white;
+            text-shadow: 0 0 8px black;
+            text-align: center;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.85);
+            padding: 20px;
+            width: 500px;
+            margin: 0 auto 30px auto;
+            border-radius: 8px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #aaa;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background: #7A0010;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+        }
+
+        button:hover {
+            background: #5A000C;
+        }
+
+        #btnBill {
+            display: block;
+            margin: 20px auto;
+            width: 260px;
+            font-size: 18px;
+        }
+
+        table {
+            width: 95%;
+            margin: 0 auto;
+            border-collapse: collapse;
+            background: rgba(255,255,255,0.9);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background: #7A0010;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="header-left">
+        <a href="../admin-menu.html">⬅ Retour menu</a>
+    </div>
+
+    <div class="header-title">Facturation du vin</div>
+
+    <button class="logout-btn" onclick="logout()">Déconnexion</button>
+</header>
+
+<div class="overlay">
+
+    <div class="card">
+        <h3>Filtres</h3>
+
+        <label><input type="radio" name="filter" value="non" checked> Non facturés</label>
+        <label><input type="radio" name="filter" value="oui"> Facturés</label>
+        <label><input type="radio" name="filter" value="tous"> Tous</label>
+
+        <label>Compagnon :</label>
+        <select id="filterCompanion">
+            <option value="">Tous</option>
+        </select>
+
+        <label>Depuis :</label>
+        <input type="date" id="filterFrom">
+
+        <label>Jusqu'à :</label>
+        <input type="date" id="filterTo">
+
+        <button onclick="applyFilters()">Appliquer</button>
+    </div>
+
+    <button id="btnBill">Marquer comme facturées</button>
+
+    <h3>Total sélectionné : <span id="totalSelected">0</span> CHF</h3>
+
+    <table id="tableConsos">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Date</th>
+                <th>Compagnon</th>
+                <th>Vin</th>
+                <th>Quantité</th>
+                <th>Prix</th>
+                <th>Total</th>
+                <th>Photos</th>
+                <th>Facturé</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+</div>
+
+<!-- PocketBase -->
+<script src="../../js/pocketbase.umd.js"></script>
+<script src="../../js/hebergement_pb.js"></script>
+<script src="../../js/auth.js"></script>
+
+<script>
+/* --- TON JAVASCRIPT ORIGINAL, INTACT --- */
+let consommations = [];
+let companions = [];
+
+async function loadCompanions() {
+    companions = await pb.collection("companions").getFullList({ sort: "name" });
+    const select = document.getElementById("filterCompanion");
+    companions.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.name;
+        select.appendChild(opt);
+    });
+}
+
+async function loadConsommations() {
+    consommations = await pb.collection("wine_consumptions").getFullList({
+        expand: "wine_type,companion",
+        sort: "-date"
+    });
+    applyFilters();
+}
+
+function applyFilters() {
+    const filter = document.querySelector("input[name='filter']:checked").value;
+    const comp = document.getElementById("filterCompanion").value;
+    const from = document.getElementById("filterFrom").value;
+    const to = document.getElementById("filterTo").value;
+
+    const tbody = document.querySelector("#tableConsos tbody");
+    tbody.innerHTML = "";
+
+    consommations.forEach(c => {
+        if (filter === "non" && c.billed) return;
+        if (filter === "oui" && !c.billed) return;
+        if (comp && c.companion !== comp) return;
+
+        const d = c.date.split("T")[0];
+        if (from && d < from) return;
+        if (to && d > to) return;
+
+        const tr = document.createElement("tr");
+
+        let imgHtml = "";
+        if (c.image && Array.isArray(c.image)) {
+            c.image.forEach(file => {
+                const url = pb.files.getUrl(c, file);
+                imgHtml += `
+                    <div style="display:inline-block; text-align:center; margin-right:8px;">
+                        <img src="${url}" 
+                             style="width:70px; cursor:pointer; display:block;" 
+                             onclick="window.open('${url}', '_blank')">
+
+                        <button style="margin-top:3px; font-size:12px;"
+                                onclick="deleteImage('${c.id}', '${file}')">
+                            🗑️
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        const compName = c.expand?.companion?.name || "—";
+        const vin = c.expand?.wine_type?.type_de_vin || "—";
+
+        tr.innerHTML = `
+            <td><input type="checkbox" class="chk" data-id="${c.id}" data-total="${c.total_chf}" ${c.billed ? "disabled" : ""}></td>
+            <td>${new Date(c.date).toLocaleDateString()}</td>
+            <td>${compName}</td>
+            <td>${vin}</td>
+            <td>${c.quantity}</td>
+            <td>${c.unit_price_chf} CHF</td>
+            <td>${c.total_chf} CHF</td>
+            <td>${imgHtml}</td>
+            <td>${c.billed ? "Oui" : "Non"}</td>
+        `;
+
+        tbody.appendChild(tr);
+    });
+
+    updateTotalSelected();
+}
+
+function updateTotalSelected() {
+    let total = 0;
+    document.querySelectorAll(".chk:checked").forEach(chk => {
+        total += parseFloat(chk.dataset.total);
+    });
+    document.getElementById("totalSelected").textContent = total.toFixed(2);
+}
+
+document.addEventListener("change", e => {
+    if (e.target.classList.contains("chk")) updateTotalSelected();
+});
+
+document.getElementById("btnBill").onclick = async () => {
+    const adminId = pb.authStore.model?.id;
+    const selected = [...document.querySelectorAll(".chk:checked")].map(chk => chk.dataset.id);
+
+    if (selected.length === 0) {
+        alert("Aucune consommation sélectionnée.");
+        return;
+    }
+
+    if (!confirm("Marquer ces consommations comme facturées ?")) return;
+
+    for (const id of selected) {
+        await pb.collection("wine_consumptions").update(id, {
+            billed: true,
+            billed_at: new Date().toISOString(),
+            billed_by: adminId
+        });
+    }
+
+    loadConsommations();
+};
+
+async function deleteImage(consoId, fileName) {
+    if (!confirm("Supprimer cette image ?")) return;
+
+    const conso = await pb.collection("wine_consumptions").getOne(consoId);
+    const remaining = conso.image.filter(img => img !== fileName);
+
+    await pb.collection("wine_consumptions").update(consoId, {
+        image: remaining
+    });
+
+    loadConsommations();
+}
+
+(async () => {
+    await loadCompanions();
+    await loadConsommations();
+})();
+</script>
+
+</body>
+</html>
