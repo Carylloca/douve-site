@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin – Menu</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("../img/page-admin-cahier_lait-types_vin.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+            overflow: hidden; /* supprime tout ascenseur */
+        }
+
+        /* ⭐ Fond moins sombre */
+        .overlay {
+            background: rgba(0, 0, 0, 0.12);
+            height: calc(100vh - 70px);
+            padding: 40px 20px;
+            padding-top: 140px; /* espace sous le header */
+            box-sizing: border-box;
+        }
+
+        /* ⭐ HEADER IDENTIQUE AUX AUTRES PAGES */
+        header {
+            width: 100%;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.55);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            box-sizing: border-box;
+        }
+
+        .header-left a {
+            margin-right: 15px;
+            padding: 10px 15px;
+            background: #7A0010; /* bordeaux */
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+            white-space: nowrap;
+        }
+
+        .header-left a:hover {
+            background: #5A000C;
+        }
+
+        /* ⭐ Titre centré comme sur les autres pages */
+        .header-title {
+            flex: 1;
+            text-align: center;
+            color: white;
+            font-size: 26px;
+            font-weight: bold;
+            text-shadow: 0 0 10px black;
+            margin-right: 60px; /* compense la largeur du bouton logout */
+        }
+
+        /* ⭐ Déconnexion en bordeaux */
+        .logout-btn {
+            padding: 10px 15px;
+            background: #7A0010; /* bordeaux */
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+            white-space: nowrap;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+        }
+
+        .logout-btn:hover {
+            background: #5A000C;
+        }
+
+        .btn {
+            display: block;
+            width: 260px;
+            margin: 15px auto;
+            padding: 15px 20px;
+            background: #7A0010;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            text-align: center;
+            font-size: 18px;
+            transition: 0.2s;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+        }
+
+        .btn:hover {
+            background: #5A000C;
+        }
+    </style>
+</head>
