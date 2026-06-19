@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Types de vin – Admin</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("../img/page-admin-wine-types.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.12);
+            min-height: calc(100vh - 70px);
+            padding: 140px 20px 40px 20px;
+            box-sizing: border-box;
+        }
+
+        /* HEADER ADMIN */
+        header {
+            width: 100%;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.55);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            box-sizing: border-box;
+        }
+
+        .header-left a {
+            margin-right: 15px;
+            padding: 10px 15px;
+            background: #7A0010;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+            white-space: nowrap;
+        }
+
+        .header-left a:hover {
+            background: #5A000C;
+        }
+
+        .header-title {
+            flex: 1;
+            text-align: center;
+            color: white;
+            font-size: 26px;
+            font-weight: bold;
+            text-shadow: 0 0 10px black;
+            margin-right: 60px;
+        }
+
+        .logout-btn {
+            padding: 10px 15px;
+            background: #7A0010;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+            white-space: nowrap;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+        }
+
+        .logout-btn:hover {
+            background: #5A000C;
+        }
+
+        /* PANNEAU */
+        .card {
+            background: rgba(255,255,255,0.90);
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 700px;
+            margin: 0 auto 30px auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+
+        h2, h3 {
+            text-align: center;
+            color: white;
+            text-shadow: 0 0 10px black;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.large { flex: 2; }
+        .form-group.medium { flex: 0.6; }
+        .form-group.small { flex: 0.6; }
+
+        input {
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #aaa;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background: #7A0010;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #5A000C;
+        }
+
+        /* TABLEAU */
+        table {
+            width: 95%;
+            margin: 0 auto;
+            border-collapse: collapse;
+            background: rgba(255,255,255,0.90);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background: #7A0010;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="header-left">
+        <a href="../admin-menu.html">⬅ Retour menu</a>
+    </div>
+
+    <div class="header-title">Gestion des types de vin</div>
+
+    <button class="logout-btn" onclick="logout()">Déconnexion</button>
+</header>
+
+<div class="overlay">
+
+    <h2>Gestion des types de vin</h2>
+
+    <div class="card">
+        <h3>Ajouter un type de vin</h3>
+
+        <div class="form-row">
+            <div class="form-group large">
+                <label>Nom du vin</label>
+                <input type="text" id="type_de_vin">
+            </div>
+
+            <div class="form-group medium">
+                <label>Contenance (cl)</label>
+                <input type="number" id="contenance" step="1">
+            </div>
+
+            <div class="form-group small">
+                <label>Prix (CHF)</label>
+                <input type="number" id="price_chf" step="0.1">
+            </div>
+        </div>
+
+        <button id="btnAdd">Ajouter</button>
+    </div>
+
+    <h3>Liste des vins</h3>
+
+    <table id="tableVins">
+        <thead>
+            <tr>
+                <th>Type de vin</th>
+                <th>Contenance (cl)</th>
+                <th>Prix</th>
+                <th>Actif</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+</div>
+
+<script src="../../js/pocketbase.umd.js"></script>
+<script src="../../js/hebergement_pb.js"></script>
+<script src="../../js/auth.js"></script>
+
+<script>
+async function loadVins() {
+    const vins = await pb.collection("wine_types").getFullList({
+        sort: "-created"
+    });
+
+    const tbody = document.querySelector("#tableVins tbody");
+    tbody.innerHTML = "";
+
+    vins.forEach(v => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${v.type_de_vin}</td>
+            <td>${v.contenance ?? "-"}</td>
+            <td>${v.price_chf ?? "-"}</td>
+            <td>${v.active ? "Oui" : "Non"}</td>
+            <td>
+                <button onclick="toggleActive('${v.id}', ${v.active})">
+                    ${v.active ? "Désactiver" : "Activer"}
+                </button>
+                <button onclick="deleteVin('${v.id}')">Supprimer</button>
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+    });
+}
+
+document.getElementById("btnAdd").onclick = async () => {
+    const type_de_vin = document.getElementById("type_de_vin").value.trim();
+    const contenance = document.getElementById("contenance").value;
+    const price_chf = document.getElementById("price_chf").value;
+
+    if (!type_de_vin) {
+        alert("Le nom du vin est obligatoire.");
+        return;
+    }
+
+    await pb.collection("wine_types").create({
+        type_de_vin,
+        contenance: contenance || null,
+        price_chf: price_chf || null,
+        active: true,
+        created: new Date().toISOString()
+    });
+
+    document.getElementById("type_de_vin").value = "";
+    document.getElementById("contenance").value = "";
+    document.getElementById("price_chf").value = "";
+
+    loadVins();
+};
+
+async function toggleActive(id, current) {
+    await pb.collection("wine_types").update(id, {
+        active: !current
+    });
+    loadVins();
+}
+
+async function deleteVin(id) {
+    if (!confirm("Supprimer ce type de vin ?")) return;
+    await pb.collection("wine_types").delete(id);
+    loadVins();
+}
+
+loadVins();
+</script>
+
+</body>
+</html>
