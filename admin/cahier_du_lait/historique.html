@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Historique des consommations – Admin</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("../img/page-admin-historique.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.12);
+            min-height: calc(100vh - 70px);
+            padding: 140px 20px 40px 20px;
+            box-sizing: border-box;
+        }
+
+        /* HEADER ADMIN */
+        header {
+            width: 100%;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.55);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            box-sizing: border-box;
+        }
+
+        .header-left a {
+            margin-right: 15px;
+            padding: 10px 15px;
+            background: #7A0010;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+            white-space: nowrap;
+        }
+
+        .header-left a:hover {
+            background: #5A000C;
+        }
+
+        .header-title {
+            flex: 1;
+            text-align: center;
+            color: white;
+            font-size: 26px;
+            font-weight: bold;
+            text-shadow: 0 0 10px black;
+            margin-right: 60px;
+        }
+
+        .logout-btn {
+            padding: 10px 15px;
+            background: #7A0010;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+            white-space: nowrap;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+        }
+
+        .logout-btn:hover {
+            background: #5A000C;
+        }
+
+        /* PANNEAU */
+        .card {
+            background: rgba(255,255,255,0.90);
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 700px;
+            margin: 0 auto 30px auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+
+        h2, h3 {
+            text-align: center;
+            color: white;
+            text-shadow: 0 0 10px black;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input, select {
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #aaa;
+            width: 100%;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background: #7A0010;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #5A000C;
+        }
+
+        /* TABLEAU */
+        table {
+            width: 95%;
+            margin: 0 auto;
+            border-collapse: collapse;
+            background: rgba(255,255,255,0.90);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background: #7A0010;
+            color: white;
+        }
+
+        img {
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="header-left">
+        <a href="../admin-menu.html">⬅ Retour menu</a>
+    </div>
+
+    <div class="header-title">Historique des consommations</div>
+
+    <button class="logout-btn" onclick="logout()">Déconnexion</button>
+</header>
+
+<div class="overlay">
+
+    <h2>Historique des consommations de vin</h2>
+
+    <div class="card">
+        <h3>Filtres</h3>
+
+        <label><input type="radio" name="filter" value="tous" checked> Tous</label>
+        <label><input type="radio" name="filter" value="non"> Non facturés</label>
+        <label><input type="radio" name="filter" value="oui"> Facturés</label>
+
+        <br><br>
+
+        <label>Compagnon :</label>
+        <select id="filterCompanion">
+            <option value="">Tous</option>
+        </select>
+
+        <label>Depuis :</label>
+        <input type="date" id="filterFrom">
+
+        <label>Jusqu'à :</label>
+        <input type="date" id="filterTo">
+
+        <button onclick="applyFilters()">Appliquer</button>
+    </div>
+
+    <table id="tableConsos">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Compagnon</th>
+                <th>Vin</th>
+                <th>Quantité</th>
+                <th>Prix</th>
+                <th>Total</th>
+                <th>Photo</th>
+                <th>Facturé</th>
+                <th>Facturé le</th>
+                <th>Par</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <h3>Total affiché : <span id="totalDisplayed">0</span> CHF</h3>
+
+</div>
+
+<script src="../../js/pocketbase.umd.js"></script>
+<script src="../../js/hebergement_pb.js"></script>
+<script src="../../js/auth.js"></script>
+
+<script>
+let consommations = [];
+let companions = [];
+let admins = [];
+
+// Charger les compagnons
+async function loadCompanions() {
+    companions = await pb.collection("companions").getFullList({
+        sort: "name"
+    });
+
+    const select = document.getElementById("filterCompanion");
+    companions.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.name;
+        select.appendChild(opt);
+    });
+}
+
+// Charger les admins
+async function loadAdmins() {
+    admins = await pb.collection("users").getFullList();
+}
+
+// Charger les consommations
+async function loadConsommations() {
+    consommations = await pb.collection("wine_consumptions").getFullList({
+        expand: "wine_type,companion,billed_by",
+        sort: "-date"
+    });
+
+    applyFilters();
+}
+
+// Appliquer les filtres
+function applyFilters() {
+    const filter = document.querySelector("input[name='filter']:checked").value;
+    const comp = document.getElementById("filterCompanion").value;
+    const from = document.getElementById("filterFrom").value;
+    const to = document.getElementById("filterTo").value;
+
+    const tbody = document.querySelector("#tableConsos tbody");
+    tbody.innerHTML = "";
+
+    let total = 0;
+
+    consommations.forEach(c => {
+
+        if (filter === "non" && c.billed) return;
+        if (filter === "oui" && !c.billed) return;
+
+        if (comp && c.companion !== comp) return;
+
+        const d = c.date.split("T")[0];
+        if (from && d < from) return;
+        if (to && d > to) return;
+
+        const tr = document.createElement("tr");
+
+        let imgHtml = "";
+        if (c.image) {
+            const url = pb.files.getUrl(c, c.image);
+            imgHtml = `<img src="${url}" style="width:70px; cursor:pointer" onclick="window.open('${url}', '_blank')">`;
+        }
+
+        const compName = c.expand?.companion?.name || "—";
+        const vin = c.expand?.wine_type?.type_de_vin || "—";
+        const adminName = c.expand?.billed_by?.name || "";
+
+        tr.innerHTML = `
+            <td>${new Date(c.date).toLocaleDateString()}</td>
+            <td>${compName}</td>
+            <td>${vin}</td>
+            <td>${c.quantity}</td>
+            <td>${c.unit_price_chf} CHF</td>
+            <td>${c.total_chf} CHF</td>
+            <td>${imgHtml}</td>
+            <td>${c.billed ? "Oui" : "Non"}</td>
+            <td>${c.billed_at ? new Date(c.billed_at).toLocaleDateString() : ""}</td>
+            <td>${adminName}</td>
+        `;
+
+        tbody.appendChild(tr);
+
+        total += c.total_chf;
+    });
+
+    document.getElementById("totalDisplayed").textContent = total.toFixed(2);
+}
+
+// Initialisation
+(async () => {
+    await loadCompanions();
+    await loadAdmins();
+    await loadConsommations();
+})();
+</script>
+
+</body>
+</html>
